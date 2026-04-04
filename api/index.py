@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException, Request, Header
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
-from database import get_db, init_db, Chat, Message, SessionLocal
+from .database import get_db, init_db, Chat, Message, SessionLocal
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 import json
