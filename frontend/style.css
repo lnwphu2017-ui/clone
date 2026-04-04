@@ -1,0 +1,781 @@
+:root {
+    --bg-color: #ffffff;
+    --sidebar-bg: #f9f9f9;
+    --sidebar-hover: #ececec;
+    --text-color: #0d0d0d;
+    --user-msg-bg: var(--sidebar-bg);
+    --input-bg: #ffffff;
+    --border-color: rgba(0, 0, 0, 0.1);
+    --btn-disabled: #d7d7d7;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Söhne, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
+}
+
+body,
+html {
+    height: 100%;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    overflow: hidden;
+}
+
+/* ===== หน้าจอ API Key (ธีมเดียวกับแอปหลัก) ===== */
+.api-key-screen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-color);
+    z-index: 2000;
+}
+
+.api-key-card {
+    background: var(--bg-color);
+    border-radius: 16px;
+    padding: 40px;
+    width: 90%;
+    max-width: 440px;
+    text-align: center;
+    animation: fadeInUp 0.5s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.api-key-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 20px;
+    background: var(--text-color);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    color: var(--bg-color);
+}
+
+.api-key-card h2 {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text-color);
+}
+
+.api-key-desc {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 24px;
+}
+
+.api-key-input-group {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+    margin-bottom: 16px;
+    background: var(--user-msg-bg);
+}
+
+.api-key-input-group:focus-within {
+    border-color: #888;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+}
+
+.api-key-input-group input {
+    flex: 1;
+    padding: 14px 16px;
+    border: none;
+    outline: none;
+    font-size: 15px;
+    color: var(--text-color);
+    background: transparent;
+}
+
+/* ซ่อนรูปตา (Reveal Password) อัตโนมัติที่เบราว์เซอร์อย่าง Edge มักจะใส่มาให้ */
+.api-key-input-group input::-ms-reveal,
+.api-key-input-group input::-ms-clear {
+    display: none;
+}
+
+.toggle-visibility-btn {
+    background: none;
+    border: none;
+    padding: 14px;
+    cursor: pointer;
+    color: #999;
+    font-size: 16px;
+}
+
+.toggle-visibility-btn:hover {
+    color: var(--text-color);
+}
+
+.save-key-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--text-color);
+    color: var(--bg-color);
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s;
+    margin-bottom: 16px;
+}
+
+.save-key-btn:hover:not(:disabled) {
+    background: #1a1a1a;
+}
+
+.save-key-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.get-key-link {
+    color: #888;
+    font-size: 13px;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.get-key-link:hover {
+    color: var(--text-color);
+    text-decoration: underline;
+}
+
+/* ===== Layout หลัก ===== */
+.app-container {
+    display: flex;
+    height: 100vh;
+}
+
+/* ===== Sidebar ===== */
+.sidebar {
+    width: 260px;
+    background-color: var(--sidebar-bg);
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    border-right: 1px solid var(--border-color);
+}
+
+.sidebar-header {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.new-chat-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    cursor: pointer;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.new-chat-btn:hover {
+    background-color: var(--sidebar-hover);
+}
+
+.new-chat-btn span {
+    flex-grow: 1;
+    text-align: left;
+    margin-left: 10px;
+}
+
+/* ส่วนเลือกโมเดล AI */
+.model-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.model-selector label {
+    font-size: 12px;
+    color: #888;
+    font-weight: 600;
+    padding-left: 4px;
+}
+
+.model-selector select {
+    width: 100%;
+    padding: 9px 10px;
+    background-color: var(--sidebar-hover);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-color);
+    outline: none;
+    font-size: 13px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.model-selector select:hover {
+    border-color: #667eea;
+}
+
+.model-selector select:focus {
+    border-color: #667eea;
+}
+
+/* ค้นหาแชท */
+.search-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-container i {
+    position: absolute;
+    left: 10px;
+    color: #888;
+    font-size: 12px;
+}
+
+.search-container input {
+    width: 100%;
+    padding: 8px 10px 8px 30px;
+    background-color: var(--sidebar-hover);
+    border: none;
+    border-radius: 6px;
+    color: var(--text-color);
+    outline: none;
+}
+
+/* รายการแชท */
+.history-list {
+    flex-grow: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.chat-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #000000;
+}
+
+.chat-item:hover,
+.chat-item.active {
+    background-color: var(--sidebar-hover);
+    color: rgb(0, 0, 0);
+}
+
+.chat-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-grow: 1;
+}
+
+.delete-btn {
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    display: none;
+}
+
+.chat-item:hover .delete-btn {
+    display: block;
+}
+
+.delete-btn:hover {
+    color: #ff5555;
+}
+
+/* ปุ่มเปลี่ยน API Key ด้านล่าง Sidebar */
+.sidebar-footer {
+    padding-top: 10px;
+    border-top: 1px solid var(--border-color);
+}
+
+.change-key-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 10px 12px;
+    background: transparent;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    border-radius: 8px;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+
+.change-key-btn:hover {
+    background-color: var(--sidebar-hover);
+    color: var(--text-color);
+}
+
+/* ===== Main Content ===== */
+.main-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.top-spacer,
+.bottom-spacer {
+    transition: flex-grow 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-grow: 0;
+}
+
+/* ===== โหมดหน้าแชทใหม่ (จัดกึ่งกลางทีสุด) ===== */
+.main-content.centered-mode .top-spacer,
+.main-content.centered-mode .bottom-spacer {
+    flex-grow: 1;
+}
+
+.main-content.centered-mode .chat-container {
+    flex-grow: 0;
+    padding-bottom: 0;
+}
+
+.main-content.centered-mode .input-area {
+    padding-bottom: 0;
+    /* เอาขอบล่างออกเพื่อให้ของทุกอย่างอยู่ตรงกลางจริงๆ */
+}
+
+.header-mobile {
+    display: none;
+}
+
+.chat-container {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: flex-grow 0.5s cubic-bezier(0.4, 0, 0.2, 1), padding-bottom 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.welcome-screen {
+    margin: auto;
+    text-align: center;
+    color: var(--text-color);
+    transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), margin 0.5s cubic-bezier(0.4, 0, 0.2, 1), padding 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 1;
+    max-height: 150px;
+    overflow: hidden;
+}
+
+.welcome-screen.hidden {
+    opacity: 0;
+    max-height: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.welcome-screen h2 {
+    font-size: 24px;
+    font-weight: 600;
+}
+
+/* ===== ข้อความ (Messages) — สไตล์คล้าย Gemini ===== */
+.message {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+.message-inner {
+    width: 100%;
+    max-width: 800px;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.message.user .message-inner {
+    justify-content: flex-end;
+}
+
+
+
+.message-content {
+    font-size: 16px;
+    line-height: 1.8;
+    max-width: 85%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    color: var(--text-color);
+}
+
+.message.user .message-content {
+    background-color: var(--user-msg-bg);
+    padding: 15px 20px;
+    border-radius: 20px;
+    border-bottom-right-radius: 4px;
+    width: auto;
+}
+
+.message.assistant .message-content {
+    color: var(--text-color);
+    width: 100%;
+    max-width: 100%;
+}
+
+/* ย่อหน้า */
+.message.assistant .message-content *:first-child {
+    margin-top: 0;
+}
+
+.message.assistant .message-content p {
+    margin-bottom: 16px;
+    line-height: 1.8;
+}
+
+/* หัวข้อ — ขนาดแยกชัดเจนแบบ Gemini */
+.message.assistant .message-content h1 {
+    font-size: 1.5em;
+    font-weight: 700;
+    margin-top: 28px;
+    margin-bottom: 12px;
+    color: var(--text-color);
+}
+
+.message.assistant .message-content h2 {
+    font-size: 1.35em;
+    font-weight: 700;
+    margin-top: 24px;
+    margin-bottom: 10px;
+    color: var(--text-color);
+}
+
+.message.assistant .message-content h3 {
+    font-size: 1.2em;
+    font-weight: 600;
+    margin-top: 20px;
+    margin-bottom: 8px;
+    color: var(--text-color);
+}
+
+.message.assistant .message-content h4,
+.message.assistant .message-content h5 {
+    font-size: 1.1em;
+    font-weight: 600;
+    margin-top: 16px;
+    margin-bottom: 8px;
+}
+
+/* ตัวหนา — โดดเด่นแบบ Gemini */
+.message.assistant .message-content strong {
+    font-weight: 700;
+    color: var(--text-color);
+}
+
+/* รายการ (Lists) — เว้นระยะดี */
+.message.assistant .message-content ul,
+.message.assistant .message-content ol {
+    margin-left: 24px;
+    margin-bottom: 16px;
+    padding-left: 4px;
+}
+
+.message.assistant .message-content li {
+    margin-bottom: 10px;
+    line-height: 1.7;
+}
+
+.message.assistant .message-content li::marker {
+    color: #555;
+}
+
+/* KaTeX — สูตรคณิตศาสตร์แบบ Gemini (พื้นหลังอ่อนๆ + เว้นระยะดี) */
+.katex-display {
+    text-align: center !important;
+    font-size: clamp(1.1em, 2.5vw, 1.5em) !important;
+    margin: 24px 0 !important;
+    padding: 20px 16px;
+    background: var(--user-msg-bg);
+    border-radius: 12px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.katex-display::-webkit-scrollbar {
+    display: none;
+}
+
+/* สูตร inline */
+.katex {
+    font-size: 1.1em;
+}
+
+
+/* ตาราง */
+.message-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 15px 0;
+    table-layout: auto;
+}
+
+.message-content th,
+.message-content td {
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    text-align: left;
+    word-break: normal;
+}
+
+.message-content th {
+    background-color: var(--user-msg-bg);
+    font-weight: bold;
+}
+
+/* ===== Input Area ===== */
+.input-area {
+    padding: 20px;
+    padding-bottom: 60px;
+    /* <--- ทำให้กล่องอยู่สูงขึ้นไปจากขอบจออย่างเห็นได้ชัด */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    transition: padding-bottom 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.input-wrapper {
+    width: 100%;
+    max-width: 800px;
+    background-color: var(--input-bg);
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    /* ลดเงาลงนิดหนึ่งและเพิ่มขอบให้ชัดขึ้น (Thin border) */
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+#message-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    resize: none;
+    min-height: 80px;
+    max-height: 200px;
+    padding: 0;
+    margin-bottom: 12px;
+    font-size: 16px;
+    outline: none;
+}
+
+#message-input::placeholder {
+    color: #a0a0a0;
+}
+
+.action-btn {
+    align-self: flex-end;
+    background: #000;
+    color: #202020;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background-color 0.2s;
+}
+
+.action-btn:disabled {
+    background: #cfcfcf;
+    color: #fff;
+    cursor: not-allowed;
+}
+
+.action-btn.send-mode .stop-icon {
+    display: none;
+}
+
+.action-btn.send-mode .send-icon {
+    display: inline-block;
+}
+
+.action-btn.stop-mode .send-icon {
+    display: none;
+}
+
+.action-btn.stop-mode .stop-icon {
+    display: inline-block;
+}
+
+.disclaimer {
+    color: #888;
+    font-size: 12px;
+    margin-top: 10px;
+}
+
+/* บล็อกโค้ด */
+pre {
+    background-color: #f7f7f8;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    overflow-x: auto;
+    margin-bottom: 15px;
+}
+
+code {
+    font-family: Consolas, monospace;
+}
+
+/* ===== Modal ยืนยันลบ ===== */
+.modal-backdrop {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: var(--bg-color);
+    padding: 24px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.modal-content h3 {
+    margin-bottom: 15px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.modal-content p {
+    margin-bottom: 25px;
+    color: #444;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.btn-cancel,
+.btn-confirm {
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s;
+}
+
+.btn-cancel {
+    background-color: transparent;
+    color: var(--text-color);
+}
+
+.btn-cancel:hover {
+    background-color: var(--sidebar-hover);
+}
+
+.btn-confirm {
+    background-color: #000000;
+    color: white;
+    border-color: #000000;
+}
+
+.btn-confirm:hover {
+    background-color: #3d3d3d;
+}
+
+/* ===== การดำเนินการใต้ข้อความ AI (ปุ่ม Copy) ===== */
+.message-actions {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: -15px;
+    /* ขยับขึ้นไปชิดข้อความ */
+}
+
+.copy-message-btn {
+    background: transparent;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    font-size: 15px;
+    /* ขนาดไอคอนพอดีๆ */
+    padding: 6px;
+    border-radius: 6px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.copy-message-btn:hover {
+    background-color: var(--sidebar-hover);
+    color: var(--text-color);
+}
+
+.ai-avatar {
+    margin-top: -6px;
+    /* ดึงโลโก้ขึ้นเล็กน้อย ให้จุดกึ่งกลางพอดีกับบรรทัดแรกของข้อความเป๊ะๆ */
+    /* ไม่ต้องใส่ margin-right เพราะตัวกล่องมี gap: 20px ให้ระยะห่างที่สวยงามอยู่แล้วครับ */
+}

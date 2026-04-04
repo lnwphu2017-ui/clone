@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLONEICREAM</title>
+    <!-- FontAwesome สำหรับไอคอนต่างๆ -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- KaTeX สำหรับการแสดงผลสูตรคณิตศาสตร์ -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+    <!-- Marked.js สำหรับการแปลง Markdown เป็น HTML -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- หน้าจอ Login (แสดงเมื่อยังไม่ล็อกอิน) -->
+    <div id="login-screen" class="api-key-screen">
+        <div class="api-key-card">
+            <div class="api-key-icon"
+                style="background:#ffffff; border:1px solid #dadce0; border-radius:50%; width:64px; height:64px; display:flex; justify-content:center; align-items:center; margin:0 auto 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="30px" height="30px" viewBox="0 0 48 48">
+                    <g><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path><path fill="none" d="M0 0h48v48H0z"></path></g>
+                </svg>
+            </div>
+            <h2>เข้าสู่ระบบ</h2>
+            <p class="api-key-desc">กรุณาเข้าสู่ระบบด้วยบัญชี Google เพื่อใช้งานแอป</p>
+            <button id="login-google-btn" class="save-key-btn"
+                style="background:#ffffff; color:#3c4043; border:1px solid #dadce0; margin-bottom:0; justify-content:center; gap:10px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="18px" height="18px" viewBox="0 0 48 48">
+                    <g><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path><path fill="none" d="M0 0h48v48H0z"></path></g>
+                </svg>
+                <span style="font-weight: 500;">Sign in with Google</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- หน้าจอใส่ API Key (แสดงเมื่อยังไม่มี Key) -->
+    <div id="api-key-screen" class="api-key-screen" style="display:none;">
+        <div class="api-key-card">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 20px;">
+                <p class="api-key-desc" style="margin-bottom: 0;">ใส่ API Key เพื่อเริ่มต้นใช้งาน</p>
+                <a href="https://openrouter.ai/keys" target="_blank" class="get-key-link"
+                    style="margin-top: 0; display: inline-block;">
+                    <i class="fa fa-external-link-alt"></i> รับ API Key
+                </a>
+            </div>
+            <div class="api-key-input-group">
+                <input type="password" id="api-key-input" placeholder="sk-or-v1-xxxx..." autocomplete="off">
+                <button id="toggle-key-visibility" class="toggle-visibility-btn" title="แสดง/ซ่อน Key">
+                    <i class="fa fa-eye"></i>
+                </button>
+            </div>
+            <button id="save-api-key-btn" class="save-key-btn" disabled>
+                <span>เริ่มต้นใช้งาน</span>
+                <i class="fa fa-arrow-right"></i>
+            </button>
+            <button id="logout-from-key-btn" class="save-key-btn"
+                style="background-color: transparent; border: 1px solid #000000; color: #000000; margin-top: 10px;">
+                <span>ออกจากระบบ</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- แอปหลัก (ซ่อนไว้จนกว่าจะใส่ API Key) -->
+    <div class="app-container" id="app-container" style="display:none;">
+        <!-- แถบด้านข้าง (Sidebar) -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <!-- ปุ่มสร้างแชทใหม่ -->
+                <button id="new-chat-btn" class="new-chat-btn">
+                    <span>New chat</span>
+                    <i class="fa-regular fa-pen-to-square"></i>
+                </button>
+
+                <!-- ส่วนเลือกโมเดล AI (เหมือน st.sidebar.selectbox) -->
+                <div class="model-selector">
+                    <select id="model-select">
+                        <!-- ตัวเลือกจะถูกเพิ่มด้วย JavaScript -->
+                    </select>
+                </div>
+
+                <!-- ช่องค้นหาแชทในประวัติ -->
+                <div class="search-container">
+                    <i class="fa fa-search"></i>
+                    <input type="text" id="search-chat" placeholder="Search chats...">
+                </div>
+            </div>
+
+            <!-- รายชื่อประวัติการแชท -->
+            <div class="history-list" id="history-list"></div>
+
+            <!-- ปุ่มเปลี่ยน API Key ด้านล่าง Sidebar -->
+            <div class="sidebar-footer">
+                <div class="user-profile" id="user-profile"
+                    style="padding: 10px 12px; font-size: 13px; color: #888; border-bottom: 1px solid var(--border-color); margin-bottom: 5px; display: flex; align-items: center; gap: 8px;">
+                    <!-- แสดงอีเมล/ชื่อคนล็อกอิน -->
+                </div>
+                <button id="change-key-btn" class="change-key-btn" title="เปลี่ยน API Key">
+                    <i class="fa-solid fa-key"></i>
+                    <span>เปลี่ยน API Key</span>
+                </button>
+                <button id="logout-btn" class="change-key-btn" title="ออกจากระบบ" style="color: #888;">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    <span>ออกจากระบบ</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- พื้นที่แชทหลัก -->
+        <main class="main-content centered-mode">
+            <div class="header-mobile">
+                <button class="menu-btn"><i class="fa fa-bars"></i></button>
+                <span id="mobile-title">New chat</span>
+            </div>
+
+            <div class="top-spacer"></div>
+
+            <div class="chat-container" id="chat-container">
+                <div class="welcome-screen" id="welcome-screen">
+                    <h2>How can I help you today?</h2>
+                </div>
+            </div>
+
+            <div class="input-area">
+                <div class="input-wrapper">
+                    <textarea id="message-input" placeholder="Message . . ." rows="1"></textarea>
+                    <button id="action-btn" class="action-btn send-mode" disabled>
+                        <i class="fa fa-arrow-up send-icon"></i>
+                        <i class="fa fa-square stop-icon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="bottom-spacer"></div>
+        </main>
+    </div>
+
+    <!-- Modal สำหรับยืนยันการลบแชท -->
+    <div id="delete-modal" class="modal-backdrop">
+        <div class="modal-content">
+            <h3>Delete chat?</h3>
+            <p>This will delete <strong><span id="delete-chat-title"></span></strong>. This action cannot be undone.</p>
+            <div class="modal-buttons">
+                <button id="cancel-delete" class="btn-cancel">Cancel</button>
+                <button id="confirm-delete" class="btn-confirm">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBmFcrla4VrAsZgr7fGd_I_vDryVlDRpFE",
+            authDomain: "webchat-d2b1a.firebaseapp.com",
+            projectId: "webchat-d2b1a",
+            storageBucket: "webchat-d2b1a.firebasestorage.app",
+            messagingSenderId: "900971394904",
+            appId: "1:900971394904:web:391713dd411e357f46572d",
+            measurementId: "G-BMJZDF3ZDQ"
+        };
+
+        const app = initializeApp(firebaseConfig);
+
+        window.firebaseAuth = getAuth(app);
+        window.googleProvider = new GoogleAuthProvider();
+        window.signInWithPopup = signInWithPopup;
+        window.onAuthStateChanged = onAuthStateChanged;
+        window.signOut = signOut;
+
+        // เมื่อโหลด Firebase Module ช้ากว่าปกติ ให้กระตุ้น script.js ทำงานเมื่อของพร้อมแล้ว
+        if (typeof window.initApp === 'function') {
+            window.initApp();
+        }
+    </script>
+    <script src="script.js"></script>
+</body>
+
+</html>
