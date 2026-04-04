@@ -224,7 +224,7 @@ html {
     text-decoration: underline;
 }
 
-/* ===== หน้าจอ API Key (ธีมเดียวกับแอปหลัก) ===== */
+/* ===== หน้าจอ API Key (Premium SaaS UI) ===== */
 .api-key-screen {
     display: flex;
     justify-content: center;
@@ -234,63 +234,182 @@ html {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: var(--bg-color);
+    background-color: #fcfcfc; /* สีพื้นหลังที่นุ่มนวลขึ้น */
     z-index: 2000;
     padding: 20px;
 }
 
-.api-key-card {
-    background: var(--bg-color);
-    border-radius: 24px;
-    padding: 40px;
+.premium-card {
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 32px;
+    padding: 48px;
     width: 100%;
-    max-width: 440px;
+    max-width: 460px;
     text-align: center;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
-    animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 
+        0 10px 25px -5px rgba(0, 0, 0, 0.04), 
+        0 20px 48px -10px rgba(0, 0, 0, 0.05);
+    animation: premiumFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
 }
 
-.api-key-desc {
+/* เพิ่มแสง Gradient จางๆ ที่ขอบหรือพื้นหลัง */
+.premium-card::before {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(0, 102, 255, 0.03) 0%, transparent 60%);
+    z-index: -1;
+}
+
+@keyframes premiumFadeIn {
+    from { opacity: 0; transform: translateY(40px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.badge-container {
+    margin-bottom: 24px;
+}
+
+.ai-badge {
+    background: linear-gradient(135deg, #000 0%, #333 100%);
+    color: white;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 6px 12px;
+    border-radius: 100px;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.premium-title {
+    font-size: 34px;
+    font-weight: 800;
+    color: var(--text-color);
+    margin-bottom: 12px;
+    letter-spacing: -1px;
+}
+
+.premium-desc {
     font-size: 15px;
     color: #666;
-    margin-bottom: 24px;
-    text-align: left;
+    line-height: 1.6;
+    margin-bottom: 36px;
+    padding: 0 10px;
 }
 
-.api-key-input-group {
+.premium-fields {
+    margin-bottom: 32px;
+}
+
+.input-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.input-header label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-color);
+}
+
+.premium-link {
+    font-size: 12px;
+    color: #0066cc;
+    text-decoration: none;
+    font-weight: 600;
     display: flex;
     align-items: center;
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    overflow: hidden;
-    transition: all 0.2s;
-    margin-bottom: 20px;
-    background: var(--bg-color);
+    gap: 4px;
+    transition: color 0.2s;
 }
 
-.api-key-input-group:focus-within {
-    border-color: var(--text-color);
-    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+.premium-link:hover {
+    color: #004499;
 }
 
-.api-key-input-group input {
+.premium-input-wrapper {
+    display: flex;
+    align-items: center;
+    background: #f8f8f8;
+    border: 1.5px solid transparent;
+    border-radius: 16px;
+    padding: 2px 14px;
+    transition: all 0.3s;
+}
+
+.premium-input-wrapper:focus-within {
+    background: #ffffff;
+    border-color: #000;
+    box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.03);
+}
+
+.input-icon {
+    color: #999;
+    font-size: 18px;
+    margin-right: 12px;
+}
+
+.premium-input-wrapper input {
     flex: 1;
-    padding: 14px 16px;
+    padding: 14px 0;
     border: none;
-    outline: none;
-    font-size: 15px;
-    color: var(--text-color);
     background: transparent;
+    font-size: 16px;
+    color: var(--text-color);
+    outline: none;
 }
 
-.save-key-btn {
+.premium-primary-btn {
     width: 100%;
-    padding: 16px;
-    background: var(--text-color);
-    color: var(--bg-color);
+    padding: 18px;
+    background: #000;
+    color: #fff;
     border: none;
-    border-radius: 12px;
+    border-radius: 18px;
     font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-bottom: 16px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.premium-primary-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+}
+
+.premium-primary-btn:active {
+    transform: translateY(0);
+}
+
+.premium-primary-btn:disabled {
+    background: #e0e0e0;
+    color: #a0a0a0;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+.premium-secondary-btn {
+    width: 100%;
+    padding: 14px;
+    background: transparent;
+    color: #888;
+    border: 1.5px solid transparent;
+    border-radius: 16px;
+    font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     display: flex;
@@ -298,29 +417,23 @@ html {
     align-items: center;
     gap: 8px;
     transition: all 0.2s;
-    margin-bottom: 12px;
 }
 
-.save-key-btn:hover:not(:disabled) {
-    background: #222;
+.premium-secondary-btn:hover {
+    color: var(--text-color);
+    background: #f0f0f0;
 }
 
-.save-key-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.get-key-link {
-    color: #0066cc;
-    font-size: 14px;
-    text-decoration: none;
+.premium-footer {
+    margin-top: 32px;
+    font-size: 11px;
+    color: #bbb;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
     font-weight: 600;
 }
 
-.get-key-link:hover {
-    text-decoration: underline;
-}
-
+/* ===== หน้าจอ API Key (Old/Backups - Can be removed if not needed) ===== */
 @keyframes fadeInUp {
     from {
         opacity: 0;
