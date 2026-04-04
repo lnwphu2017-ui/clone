@@ -24,6 +24,206 @@ html {
     overflow: hidden;
 }
 
+/* ===== หน้าจอ Login (New Design - SiamGPT Style) ===== */
+.login-card {
+    background: var(--bg-color);
+    border-radius: 24px;
+    padding: 60px 40px;
+    width: 100%;
+    max-width: 440px;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+    animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.login-title {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--text-color);
+    letter-spacing: -0.5px;
+}
+
+.login-disclaimer {
+    font-size: 13px;
+    line-height: 1.5;
+    color: #666;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 10px;
+}
+
+.login-disclaimer i {
+    margin-top: 2px;
+    font-size: 14px;
+}
+
+.login-fields {
+    width: 100%;
+    margin-bottom: 24px;
+}
+
+.auth-input-group {
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+.auth-input-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-color);
+}
+
+.auth-input-group input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    font-size: 15px;
+    background: var(--bg-color);
+    color: var(--text-color);
+    transition: all 0.2s;
+}
+
+.auth-input-group input:focus {
+    border-color: var(--text-color);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+}
+
+.password-wrapper {
+    position: relative;
+}
+
+.toggle-password-btn {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.input-hint {
+    font-size: 12px;
+    color: #888;
+    margin-top: 8px;
+    line-height: 1.4;
+}
+
+.login-primary-btn {
+    width: 100%;
+    padding: 16px;
+    background: var(--text-color);
+    color: var(--bg-color);
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 20px;
+}
+
+.login-primary-btn:hover {
+    background: #222;
+}
+
+.login-toggle-text {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 24px;
+}
+
+.login-toggle-text a {
+    color: #0066cc;
+    text-decoration: none;
+    font-weight: 600;
+    margin-left: 4px;
+}
+
+.login-secondary-btn {
+    width: 100%;
+    padding: 14px;
+    background: #f0f0f0;
+    color: #333;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 20px;
+}
+
+.login-secondary-btn:hover {
+    background: #e5e5e5;
+}
+
+.login-divider {
+    display: flex;
+    align-items: center;
+    margin-bottom: 24px;
+    color: #999;
+    font-size: 14px;
+}
+
+.login-divider::before,
+.login-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border-color);
+}
+
+.login-divider span {
+    padding: 0 16px;
+}
+
+.login-google-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.2s;
+    margin-bottom: 32px;
+}
+
+.login-google-btn:hover {
+    background: #f9f9f9;
+    border-color: #999;
+}
+
+.login-footer {
+    font-size: 13px;
+    color: #888;
+}
+
+.login-footer a {
+    color: #666;
+    text-decoration: underline;
+}
+
 /* ===== หน้าจอ API Key (ธีมเดียวกับแอปหลัก) ===== */
 .api-key-screen {
     display: flex;
@@ -36,138 +236,17 @@ html {
     height: 100%;
     background-color: var(--bg-color);
     z-index: 2000;
+    padding: 20px;
 }
 
 .api-key-card {
     background: var(--bg-color);
     border-radius: 16px;
     padding: 40px;
-    width: 90%;
+    width: 100%;
     max-width: 440px;
     text-align: center;
     animation: fadeInUp 0.5s ease;
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.api-key-icon {
-    width: 64px;
-    height: 64px;
-    margin: 0 auto 20px;
-    background: var(--text-color);
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 24px;
-    color: var(--bg-color);
-}
-
-.api-key-card h2 {
-    font-size: 22px;
-    font-weight: 700;
-    margin-bottom: 8px;
-    color: var(--text-color);
-}
-
-.api-key-desc {
-    font-size: 14px;
-    color: #666;
-    margin-bottom: 24px;
-}
-
-.api-key-input-group {
-    display: flex;
-    align-items: center;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    overflow: hidden;
-    transition: border-color 0.2s;
-    margin-bottom: 16px;
-    background: var(--user-msg-bg);
-}
-
-.api-key-input-group:focus-within {
-    border-color: #888;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-}
-
-.api-key-input-group input {
-    flex: 1;
-    padding: 14px 16px;
-    border: none;
-    outline: none;
-    font-size: 15px;
-    color: var(--text-color);
-    background: transparent;
-}
-
-/* ซ่อนรูปตา (Reveal Password) อัตโนมัติที่เบราว์เซอร์อย่าง Edge มักจะใส่มาให้ */
-.api-key-input-group input::-ms-reveal,
-.api-key-input-group input::-ms-clear {
-    display: none;
-}
-
-.toggle-visibility-btn {
-    background: none;
-    border: none;
-    padding: 14px;
-    cursor: pointer;
-    color: #999;
-    font-size: 16px;
-}
-
-.toggle-visibility-btn:hover {
-    color: var(--text-color);
-}
-
-.save-key-btn {
-    width: 100%;
-    padding: 14px;
-    background: var(--text-color);
-    color: var(--bg-color);
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.3s;
-    margin-bottom: 16px;
-}
-
-.save-key-btn:hover:not(:disabled) {
-    background: #1a1a1a;
-}
-
-.save-key-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.get-key-link {
-    color: #888;
-    font-size: 13px;
-    text-decoration: none;
-    transition: color 0.2s;
-}
-
-.get-key-link:hover {
-    color: var(--text-color);
-    text-decoration: underline;
 }
 
 /* ===== Layout หลัก ===== */

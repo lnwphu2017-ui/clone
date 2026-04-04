@@ -46,6 +46,8 @@ async function init() {
 
     // ดักจับสถานะล็อกอินผ่าน Firebase
     window.onAuthStateChanged(window.firebaseAuth, (user) => {
+        if (currentUserUid === "guest") return; // ถ้าเป็น Guest ไม่ต้องทำอะไรต่อ
+
         if (user) {
             // ล็อกอินแล้ว
             currentUserUid = user.email; // ใช้ Email เป็น user_id แทน UID
@@ -71,7 +73,92 @@ async function init() {
 
 // ===== จัดการหน้าจอ Login =====
 function setupLoginScreen() {
-    document.getElementById('login-google-btn').onclick = async () => {
+    let isSignUpMode = false;
+
+    // อ้างอิง Element ใหม่จากดีไซน์ SiamGPT
+    const authTitle = document.getElementById('auth-title');
+    const nameGroup = document.getElementById('name-group');
+    const authMainBtn = document.getElementById('auth-main-btn');
+    const toggleAuthMode = document.getElementById('toggle-auth-mode');
+    const toggleMsg = document.getElementById('toggle-msg');
+    const loginEmail = document.getElementById('login-email');
+    const loginPassword = document.getElementById('login-password');
+    const toggleLoginPassword = document.getElementById('toggle-login-password');
+    const guestLoginBtn = document.getElementById('guest-login-btn');
+    const googleLoginBtn = document.getElementById('login-google-btn');
+    const passwordHint = document.getElementById('password-hint');
+
+    // ฟังก์ชันสลับโหมด Sign In / Sign Up
+    toggleAuthMode.onclick = (e) => {
+        e.preventDefault();
+        isSignUpMode = !isSignUpMode;
+
+        if (isSignUpMode) {
+            authTitle.innerText = "Create Account";
+            nameGroup.style.display = "block";
+            authMainBtn.innerText = "Create Account";
+            toggleMsg.innerText = "Already have an account?";
+            toggleAuthMode.innerText = "Sign in";
+            passwordHint.style.display = "block";
+        } else {
+            authTitle.innerText = "Sign in to CLONE";
+            nameGroup.style.display = "none";
+            authMainBtn.innerText = "Sign In";
+            toggleMsg.innerText = "Don't have an account?";
+            toggleAuthMode.innerText = "Sign up";
+            passwordHint.style.display = "none";
+        }
+    };
+
+    // แสดง/ซ่อนรหัสผ่าน
+    toggleLoginPassword.onclick = () => {
+        const isPassword = loginPassword.type === 'password';
+        loginPassword.type = isPassword ? 'text' : 'password';
+        toggleLoginPassword.querySelector('i').className = isPassword ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
+    };
+
+    // ปุ่มหลัก (Sign In / Sign Up ด้วย Email)
+    authMainBtn.onclick = async () => {
+        const email = loginEmail.value.trim();
+        const password = loginPassword.value;
+        const name = document.getElementById('reg-name').value.trim();
+
+        if (!email || !password) {
+            alert("กรุณากรอกอีเมลและรหัสผ่าน");
+            return;
+        }
+
+        authMainBtn.disabled = true;
+        authMainBtn.innerText = "Processing...";
+
+        try {
+            if (isSignUpMode) {
+                // สมัครสมาชิกใหม่
+                const userCredential = await window.createUserWithEmailAndPassword(window.firebaseAuth, email, password);
+                if (name) {
+                    await window.updateProfile(userCredential.user, { displayName: name });
+                }
+                alert("สร้างบัญชีสำเร็จ!");
+            } else {
+                // เข้าสู่ระบบ
+                await window.signInWithEmailAndPassword(window.firebaseAuth, email, password);
+            }
+        } catch (error) {
+            console.error('Auth Error:', error);
+            let msg = "เกิดข้อผิดพลาด: ";
+            if (error.code === 'auth/email-already-in-use') msg += "อีเมลนี้ถูกใช้งานแล้ว";
+            else if (error.code === 'auth/weak-password') msg += "รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร";
+            else if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') msg += "อีเมลหรือรหัสผ่านไม่ถูกต้อง";
+            else msg += error.message;
+            alert(msg);
+        } finally {
+            authMainBtn.disabled = false;
+            authMainBtn.innerText = isSignUpMode ? "Create Account" : "Sign In";
+        }
+    };
+
+    // เข้าสู่ระบบด้วย Google (ปุ่มเดิม)
+    googleLoginBtn.onclick = async () => {
         try {
             await window.signInWithPopup(window.firebaseAuth, window.googleProvider);
         } catch (error) {
@@ -80,15 +167,35 @@ function setupLoginScreen() {
         }
     };
 
+    // เข้าสู่ระบบในฐานะ Guest (Local Bypass)
+    guestLoginBtn.onclick = () => {
+        currentUserUid = "guest";
+        document.getElementById('login-screen').style.display = 'none';
+        const userProfile = document.getElementById('user-profile');
+        if (userProfile) {
+            userProfile.innerHTML = `<i class="fa fa-user-secret" style="font-size:18px;"></i> <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Guest Mode</span>`;
+        }
+        if (apiKey) showApp();
+        else showApiKeyScreen();
+    };
+
     const handleLogout = async () => {
-        await window.signOut(window.firebaseAuth);
+        if (currentUserUid !== "guest") {
+            await window.signOut(window.firebaseAuth);
+        }
         allChats = [];
         currentChatId = null;
         chatListEl.innerHTML = '';
         clearMessages();
         updateLayoutState(true);
 
-        // ลบ API Key ออกจากระบบเมื่อผู้ใช้ Logout
+        // ล็อกเอาท์แล้วกลับไปหน้า Login
+        currentUserUid = null;
+        document.getElementById('login-screen').style.display = 'flex';
+        document.getElementById('api-key-screen').style.display = 'none';
+        document.getElementById('app-container').style.display = 'none';
+
+        // ลบ API Key ออกจากระบบเมื่อผู้ใช้ Logout (ตามเดิม)
         localStorage.removeItem('openrouter_api_key');
         apiKey = '';
     };
