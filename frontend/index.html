@@ -87,49 +87,44 @@
         </div>
     </div>
 
-    <!-- หน้าจอใส่ API Key (Premium SaaS Design) -->
+    <!-- หน้าจอใส่ API Key (Reverted to Consistent Minimal Design) -->
     <div id="api-key-screen" class="api-key-screen" style="display:none;">
-        <div class="api-key-card premium-card">
-            <div class="badge-container">
-                <span class="ai-badge">AI CONFIGURATION</span>
-            </div>
-            
-            <h1 class="premium-title">OpenRouter API Key</h1>
-            <p class="premium-desc">
-                Setup your preferred AI models by entering your secret API Key from OpenRouter.
+        <div class="login-card">
+            <h1 class="login-title">Configure API Key</h1>
+            <p class="login-disclaimer">
+                <i class="fa-solid fa-key"></i>
+                Please enter your OpenRouter API Key to start chatting. Your key is stored locally in your browser.
             </p>
 
-            <div class="premium-fields">
+            <div class="login-fields">
                 <div class="auth-input-group">
-                    <div class="input-header">
-                        <label>Your API Key</label>
-                        <a href="https://openrouter.ai/keys" target="_blank" class="premium-link">
-                            <i class="fa-solid fa-arrow-up-right-from-square"></i> Get Key
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px;">
+                        <label style="margin-bottom: 0;">API Key</label>
+                        <a href="https://openrouter.ai/keys" target="_blank" class="get-key-link" style="font-size: 13px; color: #0066cc; text-decoration: none; font-weight: 600;">
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i> รับ API Key
                         </a>
                     </div>
-                    <div class="password-wrapper premium-input-wrapper">
-                        <i class="fa-solid fa-shield-halved input-icon"></i>
+                    <div class="password-wrapper">
                         <input type="password" id="api-key-input" placeholder="sk-or-v1-xxxx..." autocomplete="off">
-                        <button id="toggle-key-visibility" class="toggle-password-btn" title="显示/隐藏 Key">
+                        <button id="toggle-key-visibility" class="toggle-password-btn" title="แสดง/ซ่อน Key">
                             <i class="fa fa-eye"></i>
                         </button>
                     </div>
                 </div>
             </div>
 
-            <button id="save-api-key-btn" class="premium-primary-btn" disabled>
-                <span>Continue</span>
-                <i class="fa-solid fa-chevron-right"></i>
+            <button id="save-api-key-btn" class="login-primary-btn" disabled>
+                <span>เริ่มต้นใช้งาน</span>
+                <i class="fa-solid fa-arrow-right"></i>
             </button>
 
-            <button id="logout-from-key-btn" class="premium-secondary-btn">
-                <i class="fa-solid fa-arrow-left"></i>
-                <span>Sign out</span>
+            <button id="logout-from-key-btn" class="login-secondary-btn">
+                <span>ออกจากระบบ</span>
             </button>
 
-            <div class="premium-footer">
-                <p>Secured with AES-256 local encryption</p>
-            </div>
+            <p class="login-footer">
+                Don't have a key? <a href="https://openrouter.ai/" target="_blank" style="color: #666; text-decoration: underline;">Learn more about OpenRouter</a>
+            </p>
         </div>
     </div>
 
