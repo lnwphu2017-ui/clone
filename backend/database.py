@@ -4,7 +4,11 @@ from datetime import datetime
 import os
 
 # กำหนดที่เก็บไฟล์ฐานข้อมูล SQLite
-DATABASE_URL = "sqlite:///./database.db"
+# บน Vercel ระบบไฟล์เป็น Read-only ให้เปลี่ยนไปใช้ /tmp/ เพื่อให้แอปทำงานได้
+if os.environ.get("VERCEL"):
+    DATABASE_URL = "sqlite:////tmp/database.db"
+else:
+    DATABASE_URL = "sqlite:///./database.db"
 
 # สร้าง Engine สำหรับเชื่อมต่อฐานข้อมูล
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
