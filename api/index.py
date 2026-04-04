@@ -25,14 +25,8 @@ def on_startup():
 
 # รายการโมเดล AI ที่ผู้ใช้สามารถเลือกใช้งานได้ (เหมือน st.sidebar.selectbox)
 AVAILABLE_MODELS = [
-
     {"id": "google/gemini-2.0-flash-001", "name": "Gemini 2.0 Flash"},
-    {"id": "google/gemini-2.0-flash-lite-preview-02-05:free", "name": "Gemini 2.0 Flash Lite "},
-    {"id": "openai/gpt-oss-120b:free", "name": "GPT OSS 120B "},
-    {"id": "deepseek/deepseek-r1:free", "name": "DeepSeek R1 "},
     {"id": "qwen/qwen3.6-plus:free", "name": "Qwen 3.6 Plus "},
-    {"id": "meta-llama/llama-3.3-70b-instruct:free", "name": "Llama 3.3 70B "},
-   
 ]
 
 # API ดึงรายการโมเดลที่สามารถเลือกใช้ได้

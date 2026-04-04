@@ -216,7 +216,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBmFcrla4VrAsZgr7fGd_I_vDryVlDRpFE",
@@ -233,6 +233,8 @@
         window.firebaseAuth = getAuth(app);
         window.googleProvider = new GoogleAuthProvider();
         window.signInWithPopup = signInWithPopup;
+        window.signInWithRedirect = signInWithRedirect;
+        window.getRedirectResult = getRedirectResult;
         window.onAuthStateChanged = onAuthStateChanged;
         window.signOut = signOut;
         window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;

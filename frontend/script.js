@@ -44,13 +44,22 @@ async function init() {
     setupApiKeyScreen();
     setupLoginScreen();
 
+    // จัดการผลลัพธ์หลังจาก Redirect มาจาก Google
+    try {
+        const result = await window.getRedirectResult(window.firebaseAuth);
+        if (result && result.user) {
+            console.log("Redirect login successful:", result.user.email);
+        }
+    } catch (error) {
+        console.error("Redirect Result Error:", error);
+    }
+
     // ดักจับสถานะล็อกอินผ่าน Firebase
     window.onAuthStateChanged(window.firebaseAuth, (user) => {
-        if (currentUserUid === "guest") return; // ถ้าเป็น Guest ไม่ต้องทำอะไรต่อ
+        if (currentUserUid === "guest") return;
 
         if (user) {
-            // ล็อกอินแล้ว
-            currentUserUid = user.email; // ใช้ Email เป็น user_id แทน UID
+            currentUserUid = user.email;
             currentUserPhoto = user.photoURL || '';
             document.getElementById('login-screen').style.display = 'none';
 
@@ -62,13 +71,19 @@ async function init() {
             if (apiKey) showApp();
             else showApiKeyScreen();
         } else {
-            // ยังไม่ล็อกอิน
             currentUserUid = null;
             document.getElementById('login-screen').style.display = 'flex';
             document.getElementById('api-key-screen').style.display = 'none';
             document.getElementById('app-container').style.display = 'none';
         }
     });
+
+    // ปุ่ม Logout ทั้งหมดในแอป
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) logoutBtn.onclick = handleLogout;
+
+    const logoutKeyBtn = document.getElementById('logout-from-key-btn');
+    if (logoutKeyBtn) logoutKeyBtn.onclick = handleLogout;
 }
 
 // ===== จัดการหน้าจอ Login =====
@@ -157,10 +172,10 @@ function setupLoginScreen() {
         }
     };
 
-    // เข้าสู่ระบบด้วย Google (ปุ่มเดิม)
+    // เข้าสู่ระบบด้วย Google (เปลี่ยนเป็น Redirect)
     googleLoginBtn.onclick = async () => {
         try {
-            await window.signInWithPopup(window.firebaseAuth, window.googleProvider);
+            await window.signInWithRedirect(window.firebaseAuth, window.googleProvider);
         } catch (error) {
             console.error('Google Sign In Error:', error);
             alert('ล็อกอินผิดพลาด: ' + error.message);
@@ -178,33 +193,30 @@ function setupLoginScreen() {
         if (apiKey) showApp();
         else showApiKeyScreen();
     };
+}
 
-    const handleLogout = async () => {
+// ฟังก์ชัน Logout ส่วนกลาง
+async function handleLogout() {
+    try {
         if (currentUserUid !== "guest") {
             await window.signOut(window.firebaseAuth);
         }
-        allChats = [];
-        currentChatId = null;
-        chatListEl.innerHTML = '';
-        clearMessages();
-        updateLayoutState(true);
+    } catch (error) {
+        console.error("Sign Out Error:", error);
+    }
+    
+    allChats = [];
+    currentChatId = null;
+    chatListEl.innerHTML = '';
+    clearMessages();
+    updateLayoutState(true);
 
-        // ล็อกเอาท์แล้วกลับไปหน้า Login
-        currentUserUid = null;
-        document.getElementById('login-screen').style.display = 'flex';
-        document.getElementById('api-key-screen').style.display = 'none';
-        document.getElementById('app-container').style.display = 'none';
-
-        // ลบ API Key ออกจากระบบเมื่อผู้ใช้ Logout (ตามเดิม)
-        localStorage.removeItem('openrouter_api_key');
-        apiKey = '';
-    };
-
-    const logoutBtn = document.getElementById('logout-btn');
-    if (logoutBtn) logoutBtn.onclick = handleLogout;
-
-    const logoutKeyBtn = document.getElementById('logout-from-key-btn');
-    if (logoutKeyBtn) logoutKeyBtn.onclick = handleLogout;
+    currentUserUid = null;
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('api-key-screen').style.display = 'none';
+    document.getElementById('app-container').style.display = 'none';
+    localStorage.removeItem('openrouter_api_key');
+    apiKey = '';
 }
 
 // ===== จัดการหน้าจอ API Key =====
