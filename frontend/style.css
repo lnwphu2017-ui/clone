@@ -241,12 +241,95 @@ html {
 
 .api-key-card {
     background: var(--bg-color);
-    border-radius: 16px;
+    border-radius: 24px;
     padding: 40px;
     width: 100%;
     max-width: 440px;
     text-align: center;
-    animation: fadeInUp 0.5s ease;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+    animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.api-key-desc {
+    font-size: 15px;
+    color: #666;
+    margin-bottom: 24px;
+    text-align: left;
+}
+
+.api-key-input-group {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.2s;
+    margin-bottom: 20px;
+    background: var(--bg-color);
+}
+
+.api-key-input-group:focus-within {
+    border-color: var(--text-color);
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+}
+
+.api-key-input-group input {
+    flex: 1;
+    padding: 14px 16px;
+    border: none;
+    outline: none;
+    font-size: 15px;
+    color: var(--text-color);
+    background: transparent;
+}
+
+.save-key-btn {
+    width: 100%;
+    padding: 16px;
+    background: var(--text-color);
+    color: var(--bg-color);
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    margin-bottom: 12px;
+}
+
+.save-key-btn:hover:not(:disabled) {
+    background: #222;
+}
+
+.save-key-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.get-key-link {
+    color: #0066cc;
+    font-size: 14px;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.get-key-link:hover {
+    text-decoration: underline;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* ===== Layout หลัก ===== */
