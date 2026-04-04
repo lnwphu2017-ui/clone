@@ -174,6 +174,9 @@ function setupLoginScreen() {
 
     // เข้าสู่ระบบด้วย Google (ท่าไม้ตาย: แก้ปัญหา Popup Blocked)
     googleLoginBtn.onclick = () => {
+        // บังคับให้เลือกบัญชีทุกครั้งที่กด (ไม่ล็อคกับบัญชีหลัก)
+        window.googleProvider.setCustomParameters({ prompt: 'select_account' });
+        
         // บรรทัดแรกต้องเรียก Popup ทันทีเพื่อให้ Browser ไม่บล็อก
         window.signInWithPopup(window.firebaseAuth, window.googleProvider)
             .then(() => {
