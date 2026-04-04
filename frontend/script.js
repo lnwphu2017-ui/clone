@@ -180,25 +180,38 @@ function setupLoginScreen() {
         }
     };
 
-    // เข้าสู่ระบบด้วย Google (เปลี่ยนกลับเป็น Redirect ตามความต้องการ)
-    googleLoginBtn.onclick = async () => {
+    // เข้าสู่ระบบด้วย Google (ท่าไม้ตายพรีเมียม: สวย เสถียร และไม่โดนบล็อก)
+    googleLoginBtn.onclick = () => {
         const originalGoogleBtnHtml = googleLoginBtn.innerHTML;
-        try {
-            // บังคับให้เลือกบัญชีทุกครั้งที่กด
-            window.googleProvider.setCustomParameters({ prompt: 'select_account' });
-            
-            // แสดงสถานะ "Redirecting..."
-            googleLoginBtn.disabled = true;
-            googleLoginBtn.innerHTML = `<i class="fa fa-spinner fa-spin"></i> <span>Redirecting to Google...</span>`;
+        
+        // 1. เปลี่ยนสถานะปุ่มให้ดูเหมือนการ Redirect พรีเมียม
+        googleLoginBtn.disabled = true;
+        googleLoginBtn.style.opacity = "0.7";
+        googleLoginBtn.innerHTML = `<i class="fa fa-spinner fa-spin"></i> <span>Redirecting to Google...</span>`;
 
-            await window.signInWithRedirect(window.firebaseAuth, window.googleProvider);
-        } catch (error) {
-            console.error('Google Sign In Error:', error);
-            alert('ล็อกอินผิดพลาด: ' + error.message);
-            // คืนค่าปุ่มหากผิดพลาด
-            googleLoginBtn.disabled = false;
-            googleLoginBtn.innerHTML = originalGoogleBtnHtml;
-        }
+        // 2. ตั้งค่าให้เลือกบัญชีได้เสมอ
+        window.googleProvider.setCustomParameters({ prompt: 'select_account' });
+
+        // 3. เรียกหน้าต่างล็อกอิน Google
+        window.signInWithPopup(window.firebaseAuth, window.googleProvider)
+            .then(() => {
+                // สำเร็จแล้ว คืนค่าปุ่มหากหน้าจอยังไม่เปลี่ยน (เผื่อกรณีระบบดีเลย์)
+                googleLoginBtn.disabled = false;
+                googleLoginBtn.style.opacity = "1";
+                googleLoginBtn.innerHTML = originalGoogleBtnHtml;
+            })
+            .catch((error) => {
+                console.error('Google Sign In Error:', error);
+                if (error.code === 'auth/popup-blocked') {
+                    alert('⚠️ Browser บล็อกหน้าต่างล็อกอิน! กรุณากด "อนุญาต (Allow Pop-ups)" ที่มุมขวาบนของช่องกรอก URL แล้วลองใหม่อีกครั้งครับ');
+                } else if (error.code !== 'auth/popup-closed-by-user') {
+                    alert('ล็อกอินผิดพลาด: ' + error.message);
+                }
+                // คืนค่าปุ่มหากกดยกเลิกหรือผิดพลาด
+                googleLoginBtn.disabled = false;
+                googleLoginBtn.style.opacity = "1";
+                googleLoginBtn.innerHTML = originalGoogleBtnHtml;
+            });
     };
 
     // เข้าสู่ระบบในฐานะ Guest (Local Bypass)
