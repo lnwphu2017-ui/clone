@@ -48,14 +48,18 @@ async function init() {
     try {
         const result = await window.getRedirectResult(window.firebaseAuth);
         if (result && result.user) {
-            console.log("Redirect login successful:", result.user.email);
+            console.log("🔥 Redirect result found:", result.user.email);
+            // บังคับให้ข้ามหน้า Login ทันที
+            currentUserUid = result.user.email;
         }
     } catch (error) {
-        console.error("Redirect Result Error:", error);
+        console.error("❌ Redirect Result Error:", error);
+        alert("เกิดปัญหาในการรับข้อมูลจาก Google: " + error.message + "\n(กรุณาเช็คการตั้งค่า Authorized Domain ใน Firebase/Google Cloud ครับ)");
     }
 
     // ดักจับสถานะล็อกอินผ่าน Firebase
     window.onAuthStateChanged(window.firebaseAuth, (user) => {
+        console.log("🎯 Auth State Changed:", user ? user.email : "Logged Out");
         if (currentUserUid === "guest") return;
 
         if (user) {
@@ -68,9 +72,13 @@ async function init() {
                 userProfile.innerHTML = `<img src="${user.photoURL || ''}" style="width:24px;height:24px;border-radius:50%;" onerror="this.style.display='none'"> <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${user.email}</span>`;
             }
 
-            if (apiKey) showApp();
-            else showApiKeyScreen();
-        } else {
+            // ตัดสินใจว่าจะไปหน้าไหน
+            if (apiKey) {
+                showApp();
+            } else {
+                showApiKeyScreen();
+            }
+        } else if (!user) {
             currentUserUid = null;
             document.getElementById('login-screen').style.display = 'flex';
             document.getElementById('api-key-screen').style.display = 'none';
