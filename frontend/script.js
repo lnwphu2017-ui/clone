@@ -780,16 +780,27 @@ async function handleAction() {
         const decoder = new TextDecoder('utf-8');
         let fullContent = '';
         let fullReasoning = '';
+        let lineBuffer = ''; // ✅ ตัวเก็บข้อมูลบรรทัดที่พ่นออกมาไม่ครบ (Chunk Fragmentation)
+
+        // เพิ่ม Cursor กระพริบเพื่อให้ดู "ไหล"
+        if (aiMessageContainer && aiMessageContainer.contentDiv) {
+            aiMessageContainer.contentDiv.classList.add('typing-cursor');
+        }
 
         while (true) {
             const { done, value } = await reader.read();
             if (done) break;
-            const chunkText = decoder.decode(value, { stream: true });
-            const lines = chunkText.split('\n');
+
+            lineBuffer += decoder.decode(value, { stream: true });
+            const lines = lineBuffer.split('\n');
+            lineBuffer = lines.pop(); // ✅ เก็บส่วนที่ยังไม่จบบรรทัดไว้ใน buffer
+
             for (let line of lines) {
-                if (line.startsWith('data: ')) {
-                    const dataStr = line.replace('data: ', '').trim();
-                    if (dataStr === '[DONE]') break;
+                const trimmedLine = line.trim();
+                if (!trimmedLine || !trimmedLine.startsWith('data: ')) continue;
+
+                const dataStr = trimmedLine.replace('data: ', '').trim();
+                if (dataStr === '[DONE]') break;
                     if (!dataStr) continue;
                     try {
                         const parsed = JSON.parse(dataStr);
@@ -810,7 +821,6 @@ async function handleAction() {
                     } catch (e) {
                         console.warn('Failed to parse SSE data:', e);
                     }
-                }
             }
             scrollToBottom();
         }
@@ -833,6 +843,11 @@ async function handleAction() {
             }
         }
     } finally {
+        // เอา Cursor ออกเมื่อพิมพ์เสร็จ
+        if (aiMessageContainer && aiMessageContainer.contentDiv) {
+            aiMessageContainer.contentDiv.classList.remove('typing-cursor');
+        }
+
         // บังคับคืนค่าปุ่มทันที
         resetToDefaultState();
         

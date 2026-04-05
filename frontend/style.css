@@ -652,6 +652,23 @@ body.sidebar-collapsed .top-controls {
     padding: 0;
     width: 100%;
     max-width: 100%;
+    position: relative;
+}
+
+/* เอฟเฟกต์ Cursor ขณะกำลัง Streaming */
+.typing-cursor::after {
+    content: "|";
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 2px;
+    font-weight: 700;
+    color: #667eea;
+    animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+    from, to { opacity: 1; }
+    50% { opacity: 0; }
 }
 
 /* ย่อหน้า */
