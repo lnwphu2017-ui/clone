@@ -319,6 +319,7 @@ async function handleLogout() {
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('api-key-screen').style.display = 'none';
     document.getElementById('app-container').style.display = 'none';
+    closeSettingsScreen();
     localStorage.removeItem('openrouter_api_key');
     apiKey = '';
 }
