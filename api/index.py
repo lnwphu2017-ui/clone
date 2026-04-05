@@ -20,6 +20,7 @@ app.add_middleware(
 AVAILABLE_MODELS = [
     {"id": "google/gemini-2.0-flash-001", "name": "Gemini 2.0 Flash"},
     {"id": "qwen/qwen3.6-plus:free", "name": "Qwen 3.6 Plus "},
+    {"id": "openai/gpt-oss-120b:free", "name": "GPT-OSS 120B (Free)"},
 ]
 
 @app.get("/api/")
