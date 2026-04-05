@@ -816,7 +816,14 @@ async function handleAction() {
         }
     } catch (e) {
         if (e.name === 'AbortError') {
+            // ผู้ใช้กดสตอป — พับ thought block ทันที
             console.log('Stream aborted');
+            const tc = aiMessageContainer?.thoughtDiv?.parentElement;
+            if (tc && !tc.classList.contains('collapsed')) {
+                tc.classList.add('collapsed');
+                const ch = tc.querySelector('.bulb');
+                if (ch) ch.style.animation = 'none';
+            }
         } else {
             console.error('Stream error:', e);
             const errorMsg = `\n\n❌ **Error:** ${e.message || 'ไม่สามารถติดต่อ AI ได้ในขณะนี้'}`;
@@ -1093,7 +1100,10 @@ function updateMessageContent(elementsObj, rawMarkdownContent, explicitReasoning
         // ให้ "Thought for a moment" โชว์ตลอดขณะที่กำลังตอบ
         // การซ่อน/พับจะเกิดขึ้นใน finally block หลัง stream จบ เท่านั้น
         const container = thoughtDiv.parentElement;
-        if (container) container.style.display = 'block';
+        if (container) {
+            container.style.display = 'block';
+            container.classList.remove('collapsed'); // ✅ ต้อง remove collapsed ด้วย ไม่งั้นยังพับอยู่
+        }
     }
 
     // 2. อัปเดตเนื้อหาหลัก
