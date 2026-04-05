@@ -269,37 +269,57 @@ html {
     flex-direction: column;
     padding: 10px;
     border-right: 1px solid var(--border-color);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* แอนิเมชันลื่นไหล */
+    overflow-x: hidden;
+    position: relative;
+    z-index: 1000;
+}
+
+.sidebar.collapsed {
+    width: 0;
+    padding-left: 0;
+    padding-right: 0;
+    border-right: none;
+    opacity: 0;
+    pointer-events: none; /* ป้องกันการกดโดนปุ่มขณะซ่อน */
 }
 
 .sidebar-header {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 15px;
     margin-bottom: 20px;
 }
 
-.new-chat-btn {
+/* ส่วนควบคุมไอคอนด้านบน (Sidebar Toggle & New Chat) */
+.sidebar-controls {
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    padding: 12px;
+    align-items: center;
+    padding: 5px;
+}
+
+.icon-btn {
     background: transparent;
     border: none;
-    color: var(--text-color);
-    cursor: pointer;
+    color: #888;
+    padding: 8px;
     border-radius: 8px;
-    font-size: 14px;
-    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
 }
 
-.new-chat-btn:hover {
+.icon-btn:hover {
     background-color: var(--sidebar-hover);
+    color: var(--text-color);
 }
 
-.new-chat-btn span {
-    flex-grow: 1;
-    text-align: left;
-    margin-left: 10px;
+.icon-btn svg {
+    width: 20px;
+    height: 20px;
 }
 
 /* ส่วนเลือกโมเดล AI */
@@ -442,6 +462,24 @@ html {
     display: flex;
     flex-direction: column;
     position: relative;
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background-color: var(--bg-color);
+}
+
+/* ปุ่มเปิด Sidebar เมื่อหัน (ลอยอยู่มุมซ้าย) */
+.main-sidebar-toggle {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    z-index: 1001;
+    display: none; /* ซ่อนไว้รอคลาส .sidebar-collapsed ที่ body */
+    background: var(--bg-color);
+    border: 1px solid var(--border-color) !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+body.sidebar-collapsed .main-sidebar-toggle {
+    display: flex;
 }
 
 .top-spacer,

@@ -24,6 +24,9 @@ const cancelDeleteBtn = document.getElementById('cancel-delete');
 const fileInput = document.getElementById('file-input');
 const filePreviewContainer = document.getElementById('file-preview-container');
 const attachBtn = document.getElementById('attach-btn');
+const sidebar = document.getElementById('sidebar');
+const toggleSidebarBtn = document.getElementById('toggle-sidebar-btn');
+const mainSidebarToggle = document.getElementById('main-sidebar-toggle');
 
 let attachedFiles = [];
 
@@ -97,6 +100,37 @@ async function init() {
 
     const logoutKeyBtn = document.getElementById('logout-from-key-btn');
     if (logoutKeyBtn) logoutKeyBtn.onclick = handleLogout;
+
+    // ระบบหุ้ม Sidebar (Collapse)
+    setupSidebarToggle();
+}
+
+// ฟังก์ชันควบคุมการหด-ขยาย Sidebar
+function setupSidebarToggle() {
+    // โหลดสถานะล่าสุดจาก localStorage
+    const isCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
+    if (isCollapsed) {
+        sidebar.classList.add('collapsed');
+        document.body.classList.add('sidebar-collapsed');
+    }
+
+    // ปุ่มใน Sidebar (Close)
+    if (toggleSidebarBtn) {
+        toggleSidebarBtn.onclick = () => {
+            sidebar.classList.add('collapsed');
+            document.body.classList.add('sidebar-collapsed');
+            localStorage.setItem('sidebar_collapsed', 'true');
+        };
+    }
+
+    // ปุ่มลอยด้านนอก (Open)
+    if (mainSidebarToggle) {
+        mainSidebarToggle.onclick = () => {
+            sidebar.classList.remove('collapsed');
+            document.body.classList.remove('sidebar-collapsed');
+            localStorage.setItem('sidebar_collapsed', 'false');
+        };
+    }
 }
 
 // ===== จัดการหน้าจอ Login =====
