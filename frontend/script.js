@@ -511,7 +511,13 @@ function closeDeleteModal() {
 // ===== Event Listeners =====
 
 function setupEventListeners() {
-    newChatBtn.onclick = createNewChat;
+    // ระบบสร้างแชทใหม่ (รองรับทั้งปุ่มข้างนอกและปุ่มใน Sidebar ถ้ามี)
+    if (newChatBtn) newChatBtn.onclick = createNewChat;
+    if (newChatBtnPersistent) newChatBtnPersistent.onclick = () => {
+        currentChatId = null;
+        updateLayoutState(true);
+        clearMessages();
+    };
 
     // ระบบแนบไฟล์
     if (attachBtn && fileInput) {
@@ -520,40 +526,47 @@ function setupEventListeners() {
     }
 
     // เปลี่ยนโมเดลเมื่อผู้ใช้เลือกจาก Dropdown (เหมือน st.sidebar.selectbox)
-    modelSelect.onchange = () => {
-        selectedModel = modelSelect.value;
-        localStorage.setItem('selected_model', selectedModel);
-    };
+    if (modelSelect) {
+        modelSelect.onchange = () => {
+            selectedModel = modelSelect.value;
+            localStorage.setItem('selected_model', selectedModel);
+        };
+    }
 
     // ปุ่มเปลี่ยน API Key
-    changeKeyBtn.onclick = () => showApiKeyScreen();
+    if (changeKeyBtn) changeKeyBtn.onclick = () => showApiKeyScreen();
 
-    searchInput.oninput = (e) => {
-        const query = e.target.value.toLowerCase();
-        const filtered = allChats.filter(c => c.title.toLowerCase().includes(query));
-        renderChatList(filtered);
-    };
+    if (searchInput) {
+        searchInput.oninput = (e) => {
+            const query = e.target.value.toLowerCase();
+            const filtered = allChats.filter(c => c.title.toLowerCase().includes(query));
+            renderChatList(filtered);
+        };
+    }
 
-    messageInput.addEventListener('input', () => {
-        messageInput.style.height = 'auto';
-        messageInput.style.height = messageInput.scrollHeight + 'px';
-        
-        // ถ้าไม่ได้กำลัง Stream อยู่ ให้คอยอัปเดตสถานะปุ่มส่งตามข้อความที่พิมพ์
-        if (!abortController) {
-            setStopMode(false);
-        }
-    });
+    if (messageInput) {
+        messageInput.addEventListener('input', () => {
+            messageInput.style.height = 'auto';
+            messageInput.style.height = messageInput.scrollHeight + 'px';
+            
+            // ถ้าไม่ได้กำลัง Stream อยู่ ให้คอยอัปเดตสถานะปุ่มส่งตามข้อความที่พิมพ์
+            if (!abortController) {
+                setStopMode(false);
+            }
+        });
 
-    messageInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleAction();
-        }
-    });
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleAction();
+            }
+        });
+    }
 
-    actionBtn.onclick = handleAction;
-    confirmDeleteBtn.onclick = confirmDeleteChat;
-    cancelDeleteBtn.onclick = closeDeleteModal;
+    if (actionBtn) actionBtn.onclick = handleAction;
+    if (confirmDeleteBtn) confirmDeleteBtn.onclick = confirmDeleteChat;
+    if (cancelDeleteBtn) cancelDeleteBtn.onclick = closeDeleteModal;
+    
     window.onclick = (event) => {
         if (event.target === deleteModal) closeDeleteModal();
     };
