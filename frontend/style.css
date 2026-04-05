@@ -564,6 +564,51 @@ body.sidebar-collapsed .top-controls {
     display: none;
 }
 
+/* ===== Chat Header Bar (Sticky Top) ===== */
+.chat-header-bar {
+    width: 100%;
+    height: 56px;
+    min-height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    transition: all 0.3s ease;
+}
+
+.header-left {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-color);
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+.header-center {
+    font-size: 14px;
+    font-weight: 500;
+    color: #555;
+    text-align: center;
+    flex: 2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.header-right {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+}
+
 .chat-container {
     flex-grow: 1;
     overflow-y: auto;

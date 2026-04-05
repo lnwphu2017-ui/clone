@@ -34,6 +34,7 @@ const toggleSidebarInternal = document.getElementById('toggle-sidebar-internal')
 const newChatInternal = document.getElementById('new-chat-internal');
 const launchBtn = document.getElementById('launch-btn');
 const settingsBtn = document.getElementById('settings-btn');
+const chatHeaderTitle = document.getElementById('chat-header-title');
 
 let attachedFiles = [];
 
@@ -161,6 +162,7 @@ function setupSidebarToggle() {
     if (newChatBtnPersistent) {
         newChatBtnPersistent.onclick = () => {
             currentChatId = null;
+            if (chatHeaderTitle) chatHeaderTitle.textContent = 'New chat';
             updateLayoutState(true);
             clearMessages();
             // ถ้าเป็นมือถือ หรือหน้าจอเล็ก อาจจะอยากให้หุบ Sidebar อัตโนมัติ (ใส่เพิ่มได้ถ้าต้องการ)
@@ -538,6 +540,10 @@ function renderChatList(chats) {
 
 async function selectChat(chatId) {
     currentChatId = chatId;
+    const chat = allChats.find(c => c.id === chatId);
+    if (chatHeaderTitle) {
+        chatHeaderTitle.textContent = chat ? chat.title : 'New chat';
+    }
     renderChatList(allChats);
     clearMessages();
     updateLayoutState(true);
@@ -751,8 +757,9 @@ async function handleAction() {
         if (item.dataset.id == String(currentChatId)) {
             const titleSpan = item.querySelector('.chat-title');
             if (titleSpan && (titleSpan.textContent === 'New Chat' || titleSpan.textContent === '')) {
-                // ใช้ 30 ตัวอักษรแรกเป็นชื่อแชท
-                titleSpan.textContent = content.substring(0, 30) + (content.length > 30 ? '...' : '');
+                const newTitle = content.substring(0, 30) + (content.length > 30 ? '...' : '');
+                titleSpan.textContent = newTitle;
+                if (chatHeaderTitle) chatHeaderTitle.textContent = newTitle;
             }
         }
     });
@@ -848,7 +855,6 @@ async function handleAction() {
         }
         isStreamingFinished = true; // ✅ บอก Ticker ว่า Network จบแล้วนะ ให้เคลียร์ Buffer ที่เหลือ
     } catch (e) {
-        isStreamingFinished = true; // เคลียร์ในกรณี Error
         if (e.name === 'AbortError') {
             // ผู้ใช้กดสตอป — พับ thought block ทันที
             console.log('Stream aborted');
@@ -866,10 +872,12 @@ async function handleAction() {
                 updateMessageContent(aiMessageContainer, errorMsg, "");
             }
         }
+    } finally {
         if (aiMessageContainer && aiMessageContainer.contentDiv) {
             aiMessageContainer.contentDiv.classList.remove('streaming-active');
         }
-
+        isStreamingFinished = true; // มั่นใจอีกทีว่าหยุด Ticker
+        
         // บังคับคืนค่าปุ่มทันที
         resetToDefaultState();
         
