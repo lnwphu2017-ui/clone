@@ -124,16 +124,13 @@ async function init() {
         }
     });
 
-    // ปุ่ม Logout ทั้งหมดในแอป
-    const logoutBtn = document.getElementById('logout-btn');
-    if (logoutBtn) logoutBtn.onclick = handleLogout;
-
-    const logoutKeyBtn = document.getElementById('logout-from-key-btn');
-    if (logoutKeyBtn) logoutKeyBtn.onclick = handleLogout;
-
-    // ปุ่ม Sign In (ถ้าเป็น Guest)
+    // ปุ่ม Sign In (ถ้าเป็น Guest) ในหน้า Settings
     const loginBtn = document.getElementById('settings-auth-btn');
     if (loginBtn && currentUserUid === "guest") loginBtn.onclick = showLoginScreen;
+
+    // ตั้งค่าให้กดที่ Profile ใน Sidebar เพื่อเปิด Settings ได้เลย (Shortcut)
+    if (userProfile) userProfile.onclick = showSettingsScreen;
+    if (userProfile) userProfile.style.cursor = 'pointer';
 
     // ระบบหุ้ม Sidebar (Collapse)
     setupSidebarToggle();
@@ -662,7 +659,6 @@ function setupEventListeners() {
         };
     }
 
-    if (changeKeyBtn) changeKeyBtn.onclick = () => showApiKeyScreen();
     // ----------------------------
 
     if (searchInput) {
