@@ -28,6 +28,12 @@
     </script>
     
     <link rel="stylesheet" href="style.css">
+    <!-- PDF.js สำหรับการดึงข้อความจากไฟล์ PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        // ตั้งค่า PDF.js Worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
 </head>
 
 <body>
