@@ -139,12 +139,7 @@
                     <i class="fa-regular fa-pen-to-square"></i>
                 </button>
 
-                <!-- ส่วนเลือกโมเดล AI (เหมือน st.sidebar.selectbox) -->
-                <div class="model-selector">
-                    <select id="model-select">
-                        <!-- ตัวเลือกจะถูกเพิ่มด้วย JavaScript -->
-                    </select>
-                </div>
+                <!-- Model selector removed from here -->
 
                 <!-- ช่องค้นหาแชทในประวัติ -->
                 <div class="search-container">
@@ -190,11 +185,26 @@
 
             <div class="input-area">
                 <div class="input-wrapper">
-                    <textarea id="message-input" placeholder="Message . . ." rows="1"></textarea>
-                    <button id="action-btn" class="action-btn send-mode" disabled>
-                        <i class="fa fa-arrow-up send-icon"></i>
-                        <i class="fa fa-square stop-icon"></i>
-                    </button>
+                    <textarea id="message-input" placeholder="Send a message" rows="1"></textarea>
+                    <div class="input-actions-row">
+                        <div class="input-actions-left">
+                            <button type="button" class="attach-btn" id="attach-btn" title="แนบไฟล์">
+                                <i class="fa fa-plus"></i>
+                            </button>
+                        </div>
+                        <div class="input-actions-right">
+                            <div class="model-selector-inline">
+                                <i class="fa-solid fa-microchip"></i>
+                                <select id="model-select">
+                                    <!-- ตัวเลือกจะถูกเพิ่มด้วย JavaScript -->
+                                </select>
+                            </div>
+                            <button id="action-btn" class="action-btn send-mode" disabled>
+                                <i class="fa fa-arrow-up send-icon"></i>
+                                <i class="fa fa-square stop-icon"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 

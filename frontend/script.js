@@ -491,11 +491,13 @@ function setupEventListeners() {
         messageInput.style.height = messageInput.scrollHeight + 'px';
         if (messageInput.value.trim() !== '') {
             actionBtn.disabled = false;
-            actionBtn.style.background = 'white';
+            actionBtn.style.background = 'var(--text-color)';
+            actionBtn.style.color = 'var(--bg-color)';
         } else {
             if (!abortController) {
                 actionBtn.disabled = true;
                 actionBtn.style.background = 'var(--btn-disabled)';
+                actionBtn.style.color = '#fff';
             }
         }
     });
@@ -538,6 +540,7 @@ async function handleAction() {
     messageInput.style.height = 'auto';
     actionBtn.disabled = true;
     actionBtn.style.background = 'var(--btn-disabled)';
+    actionBtn.style.color = '#fff';
 
     appendMessage('user', content, false);
     abortController = new AbortController();
@@ -608,7 +611,8 @@ function setStopMode(isStop) {
         actionBtn.classList.remove('send-mode');
         actionBtn.classList.add('stop-mode');
         actionBtn.disabled = false;
-        actionBtn.style.background = 'white';
+        actionBtn.style.background = 'var(--text-color)';
+        actionBtn.style.color = 'var(--bg-color)';
     } else {
         actionBtn.classList.add('send-mode');
         actionBtn.classList.remove('stop-mode');

@@ -701,20 +701,93 @@ html {
     color: #a0a0a0;
 }
 
-.action-btn {
-    align-self: flex-end;
-    background: #000;
-    color: #202020;
+.input-actions-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+    padding: 4px 0;
+}
+
+.input-actions-left,
+.input-actions-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.attach-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 14px;
+}
+
+.attach-btn:hover {
+    background-color: var(--sidebar-hover);
+    transform: scale(1.05);
+}
+
+.model-selector-inline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--sidebar-hover);
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    transition: border-color 0.2s;
+    cursor: pointer;
+}
+
+.model-selector-inline:hover {
+    border-color: #667eea;
+}
+
+.model-selector-inline i {
+    font-size: 12px;
+    color: #667eea;
+}
+
+.model-selector-inline select {
+    background: transparent;
     border: none;
-    width: 36px;
-    height: 36px;
+    color: var(--text-color);
+    font-size: 13px;
+    font-weight: 500;
+    outline: none;
+    cursor: pointer;
+    padding-right: 4px;
+    max-width: 200px;
+}
+
+.action-btn {
+    align-self: center;
+    background: #000;
+    color: #fff;
+    border: none;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
     flex-shrink: 0;
-    transition: background-color 0.2s;
+    transition: all 0.2s;
+}
+
+.action-btn:hover:not(:disabled) {
+    transform: scale(1.1);
+    background-color: #333;
 }
 
 .action-btn:disabled {
