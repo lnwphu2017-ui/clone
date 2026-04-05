@@ -838,21 +838,15 @@ async function handleAction() {
         // พับ thought block เมื่อ stream จบ — ทำกับทุกโมเดล (มี reasoning หรือไม่ก็ตาม)
         const tContainer = aiMessageContainer?.thoughtDiv?.parentElement;
         if (tContainer) {
-            if (fullReasoning !== "") {
-                // โมเดลที่มี reasoning จริง → พับเก็บ ยังคลิกดูได้
-                if (!tContainer.classList.contains('collapsed')) {
-                    tContainer.classList.add('collapsed');
-                    const chevron = tContainer.querySelector('.chevron');
-                    if (chevron) chevron.className = 'fa-solid fa-chevron-right chevron';
-                }
-            } else {
-                // โมเดลที่ไม่มี reasoning (เช่น Gemini Flash) → พับเก็บ ยังโชว์ให้คลิกดูได้
-                // แสดงข้อความ "Thought for a moment" ในแถบให้รู้ว่า AI เคยคิดอยู่
-                if (!tContainer.classList.contains('collapsed')) {
-                    tContainer.classList.add('collapsed');
-                    const chevron = tContainer.querySelector('.chevron');
-                    if (chevron) chevron.className = 'fa-solid fa-chevron-right chevron';
-                }
+            // หยุด pulse animation ของ lightbulb ทันทีที่ตอบเสร็จ
+            const bulb = tContainer.querySelector('.bulb');
+            if (bulb) bulb.style.animation = 'none';
+
+            // พับ thought block เสมอ ไม่ว่าจะมี reasoning หรือไม่
+            if (!tContainer.classList.contains('collapsed')) {
+                tContainer.classList.add('collapsed');
+                const chevron = tContainer.querySelector('.chevron');
+                if (chevron) chevron.className = 'fa-solid fa-chevron-right chevron';
             }
         }
         attachedFiles = []; // ล้างไฟล์แนบหลังส่ง
@@ -973,11 +967,16 @@ function appendMessage(role, content, isEmptyStream, modelName = null, files = [
             wrapper.appendChild(t.container);
             thoughtBody = t.body;
             if (initialThought) {
+                // โมเดลที่มี reasoning จริง (โหลดจากประวัติ) → พับไว้
                 thoughtBody.innerText = initialThought;
                 t.container.classList.add('collapsed');
-                // ปรับไอคอนลูกศรให้ชี้ขวา (เนื่องจากถูกพับไว้สำหรับประวัติเก่า)
                 const chevron = t.container.querySelector('.chevron');
                 if (chevron) chevron.className = 'fa-solid fa-chevron-right chevron';
+            } else {
+                // กำลัง stream อยู่ (ทุกโมเดล) → แสดงเปิดไว้เสมอ และ pulse ไอคอน lightbulb
+                t.container.classList.remove('collapsed');
+                const bulb = t.container.querySelector('.bulb');
+                if (bulb) bulb.style.animation = 'pulse-bulb 1.2s ease-in-out infinite';
             }
         }
 

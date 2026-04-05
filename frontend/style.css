@@ -1302,6 +1302,12 @@ body.sidebar-collapsed .top-controls {
 }
 
 /* ===== AI Reasoning: Thought for a moment ===== */
+/* animation กะพริบ lightbulb ขณะที่ AI กำลังคิด */
+@keyframes pulse-bulb {
+    0%, 100% { opacity: 0.4; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.15); }
+}
+
 .thought-container {
     margin-bottom: 8px;
     border-left: 2px solid var(--border-color);
