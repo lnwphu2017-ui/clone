@@ -243,7 +243,7 @@
                     <!-- พื้นที่แสดงรูป/ไฟล์ที่แนบ (File Preview) -->
                     <div id="file-preview-container" class="file-preview-container"></div>
                     
-                    <textarea id="message-input" placeholder="Message . . ." rows="1"></textarea>
+                    <textarea id="message-input" placeholder="Send a message" rows="1"></textarea>
                     
                     <!-- Hidden File Input -->
                     <input type="file" id="file-input" style="display: none;" multiple accept="image/*, .pdf, .txt, .doc, .docx">
@@ -280,6 +280,51 @@
             <div class="modal-buttons">
                 <button id="cancel-delete" class="btn-cancel">Cancel</button>
                 <button id="confirm-delete" class="btn-confirm">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- หน้าจอ Settings ใหม่ (SiamGPT Style) -->
+    <div id="settings-screen" class="settings-screen" style="display: none;">
+        <div class="settings-header">
+            <button id="close-settings" class="back-btn">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+            <h1>Settings</h1>
+        </div>
+        
+        <div class="settings-content">
+            <!-- User Profile Card -->
+            <div class="settings-card profile-card">
+                <div class="profile-info">
+                    <div class="avatar-container">
+                        <img id="settings-avatar" src="" alt="User Avatar" onerror="this.src='https://via.placeholder.com/60'">
+                    </div>
+                    <div class="user-details">
+                        <h2 id="settings-user-name">Guest User</h2>
+                        <p id="settings-user-email">guest@clonemodel.ai</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- API Key Management Section (Merged for cleanliness) -->
+            <div class="settings-card">
+                <label class="settings-label">OpenRouter API Key</label>
+                <div class="api-key-input-group">
+                    <div class="password-wrapper">
+                        <input type="password" id="settings-api-key" placeholder="sk-or-v1-...">
+                        <button id="toggle-settings-key" class="toggle-password-btn">
+                            <i class="fa-regular fa-eye"></i>
+                        </button>
+                    </div>
+                    <button id="save-settings-key" class="save-settings-btn">Save Key</button>
+                </div>
+                <p class="settings-hint">Your API key is stored locally and used for AI requests.</p>
+            </div>
+
+            <!-- Auth Actions -->
+            <div class="settings-actions">
+                <button id="settings-auth-btn" class="settings-primary-btn">Sign out</button>
             </div>
         </div>
     </div>

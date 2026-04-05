@@ -45,6 +45,18 @@ const toggleKeyVisibility = document.getElementById('toggle-key-visibility');
 const appContainer = document.getElementById('app-container');
 const modelSelect = document.getElementById('model-select');
 const changeKeyBtn = document.getElementById('change-key-btn');
+const userProfile = document.getElementById('user-profile');
+
+// อ้างอิง Element สำหรับ Settings Screen
+const settingsScreen = document.getElementById('settings-screen');
+const closeSettingsBtn = document.getElementById('close-settings');
+const settingsAvatar = document.getElementById('settings-avatar');
+const settingsUserName = document.getElementById('settings-user-name');
+const settingsUserEmail = document.getElementById('settings-user-email');
+const settingsApiKeyInput = document.getElementById('settings-api-key');
+const saveSettingsKeyBtn = document.getElementById('save-settings-key');
+const toggleSettingsKey = document.getElementById('toggle-settings-key');
+const settingsAuthBtn = document.getElementById('settings-auth-btn');
 
 let chatIdToDelete = null;
 let allChats = [];
@@ -82,10 +94,16 @@ async function init() {
             currentUserPhoto = user.photoURL || '';
             document.getElementById('login-screen').style.display = 'none';
 
-            const userProfile = document.getElementById('user-profile');
             if (userProfile) {
                 userProfile.innerHTML = `<img src="${user.photoURL || ''}" style="width:24px;height:24px;border-radius:50%;" onerror="this.style.display='none'"> <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${user.email}</span>`;
             }
+
+            // อัปเดตข้อมูลในหน้า Settings
+            if (settingsUserName) settingsUserName.textContent = user.displayName || 'User';
+            if (settingsUserEmail) settingsUserEmail.textContent = user.email;
+            if (settingsAvatar) settingsAvatar.src = user.photoURL || '';
+            if (settingsApiKeyInput) settingsApiKeyInput.value = apiKey;
+            if (settingsAuthBtn) settingsAuthBtn.textContent = 'Sign out';
 
             // ตัดสินใจว่าจะไปหน้าไหน
             if (apiKey) {
@@ -98,6 +116,11 @@ async function init() {
             document.getElementById('login-screen').style.display = 'flex';
             document.getElementById('api-key-screen').style.display = 'none';
             document.getElementById('app-container').style.display = 'none';
+            
+            // อัปเดตข้อมูลในหน้า Settings ให้เป็น Guest
+            if (settingsUserName) settingsUserName.textContent = 'Guest User';
+            if (settingsUserEmail) settingsUserEmail.textContent = 'guest@clonemodel.ai';
+            if (settingsAuthBtn) settingsAuthBtn.textContent = 'Sign in';
         }
     });
 
@@ -107,6 +130,10 @@ async function init() {
 
     const logoutKeyBtn = document.getElementById('logout-from-key-btn');
     if (logoutKeyBtn) logoutKeyBtn.onclick = handleLogout;
+
+    // ปุ่ม Sign In (ถ้าเป็น Guest)
+    const loginBtn = document.getElementById('settings-auth-btn');
+    if (loginBtn && currentUserUid === "guest") loginBtn.onclick = showLoginScreen;
 
     // ระบบหุ้ม Sidebar (Collapse)
     setupSidebarToggle();
@@ -307,6 +334,59 @@ function showApiKeyScreen() {
     appContainer.style.display = 'none';
     apiKeyInput.value = '';
     setTimeout(() => apiKeyInput.focus(), 100);
+}
+
+function showLoginScreen() {
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('api-key-screen').style.display = 'none';
+    document.getElementById('app-container').style.display = 'none';
+    closeSettingsScreen();
+}
+
+// ===== ฟังก์ชันสำหรับหน้า Settings =====
+
+function showSettingsScreen() {
+    if (settingsScreen) {
+        settingsScreen.style.display = 'flex';
+        if (settingsApiKeyInput) settingsApiKeyInput.value = apiKey;
+    }
+}
+
+function closeSettingsScreen() {
+    if (settingsScreen) {
+        settingsScreen.style.display = 'none';
+    }
+}
+
+async function saveSettingsApiKey() {
+    const key = settingsApiKeyInput.value.trim();
+    if (!key) return;
+
+    saveSettingsKeyBtn.disabled = true;
+    saveSettingsKeyBtn.textContent = 'Saving...';
+
+    try {
+        const res = await fetch(`${BASE_URL}/validate-key`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-User-Id': currentUserUid || 'guest' },
+            body: JSON.stringify({ api_key: key })
+        });
+        const result = await res.json();
+
+        if (result.valid) {
+            apiKey = key;
+            localStorage.setItem('openrouter_api_key', apiKey);
+            alert('API Key saved successfully!');
+            closeSettingsScreen();
+        } else {
+            alert('Invalid API Key: ' + result.message);
+        }
+    } catch (e) {
+        alert('Failed to connect to server.');
+    } finally {
+        saveSettingsKeyBtn.disabled = false;
+        saveSettingsKeyBtn.textContent = 'Save Key';
+    }
 }
 
 // แสดงหน้าแอปหลักหลังจากมี API Key แล้ว
@@ -544,7 +624,29 @@ function setupEventListeners() {
         launchBtn.onclick = () => alert("Launch functionality coming soon!");
     }
     if (settingsBtn) {
-        settingsBtn.onclick = () => showApiKeyScreen(); // หรือเมนู Setting อื่นๆ
+        settingsBtn.onclick = showSettingsScreen;
+    }
+    if (closeSettingsBtn) {
+        closeSettingsBtn.onclick = closeSettingsScreen;
+    }
+    if (saveSettingsKeyBtn) {
+        saveSettingsKeyBtn.onclick = saveSettingsApiKey;
+    }
+    if (toggleSettingsKey) {
+        toggleSettingsKey.onclick = () => {
+            const isPassword = settingsApiKeyInput.type === 'password';
+            settingsApiKeyInput.type = isPassword ? 'text' : 'password';
+            toggleSettingsKey.querySelector('i').className = isPassword ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
+        };
+    }
+    if (settingsAuthBtn) {
+        settingsAuthBtn.onclick = () => {
+            if (currentUserUid && currentUserUid !== "guest") {
+                handleLogout();
+            } else {
+                showLoginScreen();
+            }
+        };
     }
 
     // --- คืนค่า Listeners ที่หายไป ---
