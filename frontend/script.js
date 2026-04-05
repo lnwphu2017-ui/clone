@@ -62,9 +62,17 @@ const settingsAuthBtn = document.getElementById('settings-auth-btn');
 
 let chatIdToDelete = null;
 let allChats = [];
+let allModels = []; // ✅ เก็บรายชื่อโมเดลทั้งหมดเพื่อใช้ในการ Filter
 let eventListenersSetup = false; // ป้องกันการตั้ง Event ซ้ำ
 let isAutoScrollEnabled = true;
 let is_sending = false; // ✅ ป้องกันการกดส่งซ้ำ
+
+// ✅ Elements สำหรับ Custom Model Selector
+const modelToggleBtn = document.getElementById('model-toggle-btn');
+const modelDropdownMenu = document.getElementById('model-dropdown-menu');
+const modelSearchInput = document.getElementById('model-search-input');
+const modelListContainer = document.getElementById('model-list-container');
+const currentModelDisplay = document.getElementById('current-model-display');
 
 window.initApp = async function () {
     await init();
@@ -497,8 +505,10 @@ async function fetchModels() {
     }
 }
 
-// แสดงตัวเลือกโมเดลใน Dropdown และตรวจสอบว่าโมเดลที่เลือกไว้ยังมีอยู่ในรายการ
+// แสดงตัวเลือกโมเดลใน Custom Dropdown และตรวจสอบว่าโมเดลที่เลือกไว้ยังมีอยู่ในรายการ
 function renderModelOptions(models) {
+    allModels = models; // เก็บไว้ใช้ค้นหา
+    
     // ตรวจสอบว่าโมเดลที่เก็บใน localStorage ยังมีอยู่จริงหรือไม่
     const modelExists = models.some(m => m.id === selectedModel);
     if (!modelExists && models.length > 0) {
@@ -506,14 +516,46 @@ function renderModelOptions(models) {
         localStorage.setItem('selected_model', selectedModel);
     }
 
-    modelSelect.innerHTML = '';
-    models.forEach(m => {
-        const option = document.createElement('option');
-        option.value = m.id;
-        option.textContent = m.name;
-        if (m.id === selectedModel) option.selected = true;
-        modelSelect.appendChild(option);
+    // อัปเดตชื่อโมเดลที่ปุ่ม Toggle
+    const currentModel = models.find(m => m.id === selectedModel);
+    if (currentModel && currentModelDisplay) {
+        currentModelDisplay.textContent = currentModel.name;
+    }
+
+    renderCustomModelList(models);
+}
+
+// เรนเดอร์รายการโมเดลใน Dropdown
+function renderCustomModelList(filteredModels) {
+    if (!modelListContainer) return;
+    modelListContainer.innerHTML = '';
+    
+    filteredModels.forEach(m => {
+        const item = document.createElement('div');
+        item.className = `model-item ${m.id === selectedModel ? 'active' : ''}`;
+        item.innerHTML = `
+            <span>${m.name}</span>
+            ${m.id === selectedModel ? '<i class="fa fa-check"></i>' : '<i class="fa-regular fa-cloud"></i>'}
+        `;
+        item.onclick = () => {
+            selectedModel = m.id;
+            localStorage.setItem('selected_model', selectedModel);
+            if (currentModelDisplay) currentModelDisplay.textContent = m.name;
+            if (modelDropdownMenu) modelDropdownMenu.style.display = 'none';
+            renderCustomModelList(allModels); // รีเฟรชสถานะ active
+        };
+        modelListContainer.appendChild(item);
     });
+
+    if (filteredModels.length === 0) {
+        const empty = document.createElement('div');
+        empty.style.padding = '20px';
+        empty.style.textAlign = 'center';
+        empty.style.color = '#888';
+        empty.style.fontSize = '13px';
+        empty.textContent = 'No models found';
+        modelListContainer.appendChild(empty);
+    }
 }
 
 // ===== จัดการแชท =====
@@ -666,20 +708,43 @@ function setupEventListeners() {
         };
     }
 
-    // --- คืนค่า Listeners ที่หายไป ---
+    // ✅ Listeners สำหรับการแนบไฟล์
     if (attachBtn && fileInput) {
         attachBtn.onclick = () => fileInput.click();
         fileInput.onchange = handleFileSelect;
     }
 
-    if (modelSelect) {
-        modelSelect.onchange = () => {
-            selectedModel = modelSelect.value;
-            localStorage.setItem('selected_model', selectedModel);
+    // ✅ Logic สำหรับ Custom Model Selector (Premium Dropdown)
+    if (modelToggleBtn && modelDropdownMenu) {
+        modelToggleBtn.onclick = (e) => {
+            e.stopPropagation();
+            const isVisible = modelDropdownMenu.style.display === 'flex';
+            modelDropdownMenu.style.display = isVisible ? 'none' : 'flex';
+            
+            if (!isVisible) {
+                // รีเซ็ตช่องค้นหาเมื่อเปิดเมนู
+                if (modelSearchInput) {
+                    modelSearchInput.value = '';
+                    renderCustomModelList(allModels);
+                    setTimeout(() => modelSearchInput.focus(), 50);
+                }
+            }
         };
-    }
 
-    // ----------------------------
+        if (modelSearchInput) {
+            modelSearchInput.onclick = (e) => e.stopPropagation(); // กันเมนูปิดเวลาคลิกช่องค้นหา
+            modelSearchInput.oninput = (e) => {
+                const query = e.target.value.toLowerCase();
+                const filtered = allModels.filter(m => m.name.toLowerCase().includes(query));
+                renderCustomModelList(filtered);
+            };
+        }
+
+        // ปิดเมนูเมื่อคลิกที่อื่นในหน้าจอ
+        document.addEventListener('click', () => {
+            if (modelDropdownMenu) modelDropdownMenu.style.display = 'none';
+        });
+    }
 
     if (searchInput) {
         searchInput.oninput = (e) => {
@@ -712,13 +777,42 @@ function setupEventListeners() {
     if (confirmDeleteBtn) confirmDeleteBtn.onclick = confirmDeleteChat;
     if (cancelDeleteBtn) cancelDeleteBtn.onclick = closeDeleteModal;
     
+    // ✅ Logic สำหรับ Custom Model Selector
+    if (modelToggleBtn) {
+        modelToggleBtn.onclick = (e) => {
+            e.stopPropagation();
+            const isVisible = modelDropdownMenu.style.display === 'flex';
+            modelDropdownMenu.style.display = isVisible ? 'none' : 'flex';
+            if (!isVisible) {
+                modelSearchInput.value = '';
+                renderCustomModelList(allModels);
+                setTimeout(() => modelSearchInput.focus(), 100);
+            }
+        };
+    }
+
+    if (modelSearchInput) {
+        modelSearchInput.oninput = (e) => {
+            const query = e.target.value.toLowerCase();
+            const filtered = allModels.filter(m => m.name.toLowerCase().includes(query));
+            renderCustomModelList(filtered);
+        };
+        // ป้องกันการปิดเมื่อคลิกในช่องค้นหา
+        modelSearchInput.onclick = (e) => e.stopPropagation();
+    }
+
+    // ปิด Dropdown เมื่อคลิกที่อื่น
+    document.addEventListener('click', () => {
+        if (modelDropdownMenu) modelDropdownMenu.style.display = 'none';
+    });
+
     // ✅ ระบบตรวจจับการ Scroll เพื่อเปิด/ปิด Auto-scroll อัจฉริยะแบบแม่นยำสูง
     if (chatContainer) {
-        chatContainer.onscroll = () => {
-            const threshold = 2; // ✅ ใช้ค่าเพียงเล็กน้อยเพื่อให้หยุดเลื่อนทันทีที่ขยับขึ้น
-            const isAtBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight <= threshold;
+        chatContainer.addEventListener('scroll', () => {
+            // ✅ ลด Threshold ลงเพื่อให้การหยุดเลื่อนละเอียดขึ้นและตอบสนองทันที
+            const isAtBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight <= 5;
             isAutoScrollEnabled = isAtBottom;
-        };
+        });
     }
     
     window.onclick = (event) => {
