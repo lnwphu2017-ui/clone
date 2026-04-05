@@ -3,3 +3,4 @@ uvicorn
 sqlalchemy
 openai
 python-multipart
+psycopg2-binary

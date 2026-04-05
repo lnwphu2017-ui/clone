@@ -5,13 +5,46 @@ import os
 
 # กำหนดที่เก็บไฟล์ฐานข้อมูล SQLite
 # บน Vercel ระบบไฟล์เป็น Read-only ให้เปลี่ยนไปใช้ /tmp/ เพื่อให้แอปทำงานได้
-if os.environ.get("VERCEL"):
+# สำหรับการเก็บข้อมูลถาวรบน Vercel ให้ตรวจสอบ URL ของ PostgreSQL
+# (Vercel จะมีตัวแปรสภาพแวดล้อมให้เมื่อคุณสร้าง Storage > Postgres)
+# ตรวจสอบตัวแปรสภาพแวดล้อมที่มีความเป็นไปได้ทั้งหมด (Vercel และ Neon มักใช้ชื่อเหล่านี้)
+DATABASE_URL = (
+    os.environ.get("DATABASE_URL") or 
+    os.environ.get("POSTGRES_URL") or 
+    os.environ.get("POSTGRES_URL_NON_POOLING") or 
+    os.environ.get("POSTGRES_PRISMA_URL")
+)
+
+if DATABASE_URL and os.environ.get("VERCEL"):
+    # หากอยู่บน Vercel และพบ URL ให้ใช้งานทันที
+    pass
+elif os.environ.get("VERCEL"):
+    # หากไม่พบ URL บน Vercel ให้ใช้ SQLite ชั่วคราว
     DATABASE_URL = "sqlite:////tmp/database.db"
 else:
+    # สำหรับการรันบนเครื่อง Local
     DATABASE_URL = "sqlite:///./database.db"
 
+# จัดการ SQLAlchemy URL สำหรับ PostgreSQL (เพื่อให้รองรับ psycopg2 และ SSL)
+if DATABASE_URL.startswith("postgres"):
+    # เปลี่ยน postgres:// เป็น postgresql://
+    if DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    
+    # บังคับใช้ SSL สำหรับความปลอดภัย (Neon/Vercel Postgres ต้องการส่วนนี้ครับ)
+    if "sslmode" not in DATABASE_URL:
+        if "?" in DATABASE_URL:
+            DATABASE_URL += "&sslmode=require"
+        else:
+            DATABASE_URL += "?sslmode=require"
+
 # สร้าง Engine สำหรับเชื่อมต่อฐานข้อมูล
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+if DATABASE_URL.startswith("sqlite"):
+    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+else:
+    # สำหรับ PostgreSQL แนะนำให้ตั้งค่า pool_pre_ping=True เพื่อป้องกันการหลุดขัดของ Connection
+    engine = create_engine(DATABASE_URL, pool_pre_ping=True)
+
 # สร้าง Session สำหรับการจัดการ Transaction
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -49,6 +82,8 @@ def init_db():
 
 # ฟังก์ชันสำหรับสร้าง Database Session เพื่อนำไปใช้งานใน API
 def get_db():
+    # ในสภาวะ Serverless (เช่น Vercel) การเรียกใช้ init_db() ที่นี่จะช่วยให้มั่นใจว่าตารางถูกสร้างขึ้นจริง
+    init_db()
     db = SessionLocal()
     try:
         yield db
