@@ -62,6 +62,7 @@ const settingsAuthBtn = document.getElementById('settings-auth-btn');
 let chatIdToDelete = null;
 let allChats = [];
 let eventListenersSetup = false; // ป้องกันการตั้ง Event ซ้ำ
+let isAutoScrollEnabled = true; // ✅ ควบคุมการเลื่อนลงอัตโนมัติ
 
 window.initApp = async function () {
     await init();
@@ -704,6 +705,15 @@ function setupEventListeners() {
     if (confirmDeleteBtn) confirmDeleteBtn.onclick = confirmDeleteChat;
     if (cancelDeleteBtn) cancelDeleteBtn.onclick = closeDeleteModal;
     
+    // ✅ ระบบตรวจจับการ Scroll เพื่อเปิด/ปิด Auto-scroll อัจฉริยะ
+    if (chatContainer) {
+        chatContainer.onscroll = () => {
+            const threshold = 100; // ระยะห่างจากขอบล่างสุด (px)
+            const isAtBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight < threshold;
+            isAutoScrollEnabled = isAtBottom;
+        };
+    }
+    
     window.onclick = (event) => {
         if (event.target === deleteModal) closeDeleteModal();
     };
@@ -750,6 +760,7 @@ async function handleAction() {
     appendMessage('user', content, false, null, attachedFiles); // ส่งไฟล์ปัจจุบันไปโชว์ด้วย
     abortController = new AbortController();
     setStopMode(true);
+    isAutoScrollEnabled = true; // ✅ บังคับให้ Auto-scroll ทำงานเมื่อเริ่มส่งข้อความใหม่
     
     // อัปเดตชื่อแชทใน Sidebar ทันทีถ้าเป็นข้อความแรก (เพื่อความลื่นไหลของ UI)
     const sidebarItems = chatListEl.querySelectorAll('.chat-item');
@@ -1219,6 +1230,8 @@ function renderMath(element) {
 }
 
 function scrollToBottom() {
+    // ✅ ถ้าผู้ใช้เลื่อนขึ้นไปอ่านข้อความเก่า (isAutoScrollEnabled = false) ไม่ต้องดึงหน้าจอลงมา
+    if (!isAutoScrollEnabled) return;
     chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
