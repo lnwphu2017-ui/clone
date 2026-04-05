@@ -75,29 +75,36 @@ async function init() {
     // ดักจับสถานะล็อกอินผ่าน Firebase
     window.onAuthStateChanged(window.firebaseAuth, (user) => {
         console.log("🎯 Auth State Changed:", user ? user.email : "Logged Out");
-        if (currentUserUid === "guest") return;
+        
+        const authText = document.getElementById('auth-text-internal');
+        const authEmail = document.getElementById('auth-user-email');
+        const authIcon = document.getElementById('auth-icon-internal');
 
         if (user) {
             currentUserUid = user.email;
             currentUserPhoto = user.photoURL || '';
+            
+            // อัปเดต UI ใน Sidebar
+            if (authText) authText.innerText = "Sign out";
+            if (authEmail) authEmail.innerText = user.email;
+            if (authIcon) authIcon.className = "fa-solid fa-right-from-bracket sidebar-icon";
+
             document.getElementById('login-screen').style.display = 'none';
 
-            const userProfile = document.getElementById('user-profile');
-            if (userProfile) {
-                userProfile.innerHTML = `<img src="${user.photoURL || ''}" style="width:24px;height:24px;border-radius:50%;" onerror="this.style.display='none'"> <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${user.email}</span>`;
-            }
-
             // ตัดสินใจว่าจะไปหน้าไหน
-            if (apiKey) {
-                showApp();
+            if (apiKey) showApp(); else showApiKeyScreen();
+        } else {
+            // ถ้าเป็นสถานะ Logout หรือ Guest
+            if (currentUserUid === "guest") {
+                if (authText) authText.innerText = "Sign in";
+                if (authEmail) authEmail.innerText = "Guest User";
+                if (authIcon) authIcon.className = "fa-solid fa-right-to-bracket sidebar-icon";
             } else {
-                showApiKeyScreen();
+                currentUserUid = null;
+                document.getElementById('login-screen').style.display = 'flex';
+                document.getElementById('api-key-screen').style.display = 'none';
+                document.getElementById('app-container').style.display = 'none';
             }
-        } else if (!user) {
-            currentUserUid = null;
-            document.getElementById('login-screen').style.display = 'flex';
-            document.getElementById('api-key-screen').style.display = 'none';
-            document.getElementById('app-container').style.display = 'none';
         }
     });
 

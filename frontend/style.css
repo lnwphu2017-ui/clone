@@ -3,7 +3,7 @@
     --sidebar-bg: #f9f9f9;
     --sidebar-hover: #ececec;
     --text-color: #0d0d0d;
-    --user-msg-bg: var(--sidebar-bg);
+    --user-msg-bg: #f4f4f4;
     --input-bg: #ffffff;
     --border-color: rgba(0, 0, 0, 0.1);
     --btn-disabled: #d7d7d7;
@@ -16,15 +16,14 @@
     font-family: 'Inter', 'IBM Plex Sans Thai', sans-serif;
 }
 
-body,
-html {
+body, html {
     height: 100%;
     background-color: var(--bg-color);
     color: var(--text-color);
     overflow: hidden;
 }
 
-/* ===== หน้าจอ Login (New Design - SiamGPT Style) ===== */
+/* ===== Auth & Login ===== */
 .login-card {
     background: var(--bg-color);
     border-radius: 24px;
@@ -36,47 +35,9 @@ html {
     animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.login-title {
-    font-size: 32px;
-    font-weight: 700;
-    margin-bottom: 12px;
-    color: var(--text-color);
-    letter-spacing: -0.5px;
-}
-
-.login-disclaimer {
-    font-size: 13px;
-    line-height: 1.5;
-    color: #666;
-    margin-bottom: 32px;
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    gap: 8px;
-    padding: 0 10px;
-}
-
-.login-disclaimer i {
-    margin-top: 2px;
-    font-size: 14px;
-}
-
-.login-fields {
-    width: 100%;
-    margin-bottom: 24px;
-}
-
-.auth-input-group {
-    text-align: left;
-    margin-bottom: 20px;
-}
-
-.auth-input-group label {
-    display: block;
-    font-size: 14px;
-    font-weight: 600;
-    margin-bottom: 8px;
-    color: var(--text-color);
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .auth-input-group input {
@@ -86,7 +47,6 @@ html {
     border-radius: 12px;
     font-size: 15px;
     background: var(--bg-color);
-    color: var(--text-color);
     transition: all 0.2s;
 }
 
@@ -94,32 +54,6 @@ html {
     border-color: var(--text-color);
     outline: none;
     box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
-}
-
-.password-wrapper {
-    position: relative;
-}
-
-.toggle-password-btn {
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    color: #999;
-    cursor: pointer;
-    font-size: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.input-hint {
-    font-size: 12px;
-    color: #888;
-    margin-top: 8px;
-    line-height: 1.4;
 }
 
 .login-primary-btn {
@@ -133,129 +67,9 @@ html {
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
-    margin-bottom: 20px;
 }
 
-.login-primary-btn:hover {
-    background: #222;
-}
-
-.login-toggle-text {
-    font-size: 14px;
-    color: #666;
-    margin-bottom: 24px;
-}
-
-.login-toggle-text a {
-    color: #0066cc;
-    text-decoration: none;
-    font-weight: 600;
-    margin-left: 4px;
-}
-
-.login-secondary-btn {
-    width: 100%;
-    padding: 14px;
-    background: #f0f0f0;
-    color: #333;
-    border: none;
-    border-radius: 12px;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-bottom: 20px;
-}
-
-.login-secondary-btn:hover {
-    background: #e5e5e5;
-}
-
-.login-divider {
-    display: flex;
-    align-items: center;
-    margin-bottom: 24px;
-    color: #999;
-    font-size: 14px;
-}
-
-.login-divider::before,
-.login-divider::after {
-    content: "";
-    flex: 1;
-    height: 1px;
-    background: var(--border-color);
-}
-
-.login-divider span {
-    padding: 0 16px;
-}
-
-.login-google-btn {
-    width: 100%;
-    padding: 14px;
-    background: var(--bg-color);
-    color: var(--text-color);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 12px;
-    transition: all 0.2s;
-    margin-bottom: 32px;
-}
-
-.login-google-btn:hover {
-    background: #f9f9f9;
-    border-color: #999;
-}
-
-.login-footer {
-    font-size: 13px;
-    color: #888;
-}
-
-.login-footer a {
-    color: #666;
-    text-decoration: underline;
-}
-
-/* ===== หน้าจอ API Key (Consistent with Login) ===== */
-.api-key-screen {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: var(--bg-color);
-    z-index: 2000;
-    padding: 20px;
-}
-
-/* ใช้ความสวยงามเดียวกับ .login-card */
-.api-key-screen .login-card {
-    animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* ===== Layout หลัก ===== */
+/* ===== Layout ===== */
 .app-container {
     display: flex;
     height: 100vh;
@@ -269,7 +83,7 @@ html {
     flex-direction: column;
     padding: 10px;
     border-right: 1px solid var(--border-color);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* แอนิเมชันลื่นไหล */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow-x: hidden;
     position: relative;
     z-index: 1000;
@@ -277,11 +91,10 @@ html {
 
 .sidebar.collapsed {
     width: 0;
-    padding-left: 0;
-    padding-right: 0;
+    padding: 0;
     border-right: none;
     opacity: 0;
-    pointer-events: none; /* ป้องกันการกดโดนปุ่มขณะซ่อน */
+    pointer-events: none;
 }
 
 .sidebar-header {
@@ -291,84 +104,51 @@ html {
     margin-bottom: 20px;
 }
 
-/* ส่วนควบคุมไอคอนด้านบน (Sidebar Toggle & New Chat) */
-.sidebar-controls {
+/* Sidebar Internal Menu (Dark Mode Colors) */
+.sidebar-controls-internal {
     display: flex;
-    justify-content: flex-start; /* เรียงชิดซ้ายตามรูปตัวอย่าง */
-    align-items: center;
-    gap: 4px; /* ระยะห่างระหว่างปุ่มเล็กน้อยเพื่อให้ดูเป็นกลุ่มเดียวกัน */
-    padding: 5px 0;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
 }
 
-.icon-btn {
-    background: transparent;
-    border: none;
-    color: #888;
-    padding: 8px;
+.sidebar-item-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
     border-radius: 8px;
     cursor: pointer;
+    color: #1a1a1a; /* เมนูบนสีเข้มตามที่ขอ */
+    transition: all 0.2s;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.sidebar-item-btn:hover {
+    background-color: var(--sidebar-hover);
+}
+
+.sidebar-item-btn svg, .sidebar-item-btn i {
+    width: 18px;
+    height: 18px;
+    font-size: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s;
 }
 
-.icon-btn:hover {
-    background-color: var(--sidebar-hover);
-    color: var(--text-color);
-    box-shadow: none !important;
-}
-
-.icon-btn svg {
-    width: 20px;
-    height: 20px;
-}
-
-/* ส่วนเลือกโมเดล AI */
-.model-selector {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.model-selector label {
-    font-size: 12px;
-    color: #888;
-    font-weight: 600;
-    padding-left: 4px;
-}
-
-.model-selector select {
-    width: 100%;
-    padding: 9px 10px;
-    background-color: var(--sidebar-hover);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    color: var(--text-color);
-    outline: none;
-    font-size: 13px;
-    cursor: pointer;
-    transition: border-color 0.2s;
-}
-
-.model-selector select:hover {
-    border-color: #667eea;
-}
-
-.model-selector select:focus {
-    border-color: #667eea;
-}
-
-/* ค้นหาแชท */
+/* Search Area */
 .search-container {
     position: relative;
-    display: flex;
-    align-items: center;
+    margin-bottom: 10px;
 }
 
 .search-container i {
     position: absolute;
     left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
     color: #888;
     font-size: 12px;
 }
@@ -378,48 +158,48 @@ html {
     padding: 8px 10px 8px 30px;
     background-color: var(--sidebar-hover);
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     color: var(--text-color);
+    font-size: 13px;
     outline: none;
 }
 
-/* รายการแชท */
+/* Chat History (Light Colors) */
 .history-list {
     flex-grow: 1;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 2px;
 }
 
 .chat-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px;
+    padding: 9px 12px;
     border-radius: 8px;
     cursor: pointer;
     font-size: 14px;
-    color: #000000;
+    color: #888888; /* ประวัติแชทสีอ่อนตามที่ขอ */
+    transition: all 0.2s;
 }
 
-.chat-item:hover,
-.chat-item.active {
+.chat-item:hover, .chat-item.active {
     background-color: var(--sidebar-hover);
-    color: rgb(0, 0, 0);
+    color: #1a1a1a;
 }
 
 .chat-title {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    flex-grow: 1;
 }
 
 .delete-btn {
     background: none;
     border: none;
-    color: #888;
+    color: #bbb;
     cursor: pointer;
     display: none;
 }
@@ -432,138 +212,49 @@ html {
     color: #ff5555;
 }
 
-/* ปุ่มเปลี่ยน API Key ด้านล่าง Sidebar */
-.sidebar-footer {
-    padding-top: 10px;
-    border-top: 1px solid var(--border-color);
-}
-
-.change-key-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    width: 100%;
-    padding: 10px 12px;
-    background: transparent;
-    border: none;
-    color: #888;
-    cursor: pointer;
-    border-radius: 8px;
-    font-size: 13px;
-    transition: all 0.2s;
-}
-
-.change-key-btn:hover {
-    background-color: var(--sidebar-hover);
-    color: var(--text-color);
-}
-
 /* ===== Main Content ===== */
 .main-content {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
     position: relative;
-    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     background-color: var(--bg-color);
+    transition: margin-left 0.3s;
 }
 
-/* แผงควบคุมมุมบนซ้าย (ถาวรเมื่อหุบ) */
+/* Top Left Controls (Visible when Collapsed) */
 .top-controls {
     position: absolute;
     top: 15px;
     left: 15px;
     z-index: 1001;
-    display: none; /* ซ่อนเป็นค่าเริ่มต้น จะแสดงเมื่อ Sidebar หุบเท่านั้น */
+    display: none;
     gap: 8px;
-    align-items: center;
 }
 
 body.sidebar-collapsed .top-controls {
-    display: flex; /* แสดงเมื่อ Sidebar หุบ */
+    display: flex;
 }
 
 .top-controls .icon-btn {
     background: var(--bg-color);
-    border: 1px solid var(--border-color) !important;
-    box-shadow: none !important;
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     width: 34px;
     height: 34px;
-}
-
-/* ส่วนเมนูภายใน Sidebar */
-.sidebar-controls-internal {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-bottom: 20px;
-    padding: 0 5px;
-}
-
-.sidebar-item-btn {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    color: #cecece;
-    transition: all 0.2s;
-    font-size: 15px;
-    font-weight: 500;
-}
-
-.sidebar-item-btn:hover {
-    background-color: var(--sidebar-hover);
-    color: var(--text-color);
-}
-
-.sidebar-item-btn svg,
-.sidebar-item-btn i {
-    width: 20px;
-    height: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
+    cursor: pointer;
+    color: #1a1a1a;
+    transition: background 0.2s;
 }
 
-.sidebar-item-btn span {
-    white-space: nowrap;
+.top-controls .icon-btn:hover {
+    background: var(--sidebar-hover);
 }
 
-/* ซ่อนปุ่มเปิด/ปิดหลักเดิมเพื่อให้เหลือแค่ top-controls */
-.main-sidebar-toggle {
-    display: none !important;
-}
-
-.top-spacer,
-.bottom-spacer {
-    transition: flex-grow 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    flex-grow: 0;
-}
-
-/* ===== โหมดหน้าแชทใหม่ (จัดกึ่งกลางทีสุด) ===== */
-.main-content.centered-mode .top-spacer,
-.main-content.centered-mode .bottom-spacer {
-    flex-grow: 1;
-}
-
-.main-content.centered-mode .chat-container {
-    flex-grow: 0;
-    padding-bottom: 0;
-}
-
-.main-content.centered-mode .input-area {
-    padding-bottom: 0;
-    /* เอาขอบล่างออกเพื่อให้ของทุกอย่างอยู่ตรงกลางจริงๆ */
-}
-
-.header-mobile {
-    display: none;
-}
-
+/* Chat Layout */
 .chat-container {
     flex-grow: 1;
     overflow-y: auto;
@@ -571,17 +262,13 @@ body.sidebar-collapsed .top-controls {
     display: flex;
     flex-direction: column;
     align-items: center;
-    transition: flex-grow 0.5s cubic-bezier(0.4, 0, 0.2, 1), padding-bottom 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .welcome-screen {
     margin: auto;
     text-align: center;
-    color: var(--text-color);
-    transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), margin 0.5s cubic-bezier(0.4, 0, 0.2, 1), padding 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    opacity: 1;
-    max-height: 150px;
-    overflow: hidden;
+    max-height: 200px;
+    transition: all 0.5s;
 }
 
 .welcome-screen.hidden {
@@ -591,652 +278,139 @@ body.sidebar-collapsed .top-controls {
     padding: 0;
 }
 
-.welcome-screen h2 {
-    font-size: 24px;
-    font-weight: 600;
-}
-
-/* ===== ข้อความ (Messages) — สไตล์คล้าย Gemini ===== */
+/* Messages */
 .message {
     width: 100%;
     display: flex;
     justify-content: center;
-    padding: 20px;
+    padding: 15px 20px;
 }
 
 .message-inner {
     width: 100%;
     max-width: 800px;
     display: flex;
-    gap: 20px;
-    align-items: flex-start;
+    gap: 16px;
 }
 
 .message.user .message-inner {
     justify-content: flex-end;
-    padding-right: 24px; /* เพิ่มระยะห่างให้ดูพรีเมียม ไม่ติดขอบจอ */
 }
-
-
 
 .message-content {
     font-size: 16px;
-    line-height: 1.8;
-    max-width: 85%;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
+    line-height: 1.6;
     color: var(--text-color);
+    max-width: 85%;
 }
 
 .message.user .message-content {
-    background-color: #f4f4f4;
-    color: #1a1a1a; /* บังคับเป็นสีเข้มเสมอ เพราะพื้นหลังเป็นสีเทาอ่อน อ่านง่ายทั้ง Dark/Light mode */
-    padding: 12px 20px;
+    background-color: var(--user-msg-bg);
+    padding: 12px 18px;
     border-radius: 18px;
-    display: table;
-    width: auto;
-    min-width: max-content;
-    max-width: 85%;
     border: 1px solid var(--border-color);
-    box-shadow: none;
-    word-break: normal;
-    overflow-wrap: break-word;
-    white-space: pre-wrap;
-    line-height: 1.5;
+    display: inline-block;
+    min-width: 100px;
     text-align: left;
 }
 
 .message.assistant .message-content {
-    color: var(--text-color);
-    background-color: transparent;
-    padding: 0;
     width: 100%;
-    max-width: 100%;
 }
 
-/* ย่อหน้า */
-.message.assistant .message-content *:first-child {
-    margin-top: 0;
-}
-
-.message.assistant .message-content p {
-    margin-bottom: 16px;
-    line-height: 1.8;
-}
-
-/* หัวข้อ — ขนาดแยกชัดเจนแบบ Gemini */
-.message.assistant .message-content h1 {
-    font-size: 1.5em;
-    font-weight: 700;
-    margin-top: 28px;
-    margin-bottom: 12px;
-    color: var(--text-color);
-}
-
-.message.assistant .message-content h2 {
-    font-size: 1.35em;
-    font-weight: 700;
-    margin-top: 24px;
-    margin-bottom: 10px;
-    color: var(--text-color);
-}
-
-.message.assistant .message-content h3 {
-    font-size: 1.2em;
-    font-weight: 600;
-    margin-top: 20px;
-    margin-bottom: 8px;
-    color: var(--text-color);
-}
-
-.message.assistant .message-content h4,
-.message.assistant .message-content h5 {
-    font-size: 1.1em;
-    font-weight: 600;
-    margin-top: 16px;
-    margin-bottom: 8px;
-}
-
-/* ตัวหนา — โดดเด่นแบบ Gemini */
-.message.assistant .message-content strong {
-    font-weight: 700;
-    color: var(--text-color);
-}
-
-/* รายการ (Lists) — เว้นระยะดี */
-.message.assistant .message-content ul,
-.message.assistant .message-content ol {
-    margin-left: 24px;
-    margin-bottom: 16px;
-    padding-left: 4px;
-}
-
-.message.assistant .message-content li {
-    margin-bottom: 10px;
-    line-height: 1.7;
-}
-
-.message.assistant .message-content li::marker {
-    color: #555;
-}
-
-/* KaTeX — สูตรคณิตศาสตร์แบบ Gemini (พื้นหลังอ่อนๆ + เว้นระยะดี) */
-.katex-display {
-    text-align: center !important;
-    font-size: clamp(1.1em, 2.5vw, 1.5em) !important;
-    margin: 24px 0 !important;
-    padding: 20px 16px;
-    background: var(--user-msg-bg);
-    border-radius: 12px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-}
-
-.katex-display::-webkit-scrollbar {
-    display: none;
-}
-
-/* สูตร inline */
-.katex {
-    font-size: 1.1em;
-}
-
-
-/* ตาราง */
-.message-content table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 15px 0;
-    table-layout: auto;
-}
-
-.message-content th,
-.message-content td {
-    padding: 10px;
-    border: 1px solid var(--border-color);
-    text-align: left;
-    word-break: normal;
-}
-
-.message-content th {
-    background-color: var(--user-msg-bg);
-    font-weight: bold;
-}
-
-/* ===== Input Area ===== */
-.input-area {
-    padding: 20px;
-    padding-bottom: 60px;
-    /* <--- ทำให้กล่องอยู่สูงขึ้นไปจากขอบจออย่างเห็นได้ชัด */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    transition: padding-bottom 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.input-wrapper {
-    width: 100%;
-    max-width: 800px;
-    background-color: var(--input-bg);
-    border-radius: 16px;
-    display: flex;
-    flex-direction: column;
-    padding: 12px 16px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
-    border: 1px solid rgba(0, 0, 0, 0.15);
-}
-
-.file-preview-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 8px;
-    max-height: 200px;
-    overflow-y: auto;
-}
-
-.file-pill {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--sidebar-bg);
-    border: 1px solid var(--border-color);
-    padding: 6px 12px;
-    border-radius: 12px;
-    font-size: 13px;
-    color: var(--text-color);
-    animation: fadeIn 0.3s ease;
-    position: relative;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(5px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.file-pill img {
-    width: 30px;
-    height: 30px;
-    object-fit: cover;
-    border-radius: 4px;
-}
-
-.file-pill .remove-file {
-    cursor: pointer;
-    color: #ff5555;
-    font-size: 14px;
-    padding: 2px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.2s;
-}
-
-.file-pill .remove-file:hover {
-    transform: scale(1.2);
-}
-
-#message-input {
-    width: 100%;
-    background: transparent;
-    border: none;
-    color: var(--text-color);
-    resize: none;
-    min-height: 80px;
-    max-height: 200px;
-    padding: 0;
-    margin-bottom: 12px;
-    font-size: 16px;
-    outline: none;
-}
-
-#message-input::placeholder {
-    color: #a0a0a0;
-}
-
-.input-actions-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 8px;
-    padding: 4px 0;
-}
-
-.input-actions-left,
-.input-actions-right {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.attach-btn {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    border: 1px solid var(--border-color);
-    background: transparent;
-    color: var(--text-color);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-size: 14px;
-}
-
-.attach-btn:hover {
-    background-color: var(--sidebar-hover);
-    transform: scale(1.05);
-}
-
-.model-selector-inline {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background-color: var(--sidebar-hover);
-    padding: 6px 12px;
-    border-radius: 20px;
-    border: 1px solid var(--border-color);
-    transition: border-color 0.2s;
-    cursor: pointer;
-}
-
-.model-selector-inline:hover {
-    border-color: #667eea;
-}
-
-.model-selector-inline i {
-    font-size: 12px;
-    color: #667eea;
-}
-
-/* ===== PDF Icon Coloring (RED) ===== */
-.fa-file-pdf, 
-.message-file-pill.pdf-type i {
-    color: #ff4444 !important;
-}
-
-/* ลบส่วนที่ซ้ำซ้อนกับด้านบนออก เพื่อความเสถียร */
-
-.message-attachments {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 10px;
-}
-
-.message-file-pill {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: #f4f4f4; /* ปรับให้เป็นสีเดียวกับข้อความ */
-    border: 1px solid var(--border-color);
-    padding: 10px 18px;
-    border-radius: 18px;
-    font-size: 14px;
-    color: #333333;
-    width: fit-content;
-    box-shadow: none;
-    margin-bottom: 8px;
-    transition: transform 0.2s ease;
-}
-
-.message-file-pill:hover {
-    transform: translateY(-2px);
-}
-
-.message-file-pill i {
-    font-size: 22px;
-    color: #ff4444 !important; /* ไอคอน PDF สีแดงสดตามรูป */
-}
-
-.message-file-pill .file-name {
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 250px;
-}
-
-/* ===== AI Reasoning: Thought for a moment ===== */
+/* Reasoning/Thought Blocks */
 .thought-container {
-    margin-bottom: 8px;
-    border-left: 2px solid var(--border-color);
-    padding-left: 12px;
-    transition: all 0.3s ease;
+    background-color: #fcfcfc;
+    border-left: 3px solid #eee;
+    margin: 10px 0;
+    border-radius: 4px;
+    overflow: hidden;
 }
 
 .thought-header {
+    padding: 8px 12px;
     display: flex;
     align-items: center;
     gap: 10px;
     cursor: pointer;
+    font-size: 13px;
     color: #888;
-    font-size: 14px;
-    font-weight: 500;
-    user-select: none;
-    padding: 8px 0;
-    transition: color 0.2s ease;
-}
-
-.thought-header:hover {
-    color: #555;
-}
-
-.thought-header i.bulb {
-    font-size: 16px;
-    opacity: 0.8;
-}
-
-.thought-header i.chevron {
-    font-size: 10px;
-    transition: transform 0.3s ease;
-    opacity: 0.6;
+    background: #f9f9f9;
 }
 
 .thought-content {
-    color: #666;
-    font-size: 14px;
-    line-height: 1.6;
-    margin-top: 4px;
-    overflow: hidden;
-    max-height: 2000px;
-    transition: max-height 0.5s ease, opacity 0.3s ease;
-    opacity: 1;
-}
-
-/* เมื่อพับเก็บ (Collapsed) */
-.thought-container.collapsed .thought-content {
-    max-height: 0;
-    opacity: 0;
-    margin-top: 0;
-    pointer-events: none;
-}
-
-.thought-container.collapsed .thought-header i.chevron {
-    transform: rotate(-90deg);
-}
-
-.thought-container.hidden {
-    display: none;
-}
-
-.model-selector-inline select {
-    background: transparent;
-    border: none;
-    color: var(--text-color);
-    font-size: 13px;
-    font-weight: 500;
-    outline: none;
-    cursor: pointer;
-    padding-right: 4px;
-    max-width: 200px;
-}
-
-.action-btn {
-    align-self: center;
-    background: #000;
-    color: #fff;
-    border: none;
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    flex-shrink: 0;
-    transition: all 0.2s;
-}
-
-.action-btn:hover:not(:disabled) {
-    transform: scale(1.1);
-    background-color: #333;
-}
-
-.action-btn:disabled {
-    background: #cfcfcf;
-    color: #fff;
-    cursor: not-allowed;
-}
-
-.action-btn.send-mode .stop-icon {
-    display: none;
-}
-
-.action-btn.send-mode .send-icon {
-    display: inline-block;
-}
-
-.action-btn.stop-mode .send-icon {
-    display: none;
-}
-
-.action-btn.stop-mode .stop-icon {
-    display: inline-block;
-}
-
-.disclaimer {
-    color: #888;
-    font-size: 12px;
-    margin-top: 10px;
-}
-
-/* บล็อกโค้ด */
-pre {
-    background-color: #f7f7f8;
-    padding: 15px;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-    overflow-x: auto;
-    margin-bottom: 15px;
-}
-
-code {
-    font-family: Consolas, monospace;
-}
-
-/* ===== Modal ยืนยันลบ ===== */
-.modal-backdrop {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-    justify-content: center;
-    align-items: center;
-}
-
-.modal-content {
-    background-color: var(--bg-color);
-    padding: 24px;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 400px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-}
-
-.modal-content h3 {
-    margin-bottom: 15px;
-    font-size: 18px;
-    font-weight: 600;
-}
-
-.modal-content p {
-    margin-bottom: 25px;
-    color: #444;
+    padding: 12px;
     font-size: 14px;
     line-height: 1.5;
+    color: #666;
+    border-top: 1px solid #f0f0f0;
 }
 
-.modal-buttons {
+.thought-container.collapsed .thought-content {
+    display: none;
+}
+
+/* Input Area */
+.input-area-wrapper {
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
+    padding: 20px;
+}
+
+.input-container {
+    width: 100%;
+    max-width: 800px;
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 24px;
+    padding: 10px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.input-row {
+    display: flex;
+    align-items: flex-end;
     gap: 12px;
 }
 
-.btn-cancel,
-.btn-confirm {
-    padding: 10px 18px;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    border: 1px solid var(--border-color);
-    transition: all 0.2s;
-}
-
-.btn-cancel {
-    background-color: transparent;
-    color: var(--text-color);
-}
-
-.btn-cancel:hover {
-    background-color: var(--sidebar-hover);
-}
-
-.btn-confirm {
-    background-color: #000000;
-    color: white;
-    border-color: #000000;
-}
-
-.btn-confirm:hover {
-    background-color: #3d3d3d;
-}
-
-/* ===== การดำเนินการใต้ข้อความ AI (ปุ่ม Copy) ===== */
-.message-actions {
-    display: flex;
-    justify-content: flex-start;
-    margin-top: -15px;
-    /* ขยับขึ้นไปชิดข้อความ */
-}
-
-.copy-message-btn {
-    background: transparent;
+#message-input {
+    flex-grow: 1;
     border: none;
-    color: #888;
-    cursor: pointer;
-    font-size: 15px;
-    /* ขนาดไอคอนพอดีๆ */
-    padding: 6px;
-    border-radius: 6px;
-    transition: all 0.2s;
+    outline: none;
+    resize: none;
+    max-height: 200px;
+    padding: 8px 0;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+.action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
     display: flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
-.copy-message-btn:hover {
-    background-color: var(--sidebar-hover);
-    color: var(--text-color);
+.action-btn.send-mode {
+    background: #000;
+    color: #fff;
 }
 
-.ai-avatar {
-    margin-top: -6px;
-    /* ดึงโลโก้ขึ้นเล็กน้อย ให้จุดกึ่งกลางพอดีกับบรรทัดแรกของข้อความเป๊ะๆ */
+.action-btn.stop-mode {
+    background: #000;
+    color: #fff;
+    border-radius: 8px; /* Square for stop */
 }
 
-/* ===== ส่วนแสดงผลไฟล์แนบ (PDF Icon สีแดง) ===== */
-.message-attachments {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 10px;
-}
-
-.message-file-pill {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--border-color);
-    padding: 8px 14px;
-    border-radius: 12px;
-    font-size: 13px;
-    color: var(--text-color);
-    min-width: 140px;
-}
-
-.message-file-pill i {
-    font-size: 16px;
-}
-
-.message-file-pill.pdf-type i {
-    color: #ff4444; /* ไอคอน PDF สีแดงสด */
-}
-
-.message-file-pill .file-name {
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 120px;
+.action-btn:disabled {
+    background: #eee;
+    color: #ccc;
+    cursor: default;
 }
