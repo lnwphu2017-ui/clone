@@ -288,9 +288,10 @@ function setupLoginScreen() {
             });
     };
 
-    // เข้าสู่ระบบในฐานะ Guest (Local Bypass)
+    // เข้าสู่ระบบในฐานะ Guest (Local Bypass - สร้าง ID ใหม่ทุกครั้งเพื่อความเป็นส่วนตัว)
     guestLoginBtn.onclick = () => {
-        currentUserUid = "guest";
+        // สุ่ม ID ใหม่ทุกครั้งที่เข้า เพื่อไม่ให้ประวัติปนกับคนอื่น
+        currentUserUid = "guest_" + Math.random().toString(36).substring(2, 10);
         document.getElementById('login-screen').style.display = 'none';
         const userProfile = document.getElementById('user-profile');
         if (userProfile) {
@@ -710,19 +711,22 @@ async function handleAction() {
     }
     const content = messageInput.value.trim();
     if (!content) return;
+    
+    // ปิดปุ่มและล้างช่องพิมพ์ทันทีเพื่อป้องกันการกดเบิ้ล (Race Condition)
+    actionBtn.disabled = true;
+    actionBtn.style.background = 'var(--btn-disabled)';
+    actionBtn.style.color = '#fff';
+    messageInput.value = '';
+    messageInput.style.height = 'auto';
+
     // ตรวจสอบ API Key ก่อนส่ง
     if (!apiKey) {
         showApiKeyScreen();
+        resetToDefaultState(); // คืนค่าปุ่มหากยังไม่มี Key
         return;
     }
 
     if (!currentChatId) await createNewChat();
-
-    messageInput.value = '';
-    messageInput.style.height = 'auto';
-    actionBtn.disabled = true;
-    actionBtn.style.background = 'var(--btn-disabled)';
-    actionBtn.style.color = '#fff';
 
     // รวมข้อความจาก PDF (ถ้ามี)
     let finalContent = content;
