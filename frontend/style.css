@@ -574,17 +574,18 @@ body.sidebar-collapsed .main-sidebar-toggle {
 
 .message.user .message-content {
     background-color: #f4f4f4; /* สีเทาอ่อน */
-    padding: 12px 18px; /* ลด Padding นิดหน่อยเพื่อเพิ่มพื้นที่เนื้อหา */
+    padding: 10px 16px; /* ปรับ Padding ให้สมดุล */
     border-radius: 18px;
     width: fit-content;
     max-width: 85%;
-    min-width: 150px; /* เพิ่มความกว้างขั้นต่ำให้เพียงพอสำหรับคำทักทาย */
+    display: inline-block; /* ช่วยให้บับเบิ้ลหดตัวพอดีกับเนื้อหา */
     border: 1px solid var(--border-color);
     box-shadow: none;
     word-break: normal;
     overflow-wrap: break-word;
-    white-space: pre-wrap; /* รักษาช่องว่างและการขึ้นบรรทัด */
+    white-space: pre-wrap;
     line-height: 1.5;
+    text-align: left; /* เนื้อหาในบับเบิ้ลชิดซ้ายปกติ */
 }
 
 .message.assistant .message-content {
