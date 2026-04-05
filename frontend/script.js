@@ -777,9 +777,9 @@ function appendMessage(role, content, isEmptyStream, modelName = null, files = [
             thoughtBody = t.body;
             if (initialThought) {
                 thoughtBody.innerText = initialThought;
-                container.classList.add('collapsed');
+                t.container.classList.add('collapsed');
                 // ปรับไอคอนลูกศรให้ชี้ขวา (เนื่องจากถูกพับไว้สำหรับประวัติเก่า)
-                const chevron = container.querySelector('.chevron');
+                const chevron = t.container.querySelector('.chevron');
                 if (chevron) chevron.className = 'fa-solid fa-chevron-right chevron';
             }
         }
@@ -881,12 +881,12 @@ function updateMessageContent(elementsObj, rawMarkdownContent, explicitReasoning
 
     if (finalThoughtText && thoughtDiv) {
         thoughtDiv.innerText = finalThoughtText;
-        // แสดงแถบความคิดและกางออกทันทีตอนกำลัง Stream
+        // แสดงแถบความคิดและกางออกทันทีตอนกำลังพ่น
         const container = thoughtDiv.parentElement;
         container.style.display = 'block';
         container.classList.remove('hidden');
     } else if (thoughtDiv && !finalThoughtText) {
-        // ห้ามสั่งซ่อนถ้าใน thoughtDiv มีเนื้อหาอยู่แล้ว (เพื่อความ Persistent ระหว่าง Stream)
+        // ห้ามสั่งซ่อนถ้าใน thoughtDiv มีเนื้อหาเดิมสะสมอยู่แล้ว (แก้ปัญหาหายไประหว่างเปลี่ยนก้อน)
         const currentText = thoughtDiv.innerText.trim();
         if (!currentText) {
             thoughtDiv.parentElement.style.display = 'none';
