@@ -553,18 +553,28 @@ async function handleAction() {
     actionBtn.style.background = 'var(--btn-disabled)';
     actionBtn.style.color = '#fff';
 
+    // รวมข้อความจาก PDF (ถ้ามี)
+    let finalContent = content;
+    const pdfTexts = attachedFiles
+        .filter(f => f.type === 'application/pdf' && f.extractedText)
+        .map(f => `--- ข้อมูลจากไฟล์ PDF: ${f.name} ---\n${f.extractedText}\n--- สิ้นสุดไฟล์ PDF ---`)
+        .join("\n\n");
+
+    if (pdfTexts) {
+        finalContent = `[เอกสารแนบเพื่ออ้างอิงและสรุป]\n${pdfTexts}\n\n[คำสั่งจากผู้ใช้]: ${content}`;
+    }
+
     appendMessage('user', content, false);
     abortController = new AbortController();
     setStopMode(true);
     const aiMessageContainer = appendMessage('assistant', '', true, selectedModel);
 
     try {
-        // ส่ง api_key และ model ไปกับทุก request (ประวัติจะถูกดึงจาก DB ฝั่ง Backend)
         const res = await fetch(`${BASE_URL}/chats/${currentChatId}/stream`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-User-Id': currentUserUid || 'guest' },
             body: JSON.stringify({
-                content,
+                content: finalContent,
                 api_key: apiKey,
                 model: selectedModel
             }),
@@ -770,12 +780,41 @@ function scrollToBottom() {
 
 function handleFileSelect(event) {
     const files = Array.from(event.target.files);
-    files.forEach(file => {
-        // จำกัดขนาดไฟล์หรือประเภทได้ที่นี่ (Optional)
-        attachedFiles.push(file);
+    files.forEach(async file => {
+        const fileObj = {
+            file: file,
+            name: file.name,
+            type: file.type,
+            extractedText: ""
+        };
+
+        if (file.type === 'application/pdf') {
+            fileObj.extractedText = await extractTextFromPDF(file);
+        }
+        
+        attachedFiles.push(fileObj);
+        renderFilePreviews();
     });
-    renderFilePreviews();
-    fileInput.value = ''; // Reset เพื่อให้เลือกไฟล์เดิมซ้ำได้
+    fileInput.value = ''; // Reset
+}
+
+async function extractTextFromPDF(file) {
+    try {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        let fullText = "";
+        
+        for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            const pageText = textContent.items.map(item => item.str).join(" ");
+            fullText += pageText + "\n";
+        }
+        return fullText;
+    } catch (e) {
+        console.error("PDF Extraction Error:", e);
+        return "[Error extracting text from PDF]";
+    }
 }
 
 function renderFilePreviews() {
@@ -795,11 +834,12 @@ function renderFilePreviews() {
             const img = document.createElement('img');
             const reader = new FileReader();
             reader.onload = (e) => img.src = e.target.result;
-            reader.readAsDataURL(file);
+            reader.readAsDataURL(file.file);
             pill.appendChild(img);
         } else {
             const icon = document.createElement('i');
-            icon.className = 'fa-regular fa-file-lines';
+            icon.className = file.type === 'application/pdf' ? 'fa-solid fa-file-pdf' : 'fa-regular fa-file-lines';
+            if (file.type === 'application/pdf') icon.style.color = '#ff5555';
             pill.appendChild(icon);
         }
 
