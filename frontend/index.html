@@ -175,12 +175,9 @@
                         <span>Launch</span>
                     </div>
 
-                    <div class="sidebar-item-btn" id="auth-btn-internal" style="margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 15px;">
-                        <i class="fa-solid fa-right-from-bracket sidebar-icon" id="auth-icon-internal"></i>
-                        <div style="display: flex; flex-direction: column; overflow: hidden; line-height: 1.2;">
-                            <span id="auth-text-internal" style="font-weight: 600;">Sign out</span>
-                            <span id="auth-user-email" style="font-size: 11px; color: #888; overflow: hidden; text-overflow: ellipsis; max-width: 160px;">user@example.com</span>
-                        </div>
+                    <div class="sidebar-item-btn" id="settings-btn" title="Settings">
+                        <i class="fa-solid fa-gear sidebar-icon"></i>
+                        <span>Settings</span>
                     </div>
                 </div>
 
@@ -321,20 +318,6 @@
         // เมื่อโหลด Firebase Module ช้ากว่าปกติ ให้กระตุ้น script.js ทำงานเมื่อของพร้อมแล้ว
         if (typeof window.initApp === 'function') {
             window.initApp();
-        }
-
-        // ปุ่มจัดการ Authentication (Sign in / Sign out)
-        const authBtnInternal = document.getElementById('auth-btn-internal');
-        if (authBtnInternal) {
-            authBtnInternal.onclick = () => {
-                if (currentUserUid) {
-                    // ถ้าล็อกอินอยู่ ให้ Sign out
-                    handleLogout();
-                } else {
-                    // ถ้าเป็น Guest ให้กลับไปหน้า Login
-                    showLoginScreen();
-                }
-            };
         }
     </script>
     <script src="script.js"></script>
