@@ -640,7 +640,7 @@ async function handleAction() {
                             // เมื่อเริ่มมีเนื้อหาคำตอบ ให้พับส่วนที่คิดเก็บไปโดยอัตโนมัติ (เพื่อความสะอาด)
                             if (fullContent === "" && fullReasoning !== "") {
                                 const tContainer = aiMessageContainer.thoughtDiv?.parentElement;
-                                if (tContainer) {
+                                if (tContainer && !tContainer.classList.contains('collapsed')) {
                                     tContainer.classList.add('collapsed');
                                     const chevron = tContainer.querySelector('.chevron');
                                     if (chevron) chevron.className = 'fa-solid fa-chevron-right chevron';
@@ -667,6 +667,16 @@ async function handleAction() {
         if (aiMessageContainer && aiMessageContainer.contentDiv && aiMessageContainer.contentDiv.parentElement) {
             const actionRow = aiMessageContainer.contentDiv.parentElement.querySelector('.message-actions');
             if (actionRow) actionRow.style.display = 'flex';
+        }
+        
+        // พับส่วนที่คิดเก็บไปโดยอัตโนมัติ (หลังจากตอบเสร็จ)
+        if (fullReasoning !== "") {
+            const tContainer = aiMessageContainer.thoughtDiv?.parentElement;
+            if (tContainer && !tContainer.classList.contains('collapsed')) {
+                tContainer.classList.add('collapsed');
+                const chevron = tContainer.querySelector('.chevron');
+                if (chevron) chevron.className = 'fa-solid fa-chevron-right chevron';
+            }
         }
         resetToDefaultState();
         attachedFiles = []; // ล้างไฟล์แนบหลังส่ง
