@@ -1127,11 +1127,25 @@ function updateMessageContent(elementsObj, rawMarkdownContent, explicitReasoning
 
     if (finalThoughtText && thoughtDiv) {
         thoughtDiv.innerText = finalThoughtText;
-        // แสดงแถบความคิดและกางออกทันทีตอนกำลังพ่น
         const container = thoughtDiv.parentElement;
-        container.style.display = 'block';
-        container.classList.remove('hidden');
-        container.classList.remove('collapsed');
+        if (container) {
+            container.style.display = 'block';
+            container.classList.remove('hidden');
+            
+            // ✅ พับเก็บอัตโนมัติถ้าเริ่มแสดงเนื้อหาหลักแล้ว (สไตล์ Gemini)
+            if (mainText.trim().length > 0) {
+                if (!container.classList.contains('collapsed')) {
+                    container.classList.add('collapsed');
+                    const chevron = container.querySelector('.chevron');
+                    if (chevron) chevron.className = 'fa-solid fa-chevron-right chevron';
+                    const bulb = container.querySelector('.bulb');
+                    if (bulb) bulb.style.animation = 'none';
+                }
+            } else {
+                // กางไว้ระหว่างที่ยังไม่มีเนื้อหาหลักพ่นออกมา
+                container.classList.remove('collapsed');
+            }
+        }
     } else if (thoughtDiv && !finalThoughtText) {
         // ไม่มี reasoning จริงๆ (เช่น Gemini Flash) — แสดง thought block ค้างไว้ตลอดระหว่าง stream
         // ให้ "Thought for a moment" โชว์ตลอดขณะที่กำลังตอบ
@@ -1139,7 +1153,18 @@ function updateMessageContent(elementsObj, rawMarkdownContent, explicitReasoning
         const container = thoughtDiv.parentElement;
         if (container) {
             container.style.display = 'block';
-            container.classList.remove('collapsed'); // ✅ ต้อง remove collapsed ด้วย ไม่งั้นยังพับอยู่
+            // ✅ พับเก็บอัตโนมัติถ้าเริ่มแสดงเนื้อหาหลักแล้ว
+            if (mainText.trim().length > 0) {
+                if (!container.classList.contains('collapsed')) {
+                    container.classList.add('collapsed');
+                    const chevron = container.querySelector('.chevron');
+                    if (chevron) chevron.className = 'fa-solid fa-chevron-right chevron';
+                    const bulb = container.querySelector('.bulb');
+                    if (bulb) bulb.style.animation = 'none';
+                }
+            } else {
+                container.classList.remove('collapsed');
+            }
         }
     }
 
