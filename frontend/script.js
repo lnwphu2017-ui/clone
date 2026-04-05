@@ -537,16 +537,10 @@ function setupEventListeners() {
     messageInput.addEventListener('input', () => {
         messageInput.style.height = 'auto';
         messageInput.style.height = messageInput.scrollHeight + 'px';
-        if (messageInput.value.trim() !== '') {
-            actionBtn.disabled = false;
-            actionBtn.style.background = 'var(--text-color)';
-            actionBtn.style.color = 'var(--bg-color)';
-        } else {
-            if (!abortController) {
-                actionBtn.disabled = true;
-                actionBtn.style.background = 'var(--btn-disabled)';
-                actionBtn.style.color = '#fff';
-            }
+        
+        // ถ้าไม่ได้กำลัง Stream อยู่ ให้คอยอัปเดตสถานะปุ่มส่งตามข้อความที่พิมพ์
+        if (!abortController) {
+            setStopMode(false);
         }
     });
 
@@ -678,6 +672,9 @@ async function handleAction() {
         if (e.name === 'AbortError') console.log('Stream aborted');
         else console.error('Stream error:', e);
     } finally {
+        // บังคับคืนค่าปุ่มทันที
+        resetToDefaultState();
+        
         // หลังจาก Stream จบ ให้เปิดการแสดงผลปุ่ม Copy
         if (aiMessageContainer && aiMessageContainer.contentDiv && aiMessageContainer.contentDiv.parentElement) {
             const actionRow = aiMessageContainer.contentDiv.parentElement.querySelector('.message-actions');
@@ -693,7 +690,6 @@ async function handleAction() {
                 if (chevron) chevron.className = 'fa-solid fa-chevron-right chevron';
             }
         }
-        resetToDefaultState();
         attachedFiles = []; // ล้างไฟล์แนบหลังส่ง
         renderFilePreviews();
         fetchChats();
@@ -712,8 +708,18 @@ function setStopMode(isStop) {
     } else {
         actionBtn.classList.add('send-mode');
         actionBtn.classList.remove('stop-mode');
-        actionBtn.disabled = true;
-        actionBtn.style.background = 'var(--btn-disabled)';
+        
+        const hasText = messageInput.value.trim().length > 0;
+        
+        if (hasText) {
+            actionBtn.disabled = false;
+            actionBtn.style.background = 'var(--text-color)';
+            actionBtn.style.color = 'var(--bg-color)';
+        } else {
+            actionBtn.disabled = true;
+            actionBtn.style.background = 'var(--btn-disabled)';
+            actionBtn.style.color = '#fff';
+        }
     }
 }
 
