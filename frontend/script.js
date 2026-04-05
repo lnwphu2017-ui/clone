@@ -35,6 +35,7 @@ const newChatInternal = document.getElementById('new-chat-internal');
 const launchBtn = document.getElementById('launch-btn');
 const settingsBtn = document.getElementById('settings-btn');
 const chatHeaderTitle = document.getElementById('chat-header-title');
+const mainContent = document.querySelector('.main-content');
 
 let attachedFiles = [];
 
@@ -166,7 +167,6 @@ function setupSidebarToggle() {
             if (chatHeaderTitle) chatHeaderTitle.textContent = 'New chat';
             updateLayoutState(true);
             clearMessages();
-            // ถ้าเป็นมือถือ หรือหน้าจอเล็ก อาจจะอยากให้หุบ Sidebar อัตโนมัติ (ใส่เพิ่มได้ถ้าต้องการ)
         };
     }
 }
@@ -774,6 +774,8 @@ async function handleAction() {
             }
         }
     });
+
+    // updateLayoutState จะถูกเรียกโดยอัตโนมัติจาก appendMessage หรือที่อื่นๆ
     
     const aiMessageContainer = appendMessage('assistant', '', true, selectedModel);
 
@@ -957,15 +959,19 @@ function resetToDefaultState() {
 }
 
 function updateLayoutState(isNewChat) {
-    const mainContent = document.querySelector('.main-content');
+    if (!mainContent) return;
     if (isNewChat) {
         mainContent.classList.add('centered-mode');
+        // ✅ เพิ่มคลาสสำหรับจัดวางกึ่งกลาง
+        mainContent.classList.add('is-new-chat');
         if (!chatContainer.contains(welcomeScreen)) {
             chatContainer.appendChild(welcomeScreen);
         }
         welcomeScreen.classList.remove('hidden');
     } else {
         mainContent.classList.remove('centered-mode');
+        // ✅ เอาคลาสออกเพื่อให้เลื่อนลงมาข้างล่าง
+        mainContent.classList.remove('is-new-chat');
         welcomeScreen.classList.add('hidden');
     }
 }

@@ -586,9 +586,9 @@ body:not(.sidebar-collapsed) .header-control-btn {
     align-items: center;
     justify-content: space-between;
     padding: 0 20px;
-    background-color: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background-color: rgba(255, 255, 255, 0.7); /* ✅ ปรับให้ใสขึ้นเล็กน้อย */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border-bottom: 1px solid var(--border-color);
     position: sticky;
     top: 0;
@@ -626,14 +626,39 @@ body:not(.sidebar-collapsed) .header-control-btn {
 .chat-container {
     flex-grow: 1;
     overflow-y: auto;
-    padding: 20px 0 180px 0; /* ✅ เพิ่ม padding-bottom เพื่อไม่ให้ข้อความโดนช่องแชททับ */
+    padding: 20px 0 160px 0; /* ✅ ปรับ padding-bottom ให้พอดีกับช่องแชท */
     display: flex;
     flex-direction: column;
     align-items: center;
-    transition: flex-grow 0.5s cubic-bezier(0.4, 0, 0.2, 1), padding-bottom 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     scroll-behavior: smooth;
     position: relative;
     z-index: 1;
+}
+
+/* 🔥 โซลูชันเลื่อนลงแบบสมูท: เมื่อเป็น New Chat ให้จัดกึ่งกลาง */
+.main-content {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    height: 100%;
+    overflow: hidden;
+}
+
+.main-content .top-spacer,
+.main-content .bottom-spacer {
+    flex-grow: 0;
+    transition: flex-grow 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.main-content.is-new-chat .top-spacer,
+.main-content.is-new-chat .bottom-spacer {
+    flex-grow: 1;
+}
+
+.main-content.is-new-chat .chat-container {
+    padding-bottom: 20px;
+    flex-grow: 0;
 }
 
 .welcome-screen {
@@ -800,7 +825,7 @@ body:not(.sidebar-collapsed) .header-control-btn {
     color: #555;
 }
 
-/* KaTeX — สูตรคณิตศาสตร์แบบ Gemini (พื้นหลังอ่อนๆ + เว้นระยะดี) */
+/* KaTeX — สูตรคณิตศาสตร์แบบ Gemini */
 .katex-display {
     text-align: center !important;
     font-size: clamp(1.1em, 2.5vw, 1.5em) !important;
@@ -853,21 +878,32 @@ body:not(.sidebar-collapsed) .header-control-btn {
     flex-direction: column;
     align-items: center;
     width: 100%;
-    transition: padding-bottom 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), 
+                bottom 0.8s cubic-bezier(0.16, 1, 0.3, 1), 
+                background 0.5s ease;
     
-    /* ✅ Glassmorphism Fade Effect (Gemini Style) */
+    /* ✅ Glassmorphism Fade Effect (ใสขึ้นและโปร่งแสงมากขึ้น) */
     position: absolute;
     bottom: 0;
     left: 0;
     z-index: 10;
-    background: linear-gradient(to top, var(--bg-color) 60%, rgba(255,255,255,0.01) 100%);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    pointer-events: none; /* ✅ ให้คลิกผ่านส่วนที่ว่างๆ ไปโดนแชทข้างหลังได้ */
+    background: linear-gradient(to top, var(--bg-color) 30%, rgba(255,255,255,0) 100%);
+    backdrop-filter: blur(2px); /* ✅ ลดความเบลอลงตามคำขอ */
+    -webkit-backdrop-filter: blur(2px);
+    pointer-events: none;
+}
+
+/* 🔥 โซลูชันเลื่อนลงแบบสมูท: เมื่อเป็น New Chat ให้เลื่อนไปกึ่งกลาง */
+.main-content.is-new-chat .input-area {
+    bottom: 50%;
+    transform: translateY(50%);
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
 }
 
 .input-wrapper {
-    pointer-events: auto; /* ✅ แต่ตัวกล่องพิมพ์ต้องคลิกได้ปกติ */
+    pointer-events: auto;
     width: 100%;
     max-width: 800px;
     background-color: var(--input-bg);
@@ -875,8 +911,9 @@ body:not(.sidebar-collapsed) .header-control-btn {
     display: flex;
     flex-direction: column;
     padding: 12px 16px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06); /* ✅ เงาบางลงให้ดูคลีน */
     border: 1px solid rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
 }
 
 .file-preview-container {
