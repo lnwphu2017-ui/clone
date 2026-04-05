@@ -852,17 +852,33 @@ body:not(.sidebar-collapsed) .header-control-btn {
 /* ตาราง */
 .message-content table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate; /* ✅ เปลี่ยนเป็น separate เพื่อให้ border-radius ทำงาน */
+    border-spacing: 0;         /* ✅ ป้องกันช่องว่างระหว่าง cell */
     margin: 15px 0;
     table-layout: auto;
+    border: 1px solid var(--border-color); /* ✅ เพิ่มขอบนอกสุด */
+    border-radius: 12px;      /* ✅ ขอบมนตามที่ขอ */
+    overflow: hidden;         /* ✅ ป้องกันเนื้อหาทะลุมุมโค้ง */
 }
 
 .message-content th,
 .message-content td {
     padding: 10px;
-    border: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color); /* ✅ เส้นขอบล่าง */
+    border-right: 1px solid var(--border-color);  /* ✅ เส้นขอบขวา */
     text-align: left;
     word-break: normal;
+}
+
+/* ลบเส้นขอบขวาสุดของแต่ละแถว */
+.message-content th:last-child,
+.message-content td:last-child {
+    border-right: none;
+}
+
+/* ลบเส้นขอบล่างของแถวสุดท้าย */
+.message-content tr:last-child td {
+    border-bottom: none;
 }
 
 .message-content th {
@@ -1004,12 +1020,12 @@ body:not(.sidebar-collapsed) .header-control-btn {
 }
 
 .attach-btn, .action-btn {
-    width: 31px;
+    width: 32px; /* ✅ ปรับขนาดให้เท่ากันที่ 32px */
     height: 32px;
     border-radius: 50%;
     border: 1px solid var(--border-color);
-    background-color: #ffffff !important;
-    color: #0d0d0d;
+    background-color: #ffffff !important; /* ✅ บังคับเป็นสีขาวเสมอ */
+    color: var(--text-color); /* ✅ สีไอคอนตามธีมปกติ */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -1024,10 +1040,10 @@ body:not(.sidebar-collapsed) .header-control-btn {
 }
 
 .action-btn:disabled {
-    background-color: var(--btn-disabled);
-    color: #fff;
+    background-color: #ffffff !important; /* ✅ ยังคงขาว แม้ปิดการใช้งาน */
+    color: var(--btn-disabled) !important; /* ✅ ไอคอนจางลงแทน */
     cursor: not-allowed;
-    border: none;
+    border: 1px solid var(--border-color) !important; /* ✅ ยังคงขอบไว้เพื่อให้มองเห็นได้ */
 }
 
 /* ปรับแต่ง Custom Model Selector (Premium Dropdown) */
@@ -1143,25 +1159,7 @@ body:not(.sidebar-collapsed) .header-control-btn {
     opacity: 0.5;
 }
 
-.attach-btn {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    border: 1px solid var(--border-color);
-    background: transparent;
-    color: var(--text-color);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-size: 14px;
-}
-
-.attach-btn:hover {
-    background-color: var(--sidebar-hover);
-    transform: scale(1.05);
-}
+/* ลบคลาส .attach-btn ซ้ำซ้อนออกเพราะรวมไว้ด้านบนแล้ว */
 
 .model-selector-inline {
     display: flex;

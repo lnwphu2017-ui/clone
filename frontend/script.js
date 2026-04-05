@@ -831,8 +831,9 @@ async function handleAction() {
     is_sending = true;
     // ปิดปุ่มและล้างช่องพิมพ์ทันทีเพื่อป้องกันการกดเบิ้ล (Race Condition)
     actionBtn.disabled = true;
-    actionBtn.style.background = 'var(--btn-disabled)';
-    actionBtn.style.color = '#fff';
+    // ปลดล็อกการใช้สีจาก CSS
+    actionBtn.style.background = '';
+    actionBtn.style.color = '';
     messageInput.value = '';
     messageInput.style.height = 'auto';
 
@@ -1038,8 +1039,8 @@ function setStopMode(isStop) {
         actionBtn.classList.remove('send-mode');
         actionBtn.classList.add('stop-mode');
         actionBtn.disabled = false;
-        actionBtn.style.background = 'var(--text-color)';
-        actionBtn.style.color = 'var(--bg-color)';
+        actionBtn.style.background = ''; // ใช้สีจาก CSS
+        actionBtn.style.color = '';      // ใช้สีจาก CSS
     } else {
         actionBtn.classList.add('send-mode');
         actionBtn.classList.remove('stop-mode');
@@ -1048,12 +1049,12 @@ function setStopMode(isStop) {
         
         if (hasText) {
             actionBtn.disabled = false;
-            actionBtn.style.background = 'var(--text-color)';
-            actionBtn.style.color = 'var(--bg-color)';
+            actionBtn.style.background = ''; // ใช้สีจาก CSS
+            actionBtn.style.color = '';      // ใช้สีจาก CSS
         } else {
             actionBtn.disabled = true;
-            actionBtn.style.background = 'var(--btn-disabled)';
-            actionBtn.style.color = '#fff';
+            actionBtn.style.background = ''; // ใช้สีจาก CSS
+            actionBtn.style.color = '';      // ใช้สีจาก CSS
         }
     }
 }
