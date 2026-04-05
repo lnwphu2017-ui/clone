@@ -185,7 +185,13 @@
 
             <div class="input-area">
                 <div class="input-wrapper">
-                    <textarea id="message-input" placeholder="Send a message" rows="1"></textarea>
+                    <!-- พื้นที่แสดงรูป/ไฟล์ที่แนบ (File Preview) -->
+                    <div id="file-preview-container" class="file-preview-container"></div>
+                    
+                    <textarea id="message-input" placeholder="Message . . ." rows="1"></textarea>
+                    
+                    <!-- Hidden File Input -->
+                    <input type="file" id="file-input" style="display: none;" multiple accept="image/*, .pdf, .txt, .doc, .docx">
                     <div class="input-actions-row">
                         <div class="input-actions-left">
                             <button type="button" class="attach-btn" id="attach-btn" title="แนบไฟล์">

@@ -21,6 +21,11 @@ const deleteModal = document.getElementById('delete-modal');
 const deleteChatTitle = document.getElementById('delete-chat-title');
 const confirmDeleteBtn = document.getElementById('confirm-delete');
 const cancelDeleteBtn = document.getElementById('cancel-delete');
+const fileInput = document.getElementById('file-input');
+const filePreviewContainer = document.getElementById('file-preview-container');
+const attachBtn = document.getElementById('attach-btn');
+
+let attachedFiles = [];
 
 // อ้างอิง Element สำหรับ API Key และ Model
 const apiKeyScreen = document.getElementById('api-key-screen');
@@ -471,6 +476,12 @@ function closeDeleteModal() {
 function setupEventListeners() {
     newChatBtn.onclick = createNewChat;
 
+    // ระบบแนบไฟล์
+    if (attachBtn && fileInput) {
+        attachBtn.onclick = () => fileInput.click();
+        fileInput.onchange = handleFileSelect;
+    }
+
     // เปลี่ยนโมเดลเมื่อผู้ใช้เลือกจาก Dropdown (เหมือน st.sidebar.selectbox)
     modelSelect.onchange = () => {
         selectedModel = modelSelect.value;
@@ -600,6 +611,8 @@ async function handleAction() {
             if (actionRow) actionRow.style.display = 'flex';
         }
         resetToDefaultState();
+        attachedFiles = []; // ล้างไฟล์แนบหลังส่ง
+        renderFilePreviews();
         fetchChats();
     }
 }
@@ -751,4 +764,60 @@ function renderMath(element) {
 
 function scrollToBottom() {
     chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+// ===== จัดการไฟล์แนบ (File Attachment Helpers) =====
+
+function handleFileSelect(event) {
+    const files = Array.from(event.target.files);
+    files.forEach(file => {
+        // จำกัดขนาดไฟล์หรือประเภทได้ที่นี่ (Optional)
+        attachedFiles.push(file);
+    });
+    renderFilePreviews();
+    fileInput.value = ''; // Reset เพื่อให้เลือกไฟล์เดิมซ้ำได้
+}
+
+function renderFilePreviews() {
+    filePreviewContainer.innerHTML = '';
+    if (attachedFiles.length === 0) {
+        filePreviewContainer.style.display = 'none';
+        return;
+    }
+
+    filePreviewContainer.style.display = 'flex';
+    attachedFiles.forEach((file, index) => {
+        const pill = document.createElement('div');
+        pill.className = 'file-pill';
+        
+        // ตรวจสอบว่าเป็นรูปภาพหรือไม่เพื่อแสดง Thumbnail
+        if (file.type.startsWith('image/')) {
+            const img = document.createElement('img');
+            const reader = new FileReader();
+            reader.onload = (e) => img.src = e.target.result;
+            reader.readAsDataURL(file);
+            pill.appendChild(img);
+        } else {
+            const icon = document.createElement('i');
+            icon.className = 'fa-regular fa-file-lines';
+            pill.appendChild(icon);
+        }
+
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = file.name.length > 15 ? file.name.substring(0, 12) + '...' : file.name;
+        pill.appendChild(nameSpan);
+
+        const removeBtn = document.createElement('div');
+        removeBtn.className = 'remove-file';
+        removeBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+        removeBtn.onclick = () => removeFile(index);
+        pill.appendChild(removeBtn);
+
+        filePreviewContainer.appendChild(pill);
+    });
+}
+
+function removeFile(index) {
+    attachedFiles.splice(index, 1);
+    renderFilePreviews();
 }

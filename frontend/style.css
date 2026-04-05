@@ -677,10 +677,59 @@ html {
     border-radius: 16px;
     display: flex;
     flex-direction: column;
-    padding: 16px;
-    /* ลดเงาลงนิดหนึ่งและเพิ่มขอบให้ชัดขึ้น (Thin border) */
+    padding: 12px 16px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
     border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.file-preview-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.file-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--sidebar-bg);
+    border: 1px solid var(--border-color);
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    color: var(--text-color);
+    animation: fadeIn 0.3s ease;
+    position: relative;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.file-pill img {
+    width: 30px;
+    height: 30px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.file-pill .remove-file {
+    cursor: pointer;
+    color: #ff5555;
+    font-size: 14px;
+    padding: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+}
+
+.file-pill .remove-file:hover {
+    transform: scale(1.2);
 }
 
 #message-input {
