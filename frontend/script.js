@@ -778,11 +778,37 @@ async function handleAction() {
 
         const reader = res.body.getReader();
         const decoder = new TextDecoder('utf-8');
-        let fullContent = '';
+        let fullContent = ''; // เนื้อหาผลลัพธ์สุทธิที่เราค่อยๆ พ่นลงจอ
+        let rawContentBuffer = ''; // เนื้อหาดิบที่ได้รับจาก Network รอเข้าคิวพ่น
         let fullReasoning = '';
         let lineBuffer = ''; // ✅ ตัวเก็บข้อมูลบรรทัดที่พ่นออกมาไม่ครบ (Chunk Fragmentation)
+        
+        // --- ระบบ Ticker (Smooth Streaming สไตล์ Gemini) ---
+        let isStreamingFinished = false;
+        const STREAM_SPEED_MS = 25; // ความเร็วในการพ่นตัวอักษรลงจอ (มิลลิวินาที)
+        
+        const displayTicker = setInterval(() => {
+            if (rawContentBuffer.length > 0) {
+                // ดึงตัวอักษรออกมา 1-3 ตัวต่อรอบ (ปรับให้ดูสมูทได้)
+                // ถ้า buffer เยอะมาก ให้พ่นเร็วขึ้นเพื่อให้ UI ไม่ดีเลย์จนเกินไป
+                const takeLen = rawContentBuffer.length > 500 ? 10 : (rawContentBuffer.length > 100 ? 5 : 2);
+                const chunkToDisplay = rawContentBuffer.substring(0, takeLen);
+                rawContentBuffer = rawContentBuffer.substring(takeLen);
+                fullContent += chunkToDisplay;
+                updateMessageContent(aiMessageContainer, fullContent, fullReasoning);
+                scrollToBottom();
+            } else if (isStreamingFinished) {
+                clearInterval(displayTicker);
+                // ปิดท้ายเพื่อให้แน่ใจว่า Render ตัวสุดท้ายครบถ้วน
+                updateMessageContent(aiMessageContainer, fullContent, fullReasoning);
+            }
+        }, STREAM_SPEED_MS);
+        // ------------------------------------------------
 
-        // เริ่มต้นการอ่าน Stream
+        // เพิ่ม Cursor กระพริบเพื่อให้ดู "ไหล"
+        if (aiMessageContainer && aiMessageContainer.contentDiv) {
+            aiMessageContainer.contentDiv.classList.add('streaming-active');
+        }
 
         while (true) {
             const { done, value } = await reader.read();
@@ -805,12 +831,11 @@ async function handleAction() {
                         // รองรับทั้งเนื้อหาหลักและเนื้อหาการคิด (Reasoning)
                         if (parsed.reasoning_content !== undefined) {
                             fullReasoning += parsed.reasoning_content;
+                            // Reasoning มักจะมาเร็ว เราพ่นลงจอตรงๆ ได้เลยเพื่อความพรีเมียม
                             updateMessageContent(aiMessageContainer, fullContent, fullReasoning);
                         } else if (parsed.content !== undefined) {
-                            // แสดง thought block ค้างไว้ตลอดขณะ stream กำลังทำงาน
-                            // ไม่พับระหว่างกลาง — จะพับใน finally เมื่อ stream จบเท่านั้น
-                            fullContent += parsed.content;
-                            updateMessageContent(aiMessageContainer, fullContent, fullReasoning);
+                            // แทนที่จะ update ลงจอตรงๆ เราโยนใส่ Buffer เพื่อให้ Ticker พ่นอย่างนุ่มนวล
+                            rawContentBuffer += parsed.content;
                         } else if (parsed.error) {
                             fullContent += `\n**Error:** ${parsed.error}`;
                             updateMessageContent(aiMessageContainer, fullContent, fullReasoning);
@@ -821,7 +846,9 @@ async function handleAction() {
             }
             scrollToBottom();
         }
+        isStreamingFinished = true; // ✅ บอก Ticker ว่า Network จบแล้วนะ ให้เคลียร์ Buffer ที่เหลือ
     } catch (e) {
+        isStreamingFinished = true; // เคลียร์ในกรณี Error
         if (e.name === 'AbortError') {
             // ผู้ใช้กดสตอป — พับ thought block ทันที
             console.log('Stream aborted');
@@ -839,7 +866,10 @@ async function handleAction() {
                 updateMessageContent(aiMessageContainer, errorMsg, "");
             }
         }
-    } finally {
+        if (aiMessageContainer && aiMessageContainer.contentDiv) {
+            aiMessageContainer.contentDiv.classList.remove('streaming-active');
+        }
+
         // บังคับคืนค่าปุ่มทันที
         resetToDefaultState();
         

@@ -572,6 +572,7 @@ body.sidebar-collapsed .top-controls {
     flex-direction: column;
     align-items: center;
     transition: flex-grow 0.5s cubic-bezier(0.4, 0, 0.2, 1), padding-bottom 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    scroll-behavior: smooth; /* ✅ เลื่อนหน้าจอดูสมูทขึ้น */
 }
 
 .welcome-screen {
@@ -653,6 +654,18 @@ body.sidebar-collapsed .top-controls {
     width: 100%;
     max-width: 100%;
     position: relative;
+    /* ✅ แอนิเมชั่นให้ข้อความดู "ค่อยๆ ออกมา" แบบนุ่มนวล */
+    transition: opacity 0.3s ease;
+}
+
+.message.assistant .message-content.streaming-active {
+    opacity: 0.95;
+    animation: content-pulse 2s ease-in-out infinite;
+}
+
+@keyframes content-pulse {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-1px); }
 }
 
 @keyframes blink {
