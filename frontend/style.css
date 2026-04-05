@@ -914,22 +914,29 @@ body.sidebar-collapsed .main-sidebar-toggle {
 .thought-header {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     cursor: pointer;
     color: #888;
     font-size: 14px;
     font-weight: 500;
     user-select: none;
-    padding: 4px 0;
+    padding: 8px 0;
+    transition: color 0.2s ease;
 }
 
 .thought-header:hover {
-    color: var(--text-color);
+    color: #555;
+}
+
+.thought-header i.bulb {
+    font-size: 16px;
+    opacity: 0.8;
 }
 
 .thought-header i.chevron {
     font-size: 10px;
     transition: transform 0.3s ease;
+    opacity: 0.6;
 }
 
 .thought-content {
@@ -938,7 +945,7 @@ body.sidebar-collapsed .main-sidebar-toggle {
     line-height: 1.6;
     margin-top: 4px;
     overflow: hidden;
-    max-height: 2000px; /* ค่ามากพอสำหรับการกาง */
+    max-height: 2000px;
     transition: max-height 0.5s ease, opacity 0.3s ease;
     opacity: 1;
 }

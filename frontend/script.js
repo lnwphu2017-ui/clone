@@ -637,6 +637,15 @@ async function handleAction() {
                             fullReasoning += parsed.reasoning_content;
                             updateMessageContent(aiMessageContainer, fullContent, fullReasoning);
                         } else if (parsed.content !== undefined) {
+                            // เมื่อเริ่มมีเนื้อหาคำตอบ ให้พับส่วนที่คิดเก็บไปโดยอัตโนมัติ (เพื่อความสะอาด)
+                            if (fullContent === "" && fullReasoning !== "") {
+                                const tContainer = aiMessageContainer.thoughtDiv?.parentElement;
+                                if (tContainer) {
+                                    tContainer.classList.add('collapsed');
+                                    const chevron = tContainer.querySelector('.chevron');
+                                    if (chevron) chevron.className = 'fa-solid fa-chevron-right chevron';
+                                }
+                            }
                             fullContent += parsed.content;
                             updateMessageContent(aiMessageContainer, fullContent, fullReasoning);
                         } else if (parsed.error) {
@@ -1080,8 +1089,9 @@ function createThoughtBlock() {
     const header = document.createElement('div');
     header.className = 'thought-header';
     header.innerHTML = `
-        <i class="fa-solid fa-chevron-down chevron"></i>
+        <i class="fa-regular fa-lightbulb bulb"></i>
         <span>Thought for a moment</span>
+        <i class="fa-solid fa-chevron-down chevron" style="margin-left: auto; font-size: 10px;"></i>
     `;
     
     const body = document.createElement('div');
