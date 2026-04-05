@@ -809,8 +809,8 @@ function setupEventListeners() {
     // ✅ ระบบตรวจจับการ Scroll เพื่อเปิด/ปิด Auto-scroll อัจฉริยะแบบแม่นยำสูง
     if (chatContainer) {
         chatContainer.addEventListener('scroll', () => {
-            // ✅ ลด Threshold ลงเพื่อให้การหยุดเลื่อนละเอียดขึ้นและตอบสนองทันที
-            const isAtBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight <= 5;
+            // ✅ เพิ่ม Threshold เป็น 100px เพื่อให้ Smart Scroll ทำงานได้ยืดหยุ่นขึ้น
+            const isAtBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight <= 100;
             isAutoScrollEnabled = isAtBottom;
         });
     }
@@ -823,7 +823,14 @@ function setupEventListeners() {
 // ===== ส่งข้อความ + Streaming =====
 
 async function handleAction() {
-    if (abortController || is_sending) return;
+    // ✅ ถ้ามี AbortController อยู่ หมายความว่าอยู่ใน Stop Mode ให้ทำการยกเลิกการทำงาน
+    if (abortController) {
+        console.log("🛑 User requested to stop streaming...");
+        abortController.abort();
+        return;
+    }
+
+    if (is_sending) return;
     
     const content = messageInput.value.trim();
     if (!content) return;

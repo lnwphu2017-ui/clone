@@ -631,7 +631,6 @@ body:not(.sidebar-collapsed) .header-control-btn {
     flex-direction: column;
     align-items: center;
     transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-    scroll-behavior: smooth;
     position: relative;
     z-index: 1;
 }
@@ -1044,6 +1043,21 @@ body:not(.sidebar-collapsed) .header-control-btn {
     color: var(--btn-disabled) !important; /* ✅ ไอคอนจางลงแทน */
     cursor: not-allowed;
     border: 1px solid var(--border-color) !important; /* ✅ ยังคงขอบไว้เพื่อให้มองเห็นได้ */
+}
+
+/* จัดการแสดงผลไอคอน ส่ง/หยุด ตามสถานะ */
+.action-btn .stop-icon,
+.action-btn.stop-mode .send-icon {
+    display: none;
+}
+
+.action-btn.stop-mode .stop-icon {
+    display: block;
+    color: #0d0d0d;
+}
+
+.action-btn.send-mode .send-icon {
+    display: block;
 }
 
 /* ปรับแต่ง Custom Model Selector (Premium Dropdown) */
