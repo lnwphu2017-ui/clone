@@ -87,7 +87,9 @@ async function init() {
     // ดักจับสถานะล็อกอินผ่าน Firebase
     window.onAuthStateChanged(window.firebaseAuth, (user) => {
         console.log("🎯 Auth State Changed:", user ? user.email : "Logged Out");
-        if (currentUserUid === "guest") return;
+        
+        // ถ้าเป็น Guest และไม่มีผู้ใช้ Firebase (user เป็น null) ให้คงสถานะ Guest ไว้
+        if (!user && currentUserUid === "guest") return;
 
         if (user) {
             currentUserUid = user.email;
