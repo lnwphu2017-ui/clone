@@ -827,11 +827,13 @@ body:not(.sidebar-collapsed) .header-control-btn {
 /* KaTeX — สูตรคณิตศาสตร์แบบ Gemini */
 .katex-display {
     text-align: center !important;
-    font-size: clamp(1.1em, 2.5vw, 1.5em) !important;
-    margin: 24px 0 !important;
-    padding: 20px 16px;
-    background: var(--user-msg-bg);
-    border-radius: 12px;
+    font-size: clamp(1.2em, 3vw, 1.6em) !important;
+    margin: 28px 0 !important;
+    padding: 24px 20px;
+    background: #ffffff !important; /* ✅ ใช้พื้นหลังสีขาวตามรูปตัวอย่าง */
+    border: 1px solid var(--border-color); /* ✅ เพิ่มเส้นขอบบางๆ */
+    border-radius: 16px; /* ✅ มุมโค้งมากขึ้น ดูทันสมัย */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04); /* ✅ เพิ่มเงามิติจางๆ */
     overflow-x: auto;
     overflow-y: hidden;
     -ms-overflow-style: none;

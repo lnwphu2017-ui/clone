@@ -134,7 +134,7 @@ async def chat_stream(chat_id: int, request: Request, x_user_id: str = Header("g
         chat.title = user_content[:30] + ("..." if len(user_content) > 30 else "")
         db.commit()
     all_messages = db.query(Message).filter(Message.chat_id == chat_id).order_by(Message.created_at).all()
-    messages_history = [{"role": "system", "content": "You are a helpful AI assistant. Use Markdown."}]
+    messages_history = [{"role": "system", "content": "You are a helpful AI assistant. Use Markdown. For mathematical formulas, ALWAYS use LaTeX with '$$ ... $$' for block math (standalone lines) and '$ ... $' for inline math. Make formulas clear and well-structured like in professional textbooks."}]
     messages_history.extend([{"role": msg.role, "content": msg.content} for msg in all_messages])
     db_gen = SessionLocal()
     async def wrapped_stream():
