@@ -75,22 +75,41 @@ def get_messages(chat_id: int, x_user_id: str = Header("guest"), db: Session = D
 
 async def stream_ai_response(chat_id: int, messages_history: list, db: Session, api_key: str, model: str, x_user_id: str):
     full_response = ""
+    full_reasoning = ""
     try:
         client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=api_key)
+        # รับ Stream จาก AI
         response = client.chat.completions.create(model=model, messages=messages_history, stream=True, max_tokens=2000)
         for chunk in response:
-            if chunk.choices and chunk.choices[0].delta and chunk.choices[0].delta.content:
-                content = chunk.choices[0].delta.content
+            if not chunk.choices: continue
+            delta = chunk.choices[0].delta
+            
+            # 1. ตรวจจับและส่งข้อมูลการคิด (Reasoning)
+            reasoning = getattr(delta, 'reasoning_content', None) or getattr(delta, 'reasoning', None)
+            if reasoning:
+                full_reasoning += reasoning
+                yield f"data: {json.dumps({'reasoning_content': reasoning})}\n\n"
+            
+            # 2. ตรวจจับและส่งข้อมูลเนื้อหาหลัก (Content)
+            if delta.content:
+                content = delta.content
                 full_response += content
                 yield f"data: {json.dumps({'content': content})}\n\n"
+                
         yield "data: [DONE]\n\n"
     except Exception as e:
         full_response += f"\n[Error: {str(e)}]"
         yield f"data: {json.dumps({'error': str(e)})}\n\n"
     finally:
-        if full_response.strip():
+        # บันทึกข้อมูลลงฐานข้อมูล (รวมทั้งส่วนที่คิดและส่วนที่ตอบ)
+        save_content = full_response
+        if full_reasoning.strip():
+            # หุ้มกระบวนการคิดด้วยแท็ก <thought> เพื่อให้หน้าบ้านนำไปแสดงผลได้ถาวร
+            save_content = f"<thought>\n{full_reasoning}\n</thought>\n{full_response}"
+            
+        if save_content.strip():
             try:
-                db.add(Message(chat_id=chat_id, user_id=x_user_id, role="assistant", content=full_response, model_name=model))
+                db.add(Message(chat_id=chat_id, user_id=x_user_id, role="assistant", content=save_content, model_name=model))
                 db.commit()
             except: db.rollback()
 

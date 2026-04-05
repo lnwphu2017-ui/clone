@@ -690,26 +690,6 @@ function appendMessage(role, content, isEmptyStream, modelName = null, files = [
     const inner = document.createElement('div');
     inner.className = 'message-inner';
 
-    // ส่วนแสดงไฟล์แนบ
-    const allFiles = [...files, ...extractedFiles];
-    if (allFiles.length > 0) {
-        const attachmentRow = document.createElement('div');
-        attachmentRow.className = 'message-attachments';
-        allFiles.forEach(file => {
-            const pill = document.createElement('div');
-            pill.className = `message-file-pill ${file.type === 'application/pdf' ? 'pdf-type' : ''}`;
-            const icon = document.createElement('i');
-            icon.className = file.type === 'application/pdf' ? 'fa-solid fa-file-pdf' : 'fa-regular fa-file-lines';
-            pill.appendChild(icon);
-            const name = document.createElement('div');
-            name.className = 'file-name';
-            name.textContent = file.name;
-            pill.appendChild(name);
-            attachmentRow.appendChild(pill);
-        });
-        inner.appendChild(attachmentRow);
-    }
-
     let thoughtBody = null;
     let mainContentDiv = null;
 
@@ -721,22 +701,44 @@ function appendMessage(role, content, isEmptyStream, modelName = null, files = [
         inner.appendChild(aiAvatarDiv);
 
         const wrapper = document.createElement('div');
+        wrapper.className = 'message-wrapper';
         wrapper.style.display = 'flex';
         wrapper.style.flexDirection = 'column';
         wrapper.style.gap = '8px';
         wrapper.style.width = '100%';
 
-        // สร้าง Thought Block ถ้ามีเนื้อหาการคิด หรือเป็น Stream ใหม่
+        // 1. ส่วนแสดงไฟล์แนบ (ย้ายมาไว้ข้างบนสุด)
+        const allFiles = [...files, ...extractedFiles];
+        if (allFiles.length > 0) {
+            const attachmentRow = document.createElement('div');
+            attachmentRow.className = 'message-attachments';
+            allFiles.forEach(file => {
+                const pill = document.createElement('div');
+                pill.className = `message-file-pill ${file.type === 'application/pdf' ? 'pdf-type' : ''}`;
+                const icon = document.createElement('i');
+                icon.className = file.type === 'application/pdf' ? 'fa-solid fa-file-pdf' : 'fa-regular fa-file-lines';
+                pill.appendChild(icon);
+                const nameText = document.createElement('div');
+                nameText.className = 'file-name';
+                nameText.textContent = file.name;
+                pill.appendChild(nameText);
+                attachmentRow.appendChild(pill);
+            });
+            wrapper.appendChild(attachmentRow);
+        }
+
+        // 2. ส่วนของ Thought (ความเห็นของ AI)
         if (initialThought || isEmptyStream) {
             const t = createThoughtBlock();
             wrapper.appendChild(t.container);
             thoughtBody = t.body;
             if (initialThought) {
                 thoughtBody.innerText = initialThought;
-                t.container.classList.add('collapsed'); // พับไว้สำหรับประวัติเก่า
+                t.container.classList.add('collapsed'); 
             }
         }
 
+        // 3. ส่วนเนื้อหาข้อความ
         mainContentDiv = document.createElement('div');
         mainContentDiv.className = 'message-content';
         if (!isEmptyStream) {
@@ -768,7 +770,34 @@ function appendMessage(role, content, isEmptyStream, modelName = null, files = [
         wrapper.appendChild(actionRow);
         inner.appendChild(wrapper);
     } else {
-        // ของ User
+        // ส่วนรของผู้ใช้ (User)
+        const userWrapper = document.createElement('div');
+        userWrapper.className = 'user-message-wrapper';
+        userWrapper.style.display = 'flex';
+        userWrapper.style.flexDirection = 'column';
+        userWrapper.style.alignItems = 'flex-end';
+        userWrapper.style.gap = '8px';
+
+        // 1. ไฟล์แนบของผู้ใช้ (อยู่ด้านบน)
+        if (files.length > 0) {
+            const attachmentRow = document.createElement('div');
+            attachmentRow.className = 'message-attachments';
+            files.forEach(file => {
+                const pill = document.createElement('div');
+                pill.className = `message-file-pill ${file.type === 'application/pdf' ? 'pdf-type' : ''}`;
+                const icon = document.createElement('i');
+                icon.className = file.type === 'application/pdf' ? 'fa-solid fa-file-pdf' : 'fa-regular fa-file-lines';
+                pill.appendChild(icon);
+                const nameText = document.createElement('div');
+                nameText.className = 'file-name';
+                nameText.textContent = file.name;
+                pill.appendChild(nameText);
+                attachmentRow.appendChild(pill);
+            });
+            userWrapper.appendChild(attachmentRow);
+        }
+
+        // 2. เนื้อหาข้อความของผู้ใช้
         mainContentDiv = document.createElement('div');
         mainContentDiv.className = 'message-content';
         if (!isEmptyStream) {
@@ -776,7 +805,8 @@ function appendMessage(role, content, isEmptyStream, modelName = null, files = [
             mainContentDiv.dataset.markdown = userContent;
             updateContentHtml(mainContentDiv, userContent);
         }
-        inner.appendChild(mainContentDiv);
+        userWrapper.appendChild(mainContentDiv);
+        inner.appendChild(userWrapper);
     }
 
     div.appendChild(inner);
