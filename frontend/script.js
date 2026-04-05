@@ -908,6 +908,7 @@ function clearMessages() {
 
 function appendMessage(role, content, isEmptyStream, modelName = null, files = []) {
     updateLayoutState(false);
+    const now = Date.now();
     
     // จัดการการซ่อนข้อความ PDF (Parsing Content)
     const parsedData = parseMessageContent(content);
@@ -1051,8 +1052,8 @@ function appendMessage(role, content, isEmptyStream, modelName = null, files = [
     if (!isEmptyStream && mainContentDiv) renderMath(mainContentDiv);
     scrollToBottom();
 
-    // คืนค่าทั้ง 2 ส่วนเผื่อการอัปเดตแบบ Stream
-    return { contentDiv: mainContentDiv, thoughtDiv: thoughtBody };
+    // คืนค่าทั้ง 2 ส่วนเผื่อการอัปเดตแบบ Stream และเก็บเวลาที่สร้างไว้
+    return { contentDiv: mainContentDiv, thoughtDiv: thoughtBody, createdAt: now };
 }
 
 function updateMessageContent(elementsObj, rawMarkdownContent, explicitReasoning = "") {
@@ -1079,12 +1080,23 @@ function updateMessageContent(elementsObj, rawMarkdownContent, explicitReasoning
     } else if (thoughtDiv && !finalThoughtText) {
         // ห้ามสั่งซ่อนทันทีถ้ายังไม่มีข้อความตอบกลับหลัก (เพื่อโชว์ "Thought for a moment" ระหว่างรอตัวแรก)
         const currentThoughtText = thoughtDiv.innerText.trim();
+        const elapsed = elementsObj.createdAt ? (Date.now() - elementsObj.createdAt) : 1000;
+
         if (!currentThoughtText && !rawMarkdownContent) {
-            // ยังไม่มีทั้งการคิดและคำตอบ ให้คงไว้ (โชว์ตัวหมุน/Loading)
+            // ยังไม่มีทั้งการคิดและคำตอบ ให้โชว์แถบไว้
             thoughtDiv.parentElement.style.display = 'block';
         } else if (!currentThoughtText && rawMarkdownContent) {
-            // ไม่มีข้อมูลการคิดเลย และมีคำตอบมาแล้ว ให้ซ่อนแถบคิด
-            thoughtDiv.parentElement.style.display = 'none';
+            // ไม่มีข้อมูลการคิดเลย และมีคำตอบมาแล้ว 
+            // แทนที่จะสั่งซ่อน (display: none) ให้เปลี่ยนเป็น "พับเก็บ" (Collapsed) แทนเพื่อให้ผู้ใช้กดดูได้
+            if (elapsed > 800) {
+                const container = thoughtDiv.parentElement;
+                container.style.display = 'block'; // ให้ยังโชว์แถบไว้
+                if (!container.classList.contains('collapsed')) {
+                    container.classList.add('collapsed');
+                    const chevron = container.querySelector('.chevron');
+                    if (chevron) chevron.className = 'fa-solid fa-chevron-right chevron';
+                }
+            }
         }
     }
 
