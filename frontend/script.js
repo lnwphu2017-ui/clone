@@ -835,19 +835,25 @@ async function handleAction() {
             if (actionRow) actionRow.style.display = 'flex';
         }
         
-        // พับ thought block เมื่อ stream จบ — ทำกับทุกโมเดล (มี reasoning หรือไม่ก็ตาม)
+        // พับ thought block หลัง stream จบ — แต่ต้องให้ user เห็นนานพอ
         const tContainer = aiMessageContainer?.thoughtDiv?.parentElement;
         if (tContainer) {
-            // หยุด pulse animation ของ lightbulb ทันทีที่ตอบเสร็จ
-            const bulb = tContainer.querySelector('.bulb');
-            if (bulb) bulb.style.animation = 'none';
-
-            // พับ thought block เสมอ ไม่ว่าจะมี reasoning หรือไม่
-            if (!tContainer.classList.contains('collapsed')) {
-                tContainer.classList.add('collapsed');
-                const chevron = tContainer.querySelector('.chevron');
-                if (chevron) chevron.className = 'fa-solid fa-chevron-right chevron';
-            }
+            // คำนวณเวลาที่เหลือก่อนพับ (อย่างน้อย 1500ms นับจากที่ message ถูกสร้าง)
+            const MIN_THOUGHT_DISPLAY_MS = 1500;
+            const elapsed = aiMessageContainer.createdAt ? (Date.now() - aiMessageContainer.createdAt) : MIN_THOUGHT_DISPLAY_MS;
+            const delay = Math.max(0, MIN_THOUGHT_DISPLAY_MS - elapsed);
+            
+            setTimeout(() => {
+                // หยุด pulse animation ของ lightbulb
+                const bulb = tContainer.querySelector('.bulb');
+                if (bulb) bulb.style.animation = 'none';
+                // พับ thought block (ทุกโมเดล)
+                if (!tContainer.classList.contains('collapsed')) {
+                    tContainer.classList.add('collapsed');
+                    const chevron = tContainer.querySelector('.chevron');
+                    if (chevron) chevron.className = 'fa-solid fa-chevron-right chevron';
+                }
+            }, delay);
         }
         attachedFiles = []; // ล้างไฟล์แนบหลังส่ง
         renderFilePreviews();
