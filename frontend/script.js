@@ -799,21 +799,8 @@ async function handleAction() {
                             fullReasoning += parsed.reasoning_content;
                             updateMessageContent(aiMessageContainer, fullContent, fullReasoning);
                         } else if (parsed.content !== undefined) {
-                            // เมื่อ content chunk แรกมาถึง ให้พับ thought block เสมอ
-                            // ไม่ว่าจะมี reasoning หรือไม่ก็ตาม
-                            if (fullContent === "") {
-                                const tContainer = aiMessageContainer.thoughtDiv?.parentElement;
-                                if (tContainer && !tContainer.classList.contains('collapsed')) {
-                                    tContainer.classList.add('collapsed');
-                                    const chevron = tContainer.querySelector('.chevron');
-                                    if (chevron) chevron.className = 'fa-solid fa-chevron-right chevron';
-                                }
-                                // ถ้าโมเดลไม่มี reasoning เลย ให้ซ่อน thought block ทิ้งไปเลย
-                                if (fullReasoning === "" && aiMessageContainer.thoughtDiv) {
-                                    const tContainer = aiMessageContainer.thoughtDiv.parentElement;
-                                    if (tContainer) tContainer.style.display = 'none';
-                                }
-                            }
+                            // แสดง thought block ค้างไว้ตลอดขณะ stream กำลังทำงาน
+                            // ไม่พับระหว่างกลาง — จะพับใน finally เมื่อ stream จบเท่านั้น
                             fullContent += parsed.content;
                             updateMessageContent(aiMessageContainer, fullContent, fullReasoning);
                         } else if (parsed.error) {
@@ -848,13 +835,24 @@ async function handleAction() {
             if (actionRow) actionRow.style.display = 'flex';
         }
         
-        // พับส่วนที่คิดเก็บไปโดยอัตโนมัติ (หลังจากตอบเสร็จ)
-        if (fullReasoning !== "") {
-            const tContainer = aiMessageContainer.thoughtDiv?.parentElement;
-            if (tContainer && !tContainer.classList.contains('collapsed')) {
-                tContainer.classList.add('collapsed');
-                const chevron = tContainer.querySelector('.chevron');
-                if (chevron) chevron.className = 'fa-solid fa-chevron-right chevron';
+        // พับ thought block เมื่อ stream จบ — ทำกับทุกโมเดล (มี reasoning หรือไม่ก็ตาม)
+        const tContainer = aiMessageContainer?.thoughtDiv?.parentElement;
+        if (tContainer) {
+            if (fullReasoning !== "") {
+                // โมเดลที่มี reasoning จริง → พับเก็บ ยังคลิกดูได้
+                if (!tContainer.classList.contains('collapsed')) {
+                    tContainer.classList.add('collapsed');
+                    const chevron = tContainer.querySelector('.chevron');
+                    if (chevron) chevron.className = 'fa-solid fa-chevron-right chevron';
+                }
+            } else {
+                // โมเดลที่ไม่มี reasoning (เช่น Gemini Flash) → พับเก็บ ยังโชว์ให้คลิกดูได้
+                // แสดงข้อความ "Thought for a moment" ในแถบให้รู้ว่า AI เคยคิดอยู่
+                if (!tContainer.classList.contains('collapsed')) {
+                    tContainer.classList.add('collapsed');
+                    const chevron = tContainer.querySelector('.chevron');
+                    if (chevron) chevron.className = 'fa-solid fa-chevron-right chevron';
+                }
             }
         }
         attachedFiles = []; // ล้างไฟล์แนบหลังส่ง
@@ -1084,27 +1082,13 @@ function updateMessageContent(elementsObj, rawMarkdownContent, explicitReasoning
         const container = thoughtDiv.parentElement;
         container.style.display = 'block';
         container.classList.remove('hidden');
+        container.classList.remove('collapsed');
     } else if (thoughtDiv && !finalThoughtText) {
-        // ห้ามสั่งซ่อนทันทีถ้ายังไม่มีข้อความตอบกลับหลัก (เพื่อโชว์ "Thought for a moment" ระหว่างรอตัวแรก)
-        const currentThoughtText = thoughtDiv.innerText.trim();
-        const elapsed = elementsObj.createdAt ? (Date.now() - elementsObj.createdAt) : 1000;
-
-        if (!currentThoughtText && !rawMarkdownContent) {
-            // ยังไม่มีทั้งการคิดและคำตอบ ให้โชว์แถบไว้
-            thoughtDiv.parentElement.style.display = 'block';
-        } else if (!currentThoughtText && rawMarkdownContent) {
-            // ไม่มีข้อมูลการคิดเลย และมีคำตอบมาแล้ว 
-            // แทนที่จะสั่งซ่อน (display: none) ให้เปลี่ยนเป็น "พับเก็บ" (Collapsed) แทนเพื่อให้ผู้ใช้กดดูได้
-            if (elapsed > 800) {
-                const container = thoughtDiv.parentElement;
-                container.style.display = 'block'; // ให้ยังโชว์แถบไว้
-                if (!container.classList.contains('collapsed')) {
-                    container.classList.add('collapsed');
-                    const chevron = container.querySelector('.chevron');
-                    if (chevron) chevron.className = 'fa-solid fa-chevron-right chevron';
-                }
-            }
-        }
+        // ไม่มี reasoning จริงๆ (เช่น Gemini Flash) — แสดง thought block ค้างไว้ตลอดระหว่าง stream
+        // ให้ "Thought for a moment" โชว์ตลอดขณะที่กำลังตอบ
+        // การซ่อน/พับจะเกิดขึ้นใน finally block หลัง stream จบ เท่านั้น
+        const container = thoughtDiv.parentElement;
+        if (container) container.style.display = 'block';
     }
 
     // 2. อัปเดตเนื้อหาหลัก
