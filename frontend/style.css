@@ -816,8 +816,11 @@ html {
     background-color: var(--sidebar-bg); /* เปลี่ยนเป็นสีพื้นหลังเดียวกันเพื่อความเนียน */
     color: var(--text-color);
     margin-left: auto;
+    margin-right: 0; /* มั่นใจว่าไม่ห่างจากขอบขวาเกินไปหรือชิดเกินไป */
+    max-width: 85%; /* ป้องกันการขยายจนติดขอบซ้าย */
     border-radius: 18px 18px 4px 18px;
     border: 1px solid var(--border-color);
+    padding: 10px 16px; /* เพิ่ม Padding ให้ดูโปร่งสบาย */
 }
 
 .message-attachments {
@@ -850,6 +853,62 @@ html {
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 120px;
+}
+
+/* ===== AI Reasoning: Thought for a moment ===== */
+.thought-container {
+    margin-bottom: 8px;
+    border-left: 2px solid var(--border-color);
+    padding-left: 12px;
+    transition: all 0.3s ease;
+}
+
+.thought-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    color: #888;
+    font-size: 14px;
+    font-weight: 500;
+    user-select: none;
+    padding: 4px 0;
+}
+
+.thought-header:hover {
+    color: var(--text-color);
+}
+
+.thought-header i.chevron {
+    font-size: 10px;
+    transition: transform 0.3s ease;
+}
+
+.thought-content {
+    color: #666;
+    font-size: 14px;
+    line-height: 1.6;
+    margin-top: 4px;
+    overflow: hidden;
+    max-height: 2000px; /* ค่ามากพอสำหรับการกาง */
+    transition: max-height 0.5s ease, opacity 0.3s ease;
+    opacity: 1;
+}
+
+/* เมื่อพับเก็บ (Collapsed) */
+.thought-container.collapsed .thought-content {
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0;
+    pointer-events: none;
+}
+
+.thought-container.collapsed .thought-header i.chevron {
+    transform: rotate(-90deg);
+}
+
+.thought-container.hidden {
+    display: none;
 }
 
 .model-selector-inline select {

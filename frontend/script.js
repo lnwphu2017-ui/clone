@@ -675,12 +675,17 @@ function appendMessage(role, content, isEmptyStream, modelName = null, files = [
     const displayContent = parsedData.text;
     const extractedFiles = parsedData.files;
 
+    // จัดการการดึงกระบวนการคิด (Thought Parsing) ออกจากเนื้อหาที่จะแสดงปกติ
+    const thoughtInfo = parseThoughtPart(displayContent);
+    const finalDisplayContent = thoughtInfo.mainText;
+    const initialThought = thoughtInfo.thoughtText;
+
     const div = document.createElement('div');
     div.className = `message ${role}`;
     const inner = document.createElement('div');
     inner.className = 'message-inner';
 
-    // ส่วนแสดงไฟล์แนบในกล่องข้อความ (Attachments)
+    // ส่วนแสดงไฟล์แนบ
     const allFiles = [...files, ...extractedFiles];
     if (allFiles.length > 0) {
         const attachmentRow = document.createElement('div');
@@ -688,30 +693,21 @@ function appendMessage(role, content, isEmptyStream, modelName = null, files = [
         allFiles.forEach(file => {
             const pill = document.createElement('div');
             pill.className = `message-file-pill ${file.type === 'application/pdf' ? 'pdf-type' : ''}`;
-            
             const icon = document.createElement('i');
             icon.className = file.type === 'application/pdf' ? 'fa-solid fa-file-pdf' : 'fa-regular fa-file-lines';
             pill.appendChild(icon);
-
             const name = document.createElement('div');
             name.className = 'file-name';
             name.textContent = file.name;
             pill.appendChild(name);
-
             attachmentRow.appendChild(pill);
         });
         inner.appendChild(attachmentRow);
     }
 
-    const contentDiv = document.createElement('div');
-    contentDiv.className = 'message-content';
-    if (!isEmptyStream) {
-        const textToRender = displayContent || " ";
-        contentDiv.dataset.markdown = textToRender;
-        updateContentHtml(contentDiv, textToRender);
-    }
+    let thoughtBody = null;
+    let mainContentDiv = null;
 
-    // หากเป็นผู้ช่วย (AI) ให้ใส่ Wrapper รวมข้อความกับปุ่ม
     if (role === 'assistant') {
         const aiAvatarDiv = document.createElement('div');
         aiAvatarDiv.className = 'message-avatar ai-avatar';
@@ -725,12 +721,30 @@ function appendMessage(role, content, isEmptyStream, modelName = null, files = [
         wrapper.style.gap = '8px';
         wrapper.style.width = '100%';
 
-        wrapper.appendChild(contentDiv);
+        // สร้าง Thought Block ถ้ามีเนื้อหาการคิด หรือเป็น Stream ใหม่
+        if (initialThought || isEmptyStream) {
+            const t = createThoughtBlock();
+            wrapper.appendChild(t.container);
+            thoughtBody = t.body;
+            if (initialThought) {
+                thoughtBody.innerText = initialThought;
+                t.container.classList.add('collapsed'); // พับไว้สำหรับประวัติเก่า
+            }
+        }
+
+        mainContentDiv = document.createElement('div');
+        mainContentDiv.className = 'message-content';
+        if (!isEmptyStream) {
+            const textToRender = finalDisplayContent || " ";
+            mainContentDiv.dataset.markdown = textToRender;
+            updateContentHtml(mainContentDiv, textToRender);
+        }
+        wrapper.appendChild(mainContentDiv);
 
         const actionRow = document.createElement('div');
         actionRow.className = 'message-actions';
         if (isEmptyStream) {
-            actionRow.style.display = 'none'; // ซ่อนไว้ก่อนเมื่ออยู่ระหว่าง Stream
+            actionRow.style.display = 'none';
         }
         actionRow.innerHTML = `
             <button class="copy-message-btn" title="Copy">
@@ -739,33 +753,58 @@ function appendMessage(role, content, isEmptyStream, modelName = null, files = [
         `;
         const copyBtn = actionRow.querySelector('.copy-message-btn');
         copyBtn.onclick = () => {
-            const rawContent = contentDiv.dataset.markdown || contentDiv.innerText;
+            const rawContent = mainContentDiv.dataset.markdown || mainContentDiv.innerText;
             navigator.clipboard.writeText(rawContent).then(() => {
                 const icon = copyBtn.querySelector('i');
                 icon.className = 'fa-solid fa-check';
-                setTimeout(() => {
-                    icon.className = 'fa-regular fa-copy';
-                }, 2000);
+                setTimeout(() => { icon.className = 'fa-regular fa-copy'; }, 2000);
             });
         };
         wrapper.appendChild(actionRow);
         inner.appendChild(wrapper);
     } else {
-        // ของ User ไม่ต้องมีปุ่มและ Wrapper
-        inner.appendChild(contentDiv);
+        // ของ User
+        mainContentDiv = document.createElement('div');
+        mainContentDiv.className = 'message-content';
+        if (!isEmptyStream) {
+            const userContent = displayContent || " ";
+            mainContentDiv.dataset.markdown = userContent;
+            updateContentHtml(mainContentDiv, userContent);
+        }
+        inner.appendChild(mainContentDiv);
     }
 
     div.appendChild(inner);
     chatContainer.appendChild(div);
-    if (!isEmptyStream) renderMath(contentDiv);
+    if (!isEmptyStream && mainContentDiv) renderMath(mainContentDiv);
     scrollToBottom();
-    return contentDiv;
+
+    // คืนค่าทั้ง 2 ส่วนเผื่อการอัปเดตแบบ Stream
+    return { contentDiv: mainContentDiv, thoughtDiv: thoughtBody };
 }
 
-function updateMessageContent(element, markdownContent) {
-    element.dataset.markdown = markdownContent;
-    updateContentHtml(element, markdownContent);
-    renderMath(element);
+function updateMessageContent(elementsObj, rawMarkdownContent) {
+    if (!elementsObj) return;
+    // รับค่า elementsObj ที่ห่อหุ้มมา (แทนที่จะเป็น element เดียว)
+    const { contentDiv, thoughtDiv } = elementsObj;
+    
+    // ตรวจจับความคิดในระหว่าง Stream
+    const thoughtInfo = parseThoughtPart(rawMarkdownContent);
+    const mainText = thoughtInfo.mainText;
+    const thoughtText = thoughtInfo.thoughtText;
+
+    if (thoughtText && thoughtDiv) {
+        thoughtDiv.innerText = thoughtText;
+        thoughtDiv.parentElement.classList.remove('hidden'); 
+    } else if (thoughtDiv && !thoughtText) {
+        thoughtDiv.parentElement.style.display = 'none';
+    }
+
+    if (contentDiv) {
+        contentDiv.dataset.markdown = mainText;
+        updateContentHtml(contentDiv, mainText);
+        renderMath(contentDiv);
+    }
 }
 
 function updateContentHtml(element, markdownContent) {
@@ -921,4 +960,54 @@ function parseMessageContent(rawContent) {
     }
 
     return { text, files };
+}
+
+// ===== ผู้ช่วยตรวจจับกระบวนการคิด (Thought Parser) =====
+function parseThoughtPart(content) {
+    if (!content) return { mainText: "", thoughtText: "" };
+
+    // รูปแบบหลัก: <thought>เนื้อหา</thought>
+    const thoughtRegex = /<thought>([\s\S]*?)<\/thought>/;
+    const match = content.match(thoughtRegex);
+
+    if (match) {
+        const thoughtText = match[1].trim();
+        const mainText = content.replace(thoughtRegex, "").trim();
+        return { mainText, thoughtText };
+    }
+
+    // กรณีโมเดลกำลัง Stream และยังไม่มีปิดแท็ก
+    if (content.includes("<thought>")) {
+        const parts = content.split("<thought>");
+        return { 
+            mainText: parts[0]?.trim() || "", 
+            thoughtText: parts[1]?.trim() || "" 
+        };
+    }
+
+    return { mainText: content, thoughtText: "" };
+}
+
+function createThoughtBlock() {
+    const container = document.createElement('div');
+    container.className = 'thought-container';
+    
+    const header = document.createElement('div');
+    header.className = 'thought-header';
+    header.innerHTML = `
+        <i class="fa-solid fa-chevron-down chevron"></i>
+        <span>Thought for a moment</span>
+    `;
+    
+    const body = document.createElement('div');
+    body.className = 'thought-content';
+    
+    header.onclick = () => {
+        container.classList.toggle('collapsed');
+    };
+    
+    container.appendChild(header);
+    container.appendChild(body);
+    
+    return { container, body };
 }
