@@ -29,6 +29,12 @@ const toggleSidebarBtn = document.getElementById('toggle-sidebar-btn');
 const mainSidebarToggle = document.getElementById('main-sidebar-toggle');
 const newChatBtnPersistent = document.getElementById('new-chat-btn-persistent');
 
+// ปุ่มใหม่ใน Sidebar Internal
+const toggleSidebarInternal = document.getElementById('toggle-sidebar-internal');
+const newChatInternal = document.getElementById('new-chat-internal');
+const launchBtn = document.getElementById('launch-btn');
+const settingsBtn = document.getElementById('settings-btn');
+
 let attachedFiles = [];
 
 // อ้างอิง Element สำหรับ API Key และ Model
@@ -511,21 +517,42 @@ function closeDeleteModal() {
 // ===== Event Listeners =====
 
 function setupEventListeners() {
-    // ระบบสร้างแชทใหม่ (รองรับทั้งปุ่มข้างนอกและปุ่มใน Sidebar ถ้ามี)
-    if (newChatBtn) newChatBtn.onclick = createNewChat;
-    if (newChatBtnPersistent) newChatBtnPersistent.onclick = () => {
+    // ระบบสร้างแชทใหม่ (รองรับทั้งปุ่มข้างนอกและปุ่มใน Sidebar)
+    const handleNewChatAction = () => {
         currentChatId = null;
         updateLayoutState(true);
         clearMessages();
     };
 
-    // ระบบแนบไฟล์
+    if (newChatBtn) newChatBtn.onclick = handleNewChatAction;
+    if (newChatBtnPersistent) newChatBtnPersistent.onclick = handleNewChatAction;
+    if (newChatInternal) newChatInternal.onclick = handleNewChatAction;
+
+    // ปุ่มสลับสถานะ Sidebar
+    const toggleSidebar = () => {
+        const isCurrentlyCollapsed = sidebar.classList.toggle('collapsed');
+        document.body.classList.toggle('sidebar-collapsed', isCurrentlyCollapsed);
+        localStorage.setItem('sidebar_collapsed', isCurrentlyCollapsed);
+    };
+
+    if (mainSidebarToggle) mainSidebarToggle.onclick = toggleSidebar;
+    if (toggleSidebarBtn) toggleSidebarBtn.onclick = toggleSidebar;
+    if (toggleSidebarInternal) toggleSidebarInternal.onclick = toggleSidebar;
+
+    // ปุ่ม Launch & Settings (พื้นฐาน)
+    if (launchBtn) {
+        launchBtn.onclick = () => alert("Launch functionality coming soon!");
+    }
+    if (settingsBtn) {
+        settingsBtn.onclick = () => showApiKeyScreen(); // หรือเมนู Setting อื่นๆ
+    }
+
+    // --- คืนค่า Listeners ที่หายไป ---
     if (attachBtn && fileInput) {
         attachBtn.onclick = () => fileInput.click();
         fileInput.onchange = handleFileSelect;
     }
 
-    // เปลี่ยนโมเดลเมื่อผู้ใช้เลือกจาก Dropdown (เหมือน st.sidebar.selectbox)
     if (modelSelect) {
         modelSelect.onchange = () => {
             selectedModel = modelSelect.value;
@@ -533,8 +560,8 @@ function setupEventListeners() {
         };
     }
 
-    // ปุ่มเปลี่ยน API Key
     if (changeKeyBtn) changeKeyBtn.onclick = () => showApiKeyScreen();
+    // ----------------------------
 
     if (searchInput) {
         searchInput.oninput = (e) => {

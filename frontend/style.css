@@ -468,27 +468,72 @@ html {
     background-color: var(--bg-color);
 }
 
-/* แผงควบคุมมุมบนซ้าย (ถาวร) */
+/* แผงควบคุมมุมบนซ้าย (ถาวรเมื่อหุบ) */
 .top-controls {
     position: absolute;
     top: 15px;
     left: 15px;
     z-index: 1001;
-    display: flex;
-    gap: 8px; /* ระยะห่างระหว่างปุ่มตามรูป */
+    display: none; /* ซ่อนเป็นค่าเริ่มต้น จะแสดงเมื่อ Sidebar หุบเท่านั้น */
+    gap: 8px;
     align-items: center;
+}
+
+body.sidebar-collapsed .top-controls {
+    display: flex; /* แสดงเมื่อ Sidebar หุบ */
 }
 
 .top-controls .icon-btn {
     background: var(--bg-color);
     border: 1px solid var(--border-color) !important;
-    box-shadow: none !important; /* ลบเงาตามสั่ง */
+    box-shadow: none !important;
     border-radius: 8px;
     width: 34px;
     height: 34px;
 }
 
-/* ซ่อนปุ่มเปิด/ปิดเดิมของตัวมันเอง */
+/* ส่วนเมนูภายใน Sidebar */
+.sidebar-controls-internal {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding: 0 5px;
+}
+
+.sidebar-item-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #cecece;
+    transition: all 0.2s;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.sidebar-item-btn:hover {
+    background-color: var(--sidebar-hover);
+    color: var(--text-color);
+}
+
+.sidebar-item-btn svg,
+.sidebar-item-btn i {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.sidebar-item-btn span {
+    white-space: nowrap;
+}
+
+/* ซ่อนปุ่มเปิด/ปิดหลักเดิมเพื่อให้เหลือแค่ top-controls */
 .main-sidebar-toggle {
     display: none !important;
 }
