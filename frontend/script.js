@@ -1077,9 +1077,13 @@ function updateMessageContent(elementsObj, rawMarkdownContent, explicitReasoning
         container.style.display = 'block';
         container.classList.remove('hidden');
     } else if (thoughtDiv && !finalThoughtText) {
-        // ห้ามสั่งซ่อนถ้าใน thoughtDiv มีเนื้อหาเดิมสะสมอยู่แล้ว (แก้ปัญหาหายไประหว่างเปลี่ยนก้อน)
-        const currentText = thoughtDiv.innerText.trim();
-        if (!currentText) {
+        // ห้ามสั่งซ่อนทันทีถ้ายังไม่มีข้อความตอบกลับหลัก (เพื่อโชว์ "Thought for a moment" ระหว่างรอตัวแรก)
+        const currentThoughtText = thoughtDiv.innerText.trim();
+        if (!currentThoughtText && !rawMarkdownContent) {
+            // ยังไม่มีทั้งการคิดและคำตอบ ให้คงไว้ (โชว์ตัวหมุน/Loading)
+            thoughtDiv.parentElement.style.display = 'block';
+        } else if (!currentThoughtText && rawMarkdownContent) {
+            // ไม่มีข้อมูลการคิดเลย และมีคำตอบมาแล้ว ให้ซ่อนแถบคิด
             thoughtDiv.parentElement.style.display = 'none';
         }
     }
