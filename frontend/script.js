@@ -482,6 +482,7 @@ async function fetchModels() {
         renderModelOptions([
             { id: 'google/gemini-2.0-flash-001', name: 'Gemini 2.0 Flash (Free)' },
             { id: 'deepseek/deepseek-chat-v3-0324:free', name: 'DeepSeek V3 (Free)' },
+            { id: 'openai/gpt-oss-20b:free', name: 'GPT-OSS 20B (Free)' },
         ]);
     }
 }
