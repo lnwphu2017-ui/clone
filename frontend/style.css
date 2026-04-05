@@ -316,6 +316,7 @@ html {
 .icon-btn:hover {
     background-color: var(--sidebar-hover);
     color: var(--text-color);
+    box-shadow: none !important;
 }
 
 .icon-btn svg {
@@ -467,20 +468,29 @@ html {
     background-color: var(--bg-color);
 }
 
-/* ปุ่มเปิด Sidebar เมื่อหัน (ลอยอยู่มุมซ้าย) */
-.main-sidebar-toggle {
+/* แผงควบคุมมุมบนซ้าย (ถาวร) */
+.top-controls {
     position: absolute;
     top: 15px;
     left: 15px;
     z-index: 1001;
-    display: none; /* ซ่อนไว้รอคลาส .sidebar-collapsed ที่ body */
-    background: var(--bg-color);
-    border: 1px solid var(--border-color) !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    display: flex;
+    gap: 8px; /* ระยะห่างระหว่างปุ่มตามรูป */
+    align-items: center;
 }
 
-body.sidebar-collapsed .main-sidebar-toggle {
-    display: flex;
+.top-controls .icon-btn {
+    background: var(--bg-color);
+    border: 1px solid var(--border-color) !important;
+    box-shadow: none !important; /* ลบเงาตามสั่ง */
+    border-radius: 8px;
+    width: 34px;
+    height: 34px;
+}
+
+/* ซ่อนปุ่มเปิด/ปิดเดิมของตัวมันเอง */
+.main-sidebar-toggle {
+    display: none !important;
 }
 
 .top-spacer,

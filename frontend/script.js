@@ -27,6 +27,7 @@ const attachBtn = document.getElementById('attach-btn');
 const sidebar = document.getElementById('sidebar');
 const toggleSidebarBtn = document.getElementById('toggle-sidebar-btn');
 const mainSidebarToggle = document.getElementById('main-sidebar-toggle');
+const newChatBtnPersistent = document.getElementById('new-chat-btn-persistent');
 
 let attachedFiles = [];
 
@@ -114,21 +115,23 @@ function setupSidebarToggle() {
         document.body.classList.add('sidebar-collapsed');
     }
 
-    // ปุ่มใน Sidebar (Close)
-    if (toggleSidebarBtn) {
-        toggleSidebarBtn.onclick = () => {
-            sidebar.classList.add('collapsed');
-            document.body.classList.add('sidebar-collapsed');
-            localStorage.setItem('sidebar_collapsed', 'true');
-        };
-    }
+    // ฟังก์ชันช่วยสลับสถานะ
+    const toggleSidebar = () => {
+        const isCurrentlyCollapsed = sidebar.classList.toggle('collapsed');
+        document.body.classList.toggle('sidebar-collapsed', isCurrentlyCollapsed);
+        localStorage.setItem('sidebar_collapsed', isCurrentlyCollapsed);
+    };
 
-    // ปุ่มลอยด้านนอก (Open)
-    if (mainSidebarToggle) {
-        mainSidebarToggle.onclick = () => {
-            sidebar.classList.remove('collapsed');
-            document.body.classList.remove('sidebar-collapsed');
-            localStorage.setItem('sidebar_collapsed', 'false');
+    if (mainSidebarToggle) mainSidebarToggle.onclick = toggleSidebar;
+    if (toggleSidebarBtn) toggleSidebarBtn.onclick = toggleSidebar;
+
+    // เชื่อมต่อปุ่ม New Chat ตัวใหม่ (ที่อยู่ข้างนอกถาวร)
+    if (newChatBtnPersistent) {
+        newChatBtnPersistent.onclick = () => {
+            currentChatId = null;
+            updateLayoutState(true);
+            clearMessages();
+            // ถ้าเป็นมือถือ หรือหน้าจอเล็ก อาจจะอยากให้หุบ Sidebar อัตโนมัติ (ใส่เพิ่มได้ถ้าต้องการ)
         };
     }
 }
