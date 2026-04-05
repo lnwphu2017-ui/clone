@@ -782,10 +782,7 @@ async function handleAction() {
         let fullReasoning = '';
         let lineBuffer = ''; // ✅ ตัวเก็บข้อมูลบรรทัดที่พ่นออกมาไม่ครบ (Chunk Fragmentation)
 
-        // เพิ่ม Cursor กระพริบเพื่อให้ดู "ไหล"
-        if (aiMessageContainer && aiMessageContainer.contentDiv) {
-            aiMessageContainer.contentDiv.classList.add('typing-cursor');
-        }
+        // เริ่มต้นการอ่าน Stream
 
         while (true) {
             const { done, value } = await reader.read();
@@ -843,11 +840,6 @@ async function handleAction() {
             }
         }
     } finally {
-        // เอา Cursor ออกเมื่อพิมพ์เสร็จ
-        if (aiMessageContainer && aiMessageContainer.contentDiv) {
-            aiMessageContainer.contentDiv.classList.remove('typing-cursor');
-        }
-
         // บังคับคืนค่าปุ่มทันที
         resetToDefaultState();
         
