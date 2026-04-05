@@ -294,9 +294,10 @@ html {
 /* ส่วนควบคุมไอคอนด้านบน (Sidebar Toggle & New Chat) */
 .sidebar-controls {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start; /* เรียงชิดซ้ายตามรูปตัวอย่าง */
     align-items: center;
-    padding: 5px;
+    gap: 4px; /* ระยะห่างระหว่างปุ่มเล็กน้อยเพื่อให้ดูเป็นกลุ่มเดียวกัน */
+    padding: 5px 0;
 }
 
 .icon-btn {

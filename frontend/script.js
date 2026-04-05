@@ -600,6 +600,18 @@ async function handleAction() {
     appendMessage('user', content, false, null, attachedFiles); // ส่งไฟล์ปัจจุบันไปโชว์ด้วย
     abortController = new AbortController();
     setStopMode(true);
+    
+    // อัปเดตชื่อแชทใน Sidebar ทันทีถ้าเป็นข้อความแรก (เพื่อความลื่นไหลของ UI)
+    const sidebarItems = chatListEl.querySelectorAll('.chat-item');
+    sidebarItems.forEach(item => {
+        if (item.dataset.id == currentChatId) {
+            const titleSpan = item.querySelector('.chat-title');
+            if (titleSpan && (titleSpan.textContent === 'New Chat' || titleSpan.textContent === '')) {
+                titleSpan.textContent = content.substring(0, 30) + (content.length > 30 ? '...' : '');
+            }
+        }
+    });
+    
     const aiMessageContainer = appendMessage('assistant', '', true, selectedModel);
 
     try {
