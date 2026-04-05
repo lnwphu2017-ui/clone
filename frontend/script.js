@@ -799,13 +799,19 @@ async function handleAction() {
                             fullReasoning += parsed.reasoning_content;
                             updateMessageContent(aiMessageContainer, fullContent, fullReasoning);
                         } else if (parsed.content !== undefined) {
-                            // เมื่อเริ่มมีเนื้อหาคำตอบ ให้พับส่วนที่คิดเก็บไปโดยอัตโนมัติ (เพื่อความสะอาด)
-                            if (fullContent === "" && fullReasoning !== "") {
+                            // เมื่อ content chunk แรกมาถึง ให้พับ thought block เสมอ
+                            // ไม่ว่าจะมี reasoning หรือไม่ก็ตาม
+                            if (fullContent === "") {
                                 const tContainer = aiMessageContainer.thoughtDiv?.parentElement;
                                 if (tContainer && !tContainer.classList.contains('collapsed')) {
                                     tContainer.classList.add('collapsed');
                                     const chevron = tContainer.querySelector('.chevron');
                                     if (chevron) chevron.className = 'fa-solid fa-chevron-right chevron';
+                                }
+                                // ถ้าโมเดลไม่มี reasoning เลย ให้ซ่อน thought block ทิ้งไปเลย
+                                if (fullReasoning === "" && aiMessageContainer.thoughtDiv) {
+                                    const tContainer = aiMessageContainer.thoughtDiv.parentElement;
+                                    if (tContainer) tContainer.style.display = 'none';
                                 }
                             }
                             fullContent += parsed.content;

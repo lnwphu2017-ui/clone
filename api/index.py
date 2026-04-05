@@ -79,21 +79,28 @@ async def stream_ai_response(chat_id: int, messages_history: list, db: Session, 
     full_reasoning = ""
     try:
         client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=api_key)
-        # รับ Stream จาก AI
-        response = client.chat.completions.create(model=model, messages=messages_history, stream=True, max_tokens=2000)
+        # รับ Stream จาก AI — เพิ่ม extra_body เพื่อรองรับ reasoning content ของบางโมเดล
+        response = client.chat.completions.create(
+            model=model,
+            messages=messages_history,
+            stream=True,
+            max_tokens=4096,
+            extra_body={"include_reasoning": True}
+        )
         for chunk in response:
             if not chunk.choices: continue
             delta = chunk.choices[0].delta
-            
-            # 1. ตรวจจับและส่งข้อมูลการคิด (Reasoning)
+
+            # 1. ตรวจจับและส่งข้อมูลการคิด (Reasoning) — รองรับหลาย field name
             reasoning = getattr(delta, 'reasoning_content', None) or getattr(delta, 'reasoning', None)
             if reasoning:
                 full_reasoning += reasoning
                 yield f"data: {json.dumps({'reasoning_content': reasoning})}\n\n"
-            
+
             # 2. ตรวจจับและส่งข้อมูลเนื้อหาหลัก (Content)
-            if delta.content:
-                content = delta.content
+            # ใช้ is not None แทน truthy check เพื่อรับ chunk ที่ content เป็น "" ด้วย
+            content = getattr(delta, 'content', None)
+            if content is not None and content != "":
                 full_response += content
                 yield f"data: {json.dumps({'content': content})}\n\n"
                 
