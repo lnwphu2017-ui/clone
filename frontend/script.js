@@ -705,11 +705,11 @@ function setupEventListeners() {
     if (confirmDeleteBtn) confirmDeleteBtn.onclick = confirmDeleteChat;
     if (cancelDeleteBtn) cancelDeleteBtn.onclick = closeDeleteModal;
     
-    // ✅ ระบบตรวจจับการ Scroll เพื่อเปิด/ปิด Auto-scroll อัจฉริยะ
+    // ✅ ระบบตรวจจับการ Scroll เพื่อเปิด/ปิด Auto-scroll อัจฉริยะแบบแม่นยำสูง
     if (chatContainer) {
         chatContainer.onscroll = () => {
-            const threshold = 100; // ระยะห่างจากขอบล่างสุด (px)
-            const isAtBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight < threshold;
+            const threshold = 2; // ✅ ใช้ค่าเพียงเล็กน้อยเพื่อให้หยุดเลื่อนทันทีที่ขยับขึ้น
+            const isAtBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight <= threshold;
             isAutoScrollEnabled = isAtBottom;
         };
     }
