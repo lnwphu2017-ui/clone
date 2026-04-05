@@ -793,6 +793,49 @@ html {
     padding: 6px 12px;
     border-radius: 20px;
     border: 1px solid var(--border-color);
+    .message.user .message-inner {
+    background-color: var(--sidebar-bg); /* เปลี่ยนเป็นสีพื้นหลังเดียวกันเพื่อความเนียน */
+    color: var(--text-color);
+    margin-left: auto;
+    border-radius: 18px 18px 4px 18px;
+    border: 1px solid var(--border-color);
+}
+
+.message-attachments {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.message-file-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    padding: 8px 14px;
+    border-radius: 12px;
+    font-size: 13px;
+    color: var(--text-color);
+    min-width: 140px;
+}
+
+.message-file-pill i {
+    font-size: 16px;
+}
+
+.message-file-pill.pdf-type i {
+    color: #ff5555;
+}
+
+.message-file-pill .file-name {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+}
     transition: border-color 0.2s;
     cursor: pointer;
 }

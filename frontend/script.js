@@ -564,7 +564,7 @@ async function handleAction() {
         finalContent = `[เอกสารแนบเพื่ออ้างอิงและสรุป]\n${pdfTexts}\n\n[คำสั่งจากผู้ใช้]: ${content}`;
     }
 
-    appendMessage('user', content, false);
+    appendMessage('user', content, false, null, attachedFiles); // ส่งไฟล์ปัจจุบันไปโชว์ด้วย
     abortController = new AbortController();
     setStopMode(true);
     const aiMessageContainer = appendMessage('assistant', '', true, selectedModel);
@@ -667,18 +667,48 @@ function clearMessages() {
     chatContainer.querySelectorAll('.message').forEach(el => el.remove());
 }
 
-function appendMessage(role, content, isEmptyStream, modelName = null) {
+function appendMessage(role, content, isEmptyStream, modelName = null, files = []) {
     updateLayoutState(false);
+    
+    // จัดการการซ่อนข้อความ PDF (Parsing Content)
+    const parsedData = parseMessageContent(content);
+    const displayContent = parsedData.text;
+    const extractedFiles = parsedData.files;
+
     const div = document.createElement('div');
     div.className = `message ${role}`;
     const inner = document.createElement('div');
     inner.className = 'message-inner';
 
+    // ส่วนแสดงไฟล์แนบในกล่องข้อความ (Attachments)
+    const allFiles = [...files, ...extractedFiles];
+    if (allFiles.length > 0) {
+        const attachmentRow = document.createElement('div');
+        attachmentRow.className = 'message-attachments';
+        allFiles.forEach(file => {
+            const pill = document.createElement('div');
+            pill.className = `message-file-pill ${file.type === 'application/pdf' ? 'pdf-type' : ''}`;
+            
+            const icon = document.createElement('i');
+            icon.className = file.type === 'application/pdf' ? 'fa-solid fa-file-pdf' : 'fa-regular fa-file-lines';
+            pill.appendChild(icon);
+
+            const name = document.createElement('div');
+            name.className = 'file-name';
+            name.textContent = file.name;
+            pill.appendChild(name);
+
+            attachmentRow.appendChild(pill);
+        });
+        inner.appendChild(attachmentRow);
+    }
+
     const contentDiv = document.createElement('div');
     contentDiv.className = 'message-content';
     if (!isEmptyStream) {
-        contentDiv.dataset.markdown = content;
-        updateContentHtml(contentDiv, content);
+        const textToRender = displayContent || " ";
+        contentDiv.dataset.markdown = textToRender;
+        updateContentHtml(contentDiv, textToRender);
     }
 
     // หากเป็นผู้ช่วย (AI) ให้ใส่ Wrapper รวมข้อความกับปุ่ม
@@ -860,4 +890,35 @@ function renderFilePreviews() {
 function removeFile(index) {
     attachedFiles.splice(index, 1);
     renderFilePreviews();
+}
+
+// ===== ฟังก์ชันสำหรับตรวจจับและซ่อนข้อมูล PDF ในแชท (Content Parser) =====
+
+function parseMessageContent(rawContent) {
+    if (!rawContent || typeof rawContent !== 'string') return { text: rawContent, files: [] };
+
+    const TAG = "[เอกสารแนบเพื่ออ้างอิงและสรุป]";
+    if (!rawContent.includes(TAG)) return { text: rawContent, files: [] };
+
+    let text = rawContent;
+    let files = [];
+
+    // ดึงข้อมูลชื่อไฟล์ PDF ออกมา (Regex สำหรับดึงระหว่าง --- ข้อมูลจากไฟล์ PDF: และ ---)
+    const nameRegex = /--- ข้อมูลจากไฟล์ PDF: (.*?) ---/g;
+    let match;
+    while ((match = nameRegex.exec(rawContent)) !== null) {
+        files.push({ name: match[1], type: 'application/pdf' });
+    }
+
+    // ตัดส่วน Context ทิ้ง เหลือแต่คำสั่งจากผู้ใช้จริงๆ
+    const userPromptRegex = /\[คำสั่งจากผู้ใช้\]: ([\s\S]*)$/;
+    const contentMatch = rawContent.match(userPromptRegex);
+    if (contentMatch) {
+        text = contentMatch[1].trim();
+    } else {
+        // กรณีหาแท็กปิดไม่เจอ ให้ตัดเอาแค่ส่วนสุดท้ายหรือส่วนที่เป็น User text
+        text = rawContent.split(TAG).pop().trim();
+    }
+
+    return { text, files };
 }
