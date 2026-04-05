@@ -1004,7 +1004,7 @@ body:not(.sidebar-collapsed) .header-control-btn {
 }
 
 .attach-btn, .action-btn {
-    width: 32px;
+    width: 31px;
     height: 32px;
     border-radius: 50%;
     border: 1px solid var(--border-color);
