@@ -830,10 +830,9 @@ body:not(.sidebar-collapsed) .header-control-btn {
     font-size: clamp(1.2em, 3vw, 1.6em) !important;
     margin: 28px 0 !important;
     padding: 24px 20px;
-    background: #ffffff !important; /* ✅ ใช้พื้นหลังสีขาวตามรูปตัวอย่าง */
-    border: 1px solid var(--border-color); /* ✅ เพิ่มเส้นขอบบางๆ */
-    border-radius: 16px; /* ✅ มุมโค้งมากขึ้น ดูทันสมัย */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04); /* ✅ เพิ่มเงามิติจางๆ */
+    background: transparent !important; /* ✅ นำพื้นหลังสีขาวออกเพื่อให้เข้ากับพื้นหลังแชท */
+    border: none !important;           /* ✅ นำเส้นขอบออก */
+    box-shadow: none !important;       /* ✅ นำเงาออก */
     overflow-x: auto;
     overflow-y: hidden;
     -ms-overflow-style: none;
