@@ -523,6 +523,7 @@ function renderChatList(chats) {
     chats.forEach(chat => {
         const div = document.createElement('div');
         div.className = `chat-item ${chat.id === currentChatId ? 'active' : ''}`;
+        div.dataset.id = chat.id;
         div.innerHTML = `
             <div class="chat-title" title="${chat.title}">${chat.title}</div>
             <button class="delete-btn" onclick="deleteChat(${chat.id}, event)">
@@ -746,9 +747,10 @@ async function handleAction() {
     // อัปเดตชื่อแชทใน Sidebar ทันทีถ้าเป็นข้อความแรก (เพื่อความลื่นไหลของ UI)
     const sidebarItems = chatListEl.querySelectorAll('.chat-item');
     sidebarItems.forEach(item => {
-        if (item.dataset.id == currentChatId) {
+        if (item.dataset.id == String(currentChatId)) {
             const titleSpan = item.querySelector('.chat-title');
             if (titleSpan && (titleSpan.textContent === 'New Chat' || titleSpan.textContent === '')) {
+                // ใช้ 30 ตัวอักษรแรกเป็นชื่อแชท
                 titleSpan.textContent = content.substring(0, 30) + (content.length > 30 ? '...' : '');
             }
         }
