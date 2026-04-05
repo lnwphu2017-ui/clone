@@ -63,7 +63,8 @@ const settingsAuthBtn = document.getElementById('settings-auth-btn');
 let chatIdToDelete = null;
 let allChats = [];
 let eventListenersSetup = false; // ป้องกันการตั้ง Event ซ้ำ
-let isAutoScrollEnabled = true; // ✅ ควบคุมการเลื่อนลงอัตโนมัติ
+let isAutoScrollEnabled = true;
+let is_sending = false; // ✅ ป้องกันการกดส่งซ้ำ
 
 window.initApp = async function () {
     await init();
@@ -397,6 +398,12 @@ async function saveSettingsApiKey() {
 async function showApp() {
     apiKeyScreen.style.display = 'none';
     appContainer.style.display = 'flex';
+    
+    // ✅ ตรวจสอบสถานะเริ่มต้น ถ้าไม่มีแชทให้โชว์หน้า New Chat
+    if (!currentChatId) {
+        updateLayoutState(true);
+    }
+    
     await fetchModels();
     await fetchChats();
     if (!eventListenersSetup) {
@@ -722,14 +729,12 @@ function setupEventListeners() {
 // ===== ส่งข้อความ + Streaming =====
 
 async function handleAction() {
-    if (abortController) {
-        abortController.abort();
-        resetToDefaultState();
-        return;
-    }
+    if (abortController || is_sending) return;
+    
     const content = messageInput.value.trim();
     if (!content) return;
     
+    is_sending = true;
     // ปิดปุ่มและล้างช่องพิมพ์ทันทีเพื่อป้องกันการกดเบิ้ล (Race Condition)
     actionBtn.disabled = true;
     actionBtn.style.background = 'var(--btn-disabled)';
@@ -744,7 +749,12 @@ async function handleAction() {
         return;
     }
 
-    if (!currentChatId) await createNewChat();
+    if (!currentChatId) {
+        await createNewChat();
+        // ✅ หลังจากสร้างแชทใหม่สำเร็จ ให้เคลียร์หน้าจออีกครั้งก่อนเริ่มแสดงข้อความแรก
+        // เพื่อป้องกันข้อความซ้ำซ้อนที่อาจเกิดจาก Sequence การสร้างแชท
+        clearMessages();
+    }
 
     // รวมข้อความจาก PDF (ถ้ามี)
     let finalContent = content;
@@ -844,22 +854,22 @@ async function handleAction() {
 
                 const dataStr = trimmedLine.replace('data: ', '').trim();
                 if (dataStr === '[DONE]') break;
-                    if (!dataStr) continue;
-                    try {
-                        const parsed = JSON.parse(dataStr);
-                        
-                        // รองรับทั้งเนื้อหาหลักและเนื้อหาการคิด (Reasoning)
-                        if (parsed.reasoning_content !== undefined) {
-                            fullReasoning += parsed.reasoning_content;
-                            // Reasoning มักจะมาเร็ว เราพ่นลงจอตรงๆ ได้เลยเพื่อความพรีเมียม
-                            updateMessageContent(aiMessageContainer, fullContent, fullReasoning);
-                        } else if (parsed.content !== undefined) {
-                            // แทนที่จะ update ลงจอตรงๆ เราโยนใส่ Buffer เพื่อให้ Ticker พ่นอย่างนุ่มนวล
-                            rawContentBuffer += parsed.content;
-                        } else if (parsed.error) {
-                            fullContent += `\n**Error:** ${parsed.error}`;
-                            updateMessageContent(aiMessageContainer, fullContent, fullReasoning);
-                        }
+                if (!dataStr) continue;
+
+                try {
+                    const parsed = JSON.parse(dataStr);
+                    // รองรับทั้งเนื้อหาหลักและเนื้อหาการคิด (Reasoning)
+                    if (parsed.reasoning_content !== undefined) {
+                        fullReasoning += parsed.reasoning_content;
+                        // Reasoning มักจะมาเร็ว เราพ่นลงจอตรงๆ ได้เลยเพื่อความพรีเมียม
+                        updateMessageContent(aiMessageContainer, fullContent, fullReasoning);
+                    } else if (parsed.content !== undefined) {
+                        // แทนที่จะ update ลงจอตรงๆ เราโยนใส่ Buffer เพื่อให้ Ticker พ่นอย่างนุ่มนวล
+                        rawContentBuffer += parsed.content;
+                    } else if (parsed.error) {
+                        fullContent += `\n**Error:** ${parsed.error}`;
+                        updateMessageContent(aiMessageContainer, fullContent, fullReasoning);
+                    }
                     } catch (e) {
                         console.warn('Failed to parse SSE data:', e);
                     }
@@ -886,6 +896,7 @@ async function handleAction() {
             }
         }
     } finally {
+        is_sending = false;
         if (aiMessageContainer && aiMessageContainer.contentDiv) {
             aiMessageContainer.contentDiv.classList.remove('streaming-active');
         }

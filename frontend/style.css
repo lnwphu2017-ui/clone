@@ -878,41 +878,40 @@ body:not(.sidebar-collapsed) .header-control-btn {
     flex-direction: column;
     align-items: center;
     width: 100%;
-    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), 
-                bottom 0.8s cubic-bezier(0.16, 1, 0.3, 1), 
-                background 0.5s ease;
+    transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
     
-    /* ✅ Glassmorphism Fade Effect (ใสขึ้นและโปร่งแสงมากขึ้น) */
+    /* ✅ Glassmorphism Fade Effect */
     position: absolute;
     bottom: 0;
     left: 0;
     z-index: 10;
     background: linear-gradient(to top, var(--bg-color) 30%, rgba(255,255,255,0) 100%);
-    backdrop-filter: blur(2px); /* ✅ ลดความเบลอลงตามคำขอ */
+    backdrop-filter: blur(2px);
     -webkit-backdrop-filter: blur(2px);
     pointer-events: none;
 }
 
-/* 🔥 โซลูชันเลื่อนลงแบบสมูท: เมื่อเป็น New Chat ให้เลื่อนไปกึ่งกลาง */
+/* 🔥 ช่องพิมพ์อยู่กึ่งกลางจอใต้ข้อความต้อนรับ (New Chat Mode) */
 .main-content.is-new-chat .input-area {
-    bottom: 50%;
-    transform: translateY(50%);
+    position: relative;
+    bottom: auto;
     background: transparent;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
+    padding: 20px 0;
 }
 
 .input-wrapper {
     pointer-events: auto;
     width: 100%;
     max-width: 800px;
-    background-color: #262626; /* ✅ สีเข้มพรีเมียมตามรูปแบบ */
-    border-radius: 28px; /* ✅ ทรง Pill Shape */
+    background-color: var(--input-bg); /* ✅ ย้อนคืนสีขาวเดิม */
+    border-radius: 24px; /* ✅ ทรง Pill Shape ที่สวยงาม */
     display: flex;
     flex-direction: column;
-    padding: 8px 12px 8px 16px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 10px 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05); /* ✅ เงาบางๆ สวยงาม */
+    border: 1px solid var(--border-color);
     transition: all 0.3s ease;
 }
 
@@ -970,15 +969,15 @@ body:not(.sidebar-collapsed) .header-control-btn {
     width: 100%;
     background: transparent;
     border: none;
-    color: #eee;
+    color: var(--text-color); /* ✅ ย้อนคืนสีเดิม */
     resize: none;
-    min-height: 24px; /* ✅ เล็กลงและกะทัดรัดตามตัวอย่าง */
+    min-height: 24px;
     max-height: 200px;
     padding: 4px 0;
     margin-bottom: 4px;
-    font-size: 15px;
+    font-size: 16px;
     outline: none;
-    line-height: 1.5;
+    line-height: 1.6;
 }
 
 #message-input::placeholder {
@@ -1001,47 +1000,47 @@ body:not(.sidebar-collapsed) .header-control-btn {
 }
 
 /* ตกแต่งปุ่มให้เป็น Pill/Circle */
-.attach-btn, .action-btn, .icon-pill-btn {
-    width: 32px;
-    height: 32px;
+.attach-btn, .action-btn {
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: rgba(255, 255, 255, 0.1);
-    color: #ccc;
+    background-color: var(--sidebar-hover);
+    color: var(--text-color);
     border: none;
     cursor: pointer;
     transition: all 0.2s;
-    font-size: 14px;
+    font-size: 16px;
 }
 
-.attach-btn:hover, .icon-pill-btn:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-    color: #fff;
+.attach-btn:hover {
+    background-color: #e0e0e0;
 }
 
 .action-btn {
-    background-color: #444;
+    background-color: #000; /* ปุ่มส่งสีเข้ม */
     color: #fff;
 }
 
 .action-btn:disabled {
-    background-color: #333;
-    color: #666;
+    background-color: var(--btn-disabled);
+    color: #fff;
+    cursor: not-allowed;
 }
 
 /* ปรับแต่ง Model Select ให้เป็น Pill */
 #model-select {
-    background-color: rgba(255, 255, 255, 0.1);
-    color: #eee;
+    background-color: var(--sidebar-hover);
+    color: var(--text-color);
     border: none;
-    border-radius: 16px;
-    padding: 4px 12px;
-    font-size: 12px;
+    border-radius: 12px;
+    padding: 6px 12px;
+    font-size: 13px;
     outline: none;
     cursor: pointer;
-    max-width: 180px;
+    max-width: 220px;
 }
 
 #model-select:hover {
