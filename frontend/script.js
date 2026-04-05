@@ -768,7 +768,10 @@ function appendMessage(role, content, isEmptyStream, modelName = null, files = [
             thoughtBody = t.body;
             if (initialThought) {
                 thoughtBody.innerText = initialThought;
-                t.container.classList.add('collapsed'); 
+                container.classList.add('collapsed');
+                // ปรับไอคอนลูกศรให้ชี้ขวา (เนื่องจากถูกพับไว้สำหรับประวัติเก่า)
+                const chevron = container.querySelector('.chevron');
+                if (chevron) chevron.className = 'fa-solid fa-chevron-right chevron';
             }
         }
 
@@ -869,12 +872,14 @@ function updateMessageContent(elementsObj, rawMarkdownContent, explicitReasoning
 
     if (finalThoughtText && thoughtDiv) {
         thoughtDiv.innerText = finalThoughtText;
-        // แสดงแถบความคิดเสมอเมื่อมีเนื้อหา
-        thoughtDiv.parentElement.style.display = 'block';
-        thoughtDiv.parentElement.classList.remove('hidden');
+        // แสดงแถบความคิดและกางออกทันทีตอนกำลัง Stream
+        const container = thoughtDiv.parentElement;
+        container.style.display = 'block';
+        container.classList.remove('hidden');
     } else if (thoughtDiv && !finalThoughtText) {
-        // เฉพาะกรณีที่ไม่มีเนื้อหาเลย ถึงจะซ่อน
-        if (!thoughtDiv.innerText) {
+        // ห้ามสั่งซ่อนถ้าใน thoughtDiv มีเนื้อหาอยู่แล้ว (เพื่อความ Persistent ระหว่าง Stream)
+        const currentText = thoughtDiv.innerText.trim();
+        if (!currentText) {
             thoughtDiv.parentElement.style.display = 'none';
         }
     }
@@ -1084,6 +1089,12 @@ function createThoughtBlock() {
     
     header.onclick = () => {
         container.classList.toggle('collapsed');
+        const chevron = header.querySelector('.chevron');
+        if (container.classList.contains('collapsed')) {
+            chevron.className = 'fa-solid fa-chevron-right chevron';
+        } else {
+            chevron.className = 'fa-solid fa-chevron-down chevron';
+        }
     };
     
     container.appendChild(header);
