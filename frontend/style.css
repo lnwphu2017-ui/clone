@@ -1003,35 +1003,31 @@ body:not(.sidebar-collapsed) .header-control-btn {
     gap: 6px;
 }
 
-/* ตกแต่งปุ่มให้เป็น Pill/Circle */
 .attach-btn, .action-btn {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
+    border: 1px solid var(--border-color);
+    background-color: #ffffff !important;
+    color: #0d0d0d;
     display: flex;
-    align-items: center;
     justify-content: center;
-    background-color: var(--sidebar-hover);
-    color: var(--text-color);
-    border: none;
+    align-items: center;
     cursor: pointer;
     transition: all 0.2s;
-    font-size: 16px;
+    font-size: 14px;
 }
 
-.attach-btn:hover {
-    background-color: #e0e0e0;
-}
-
-.action-btn {
-    background-color: #000; /* ปุ่มส่งสีเข้ม */
-    color: #fff;
+.attach-btn:hover, .action-btn:hover:not(:disabled) {
+    background-color: #f5f5f5 !important;
+    transform: scale(1.05);
 }
 
 .action-btn:disabled {
     background-color: var(--btn-disabled);
     color: #fff;
     cursor: not-allowed;
+    border: none;
 }
 
 /* ปรับแต่ง Custom Model Selector (Premium Dropdown) */
@@ -1042,26 +1038,24 @@ body:not(.sidebar-collapsed) .header-control-btn {
 }
 
 .model-toggle-btn {
-    background-color: var(--sidebar-hover);
-    color: var(--text-color);
-    border: none;
-    border-radius: 20px;
-    padding: 6px 16px;
-    padding-right: 20px; /* เว้นระยะห่างไอคอนด้านขวาตามขอ */
+    background-color: #ffffff !important;
+    color: #0d0d0d;
+    border: 1px solid var(--border-color);
+    border-radius: 24px;
+    padding: 6px 14px;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 8px;
-    transition: none; /* ไม่มี Hover Effect ตามขอ */
-    width: auto; /* ปรับขนาดตามชื่อโมเดล */
+    transition: all 0.2s;
+    width: auto;
     white-space: nowrap;
 }
 
 .model-toggle-btn:hover {
-    /* คืนค่าเดิม ไม่มีการเปลี่ยนสี */
-    background-color: var(--sidebar-hover);
+    background-color: #f5f5f5 !important;
 }
 
 .model-toggle-btn i {
