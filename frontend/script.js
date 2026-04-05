@@ -770,10 +770,15 @@ async function handleAction() {
             signal: abortController.signal
         });
 
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({ detail: 'Unknown error' }));
+            throw new Error(errorData.detail || `Server Error (${res.status})`);
+        }
+
         const reader = res.body.getReader();
         const decoder = new TextDecoder('utf-8');
         let fullContent = '';
-        let fullReasoning = ''; // สำหรับเก็บกระบวนการคิด
+        let fullReasoning = '';
 
         while (true) {
             const { done, value } = await reader.read();
@@ -816,8 +821,16 @@ async function handleAction() {
             scrollToBottom();
         }
     } catch (e) {
-        if (e.name === 'AbortError') console.log('Stream aborted');
-        else console.error('Stream error:', e);
+        if (e.name === 'AbortError') {
+            console.log('Stream aborted');
+        } else {
+            console.error('Stream error:', e);
+            const errorMsg = `\n\n❌ **Error:** ${e.message || 'ไม่สามารถติดต่อ AI ได้ในขณะนี้'}`;
+            if (aiMessageContainer) {
+                // แสดง Error ในกล่องข้อความ AI
+                updateMessageContent(aiMessageContainer, errorMsg, "");
+            }
+        }
     } finally {
         // บังคับคืนค่าปุ่มทันที
         resetToDefaultState();
