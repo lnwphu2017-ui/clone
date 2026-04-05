@@ -243,17 +243,30 @@
                     <!-- Hidden File Input -->
                     <input type="file" id="file-input" style="display: none;" multiple accept="image/*, .pdf, .txt, .doc, .docx">
                     <div class="input-actions-row">
-                        <div class="input-actions-left">
+                        <div class="input-actions-right">
+                            <!-- ปุ่มแนบไฟล์ -->
                             <button type="button" class="attach-btn" id="attach-btn" title="แนบไฟล์">
                                 <i class="fa fa-plus"></i>
                             </button>
-                        </div>
-                        <div class="input-actions-right">
-                            <div class="model-selector-inline">
-                                <select id="model-select">
-                                    <!-- ตัวเลือกจะถูกเพิ่มด้วย JavaScript -->
-                                </select>
-                            </div>
+                            
+                            <!-- ปุ่ม Reasoning / Bulb (Placeholder) -->
+                            <button type="button" class="icon-pill-btn" style="width: auto; padding: 0 12px; border-radius: 16px; gap: 6px; display: flex; align-items: center;">
+                                <i class="fa-regular fa-lightbulb" style="color: #4a90e2; font-size: 14px;"></i>
+                                <span style="font-size: 12px; font-weight: 500;">Medium</span>
+                                <i class="fa fa-chevron-down" style="font-size: 8px; opacity: 0.5; margin-left: 2px;"></i>
+                            </button>
+
+                            <!-- ปุ่ม Web Search / Globe (Placeholder) -->
+                            <button type="button" class="icon-pill-btn">
+                                <i class="fa fa-globe"></i>
+                            </button>
+
+                            <!-- ตัวเลือกโมเดล (Pill Style) -->
+                            <select id="model-select" title="เลือก AI Model">
+                                <!-- ตัวเลือกจะถูกเพิ่มด้วย JavaScript -->
+                            </select>
+
+                            <!-- ปุ่มส่งข้อความ -->
                             <button id="action-btn" class="action-btn send-mode" disabled>
                                 <i class="fa fa-arrow-up send-icon"></i>
                                 <i class="fa fa-square stop-icon"></i>

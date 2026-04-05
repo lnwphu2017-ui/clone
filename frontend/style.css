@@ -906,14 +906,14 @@ body:not(.sidebar-collapsed) .header-control-btn {
     pointer-events: auto;
     width: 100%;
     max-width: 800px;
-    background-color: var(--input-bg);
-    border-radius: 16px;
+    background-color: #262626; /* ✅ สีเข้มพรีเมียมตามรูปแบบ */
+    border-radius: 28px; /* ✅ ทรง Pill Shape */
     display: flex;
     flex-direction: column;
-    padding: 12px 16px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06); /* ✅ เงาบางลงให้ดูคลีน */
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    transition: box-shadow 0.3s ease;
+    padding: 8px 12px 8px 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
 }
 
 .file-preview-container {
@@ -970,14 +970,15 @@ body:not(.sidebar-collapsed) .header-control-btn {
     width: 100%;
     background: transparent;
     border: none;
-    color: var(--text-color);
+    color: #eee;
     resize: none;
-    min-height: 80px;
+    min-height: 24px; /* ✅ เล็กลงและกะทัดรัดตามตัวอย่าง */
     max-height: 200px;
-    padding: 0;
-    margin-bottom: 12px;
-    font-size: 16px;
+    padding: 4px 0;
+    margin-bottom: 4px;
+    font-size: 15px;
     outline: none;
+    line-height: 1.5;
 }
 
 #message-input::placeholder {
@@ -986,17 +987,65 @@ body:not(.sidebar-collapsed) .header-control-btn {
 
 .input-actions-row {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end; /* ✅ ชิดขวาตามตัวอย่าง */
     align-items: center;
-    margin-top: 8px;
-    padding: 4px 0;
+    gap: 8px;
+    margin-top: 2px;
 }
 
 .input-actions-left,
 .input-actions-right {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+}
+
+/* ตกแต่งปุ่มให้เป็น Pill/Circle */
+.attach-btn, .action-btn, .icon-pill-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ccc;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 14px;
+}
+
+.attach-btn:hover, .icon-pill-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+.action-btn {
+    background-color: #444;
+    color: #fff;
+}
+
+.action-btn:disabled {
+    background-color: #333;
+    color: #666;
+}
+
+/* ปรับแต่ง Model Select ให้เป็น Pill */
+#model-select {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #eee;
+    border: none;
+    border-radius: 16px;
+    padding: 4px 12px;
+    font-size: 12px;
+    outline: none;
+    cursor: pointer;
+    max-width: 180px;
+}
+
+#model-select:hover {
+    background-color: rgba(255, 255, 255, 0.2);
 }
 
 .attach-btn {
