@@ -538,7 +538,6 @@ async function handleAction() {
     }
     const content = messageInput.value.trim();
     if (!content) return;
-
     // ตรวจสอบ API Key ก่อนส่ง
     if (!apiKey) {
         showApiKeyScreen();
@@ -584,6 +583,7 @@ async function handleAction() {
         const reader = res.body.getReader();
         const decoder = new TextDecoder('utf-8');
         let fullContent = '';
+        let fullReasoning = ''; // สำหรับเก็บกระบวนการคิด
 
         while (true) {
             const { done, value } = await reader.read();
@@ -597,12 +597,17 @@ async function handleAction() {
                     if (!dataStr) continue;
                     try {
                         const parsed = JSON.parse(dataStr);
-                        if (parsed.content !== undefined) {
+                        
+                        // รองรับทั้งเนื้อหาหลักและเนื้อหาการคิด (Reasoning)
+                        if (parsed.reasoning_content !== undefined) {
+                            fullReasoning += parsed.reasoning_content;
+                            updateMessageContent(aiMessageContainer, fullContent, fullReasoning);
+                        } else if (parsed.content !== undefined) {
                             fullContent += parsed.content;
-                            updateMessageContent(aiMessageContainer, fullContent);
+                            updateMessageContent(aiMessageContainer, fullContent, fullReasoning);
                         } else if (parsed.error) {
                             fullContent += `\n**Error:** ${parsed.error}`;
-                            updateMessageContent(aiMessageContainer, fullContent);
+                            updateMessageContent(aiMessageContainer, fullContent, fullReasoning);
                         }
                     } catch (e) {
                         console.warn('Failed to parse SSE data:', e);
@@ -615,9 +620,9 @@ async function handleAction() {
         if (e.name === 'AbortError') console.log('Stream aborted');
         else console.error('Stream error:', e);
     } finally {
-        // หลงจาก Stream จบ ให้เปิดการแสดงผลปุ่ม Copy
-        if (aiMessageContainer && aiMessageContainer.parentElement) {
-            const actionRow = aiMessageContainer.parentElement.querySelector('.message-actions');
+        // หลังจาก Stream จบ ให้เปิดการแสดงผลปุ่ม Copy
+        if (aiMessageContainer && aiMessageContainer.contentDiv && aiMessageContainer.contentDiv.parentElement) {
+            const actionRow = aiMessageContainer.contentDiv.parentElement.querySelector('.message-actions');
             if (actionRow) actionRow.style.display = 'flex';
         }
         resetToDefaultState();
@@ -783,23 +788,34 @@ function appendMessage(role, content, isEmptyStream, modelName = null, files = [
     return { contentDiv: mainContentDiv, thoughtDiv: thoughtBody };
 }
 
-function updateMessageContent(elementsObj, rawMarkdownContent) {
+function updateMessageContent(elementsObj, rawMarkdownContent, explicitReasoning = "") {
     if (!elementsObj) return;
-    // รับค่า elementsObj ที่ห่อหุ้มมา (แทนที่จะเป็น element เดียว)
     const { contentDiv, thoughtDiv } = elementsObj;
     
-    // ตรวจจับความคิดในระหว่าง Stream
-    const thoughtInfo = parseThoughtPart(rawMarkdownContent);
-    const mainText = thoughtInfo.mainText;
-    const thoughtText = thoughtInfo.thoughtText;
+    // 1. จัดการข้อมูลการคิด (Thought/Reasoning)
+    let finalThoughtText = explicitReasoning;
+    let mainText = rawMarkdownContent;
 
-    if (thoughtText && thoughtDiv) {
-        thoughtDiv.innerText = thoughtText;
-        thoughtDiv.parentElement.classList.remove('hidden'); 
-    } else if (thoughtDiv && !thoughtText) {
-        thoughtDiv.parentElement.style.display = 'none';
+    // ถ้าไม่มีข้อมูลการคิดส่งแยกมา ให้ลองแกะจากเนื้อหาหลัก (Fallback)
+    if (!finalThoughtText) {
+        const thoughtInfo = parseThoughtPart(rawMarkdownContent);
+        mainText = thoughtInfo.mainText;
+        finalThoughtText = thoughtInfo.thoughtText;
     }
 
+    if (finalThoughtText && thoughtDiv) {
+        thoughtDiv.innerText = finalThoughtText;
+        // แสดงแถบความคิดเสมอเมื่อมีเนื้อหา
+        thoughtDiv.parentElement.style.display = 'block';
+        thoughtDiv.parentElement.classList.remove('hidden');
+    } else if (thoughtDiv && !finalThoughtText) {
+        // เฉพาะกรณีที่ไม่มีเนื้อหาเลย ถึงจะซ่อน
+        if (!thoughtDiv.innerText) {
+            thoughtDiv.parentElement.style.display = 'none';
+        }
+    }
+
+    // 2. อัปเดตเนื้อหาหลัก
     if (contentDiv) {
         contentDiv.dataset.markdown = mainText;
         updateContentHtml(contentDiv, mainText);

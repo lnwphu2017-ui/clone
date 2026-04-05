@@ -520,6 +520,7 @@ html {
 
 .message.user .message-inner {
     justify-content: flex-end;
+    padding-right: 24px; /* เพิ่มระยะห่างให้ดูพรีเมียม ไม่ติดขอบจอ */
 }
 
 
@@ -535,10 +536,13 @@ html {
 
 .message.user .message-content {
     background-color: var(--user-msg-bg);
-    padding: 15px 20px;
+    padding: 12px 18px;
     border-radius: 20px;
     border-bottom-right-radius: 4px;
-    width: auto;
+    width: fit-content; /* ให้กว้างเท่ากับเนื้อหา */
+    max-width: 85%; /* ป้องกันการติดขอบซ้าย */
+    border: 1px solid var(--border-color);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05); /* เพิ่มมิตินิดหน่อย */
 }
 
 .message.assistant .message-content {
@@ -812,16 +816,7 @@ html {
     color: #ff4444 !important;
 }
 
-.message.user .message-inner {
-    background-color: var(--sidebar-bg); /* เปลี่ยนเป็นสีพื้นหลังเดียวกันเพื่อความเนียน */
-    color: var(--text-color);
-    margin-left: auto;
-    margin-right: 0; /* มั่นใจว่าไม่ห่างจากขอบขวาเกินไปหรือชิดเกินไป */
-    max-width: 85%; /* ป้องกันการขยายจนติดขอบซ้าย */
-    border-radius: 18px 18px 4px 18px;
-    border: 1px solid var(--border-color);
-    padding: 10px 16px; /* เพิ่ม Padding ให้ดูโปร่งสบาย */
-}
+/* ลบส่วนที่ซ้ำซ้อนกับด้านบนออก เพื่อความเสถียร */
 
 .message-attachments {
     display: flex;
