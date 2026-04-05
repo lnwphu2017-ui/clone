@@ -400,13 +400,13 @@ html {
     border-radius: 8px;
     cursor: pointer;
     font-size: 14px;
-    color: #000000;
+    color: #888888; /* ประวัติแชทสีรองตามสั่ง */
 }
 
 .chat-item:hover,
 .chat-item.active {
     background-color: var(--sidebar-hover);
-    color: rgb(0, 0, 0);
+    color: #1a1a1a;
 }
 
 .chat-title {
@@ -508,7 +508,7 @@ body.sidebar-collapsed .top-controls {
     padding: 10px 12px;
     border-radius: 8px;
     cursor: pointer;
-    color: #cecece;
+    color: #1a1a1a; /* เมนูบนสีเข้มตามสั่ง */
     transition: all 0.2s;
     font-size: 15px;
     font-weight: 500;
@@ -516,7 +516,7 @@ body.sidebar-collapsed .top-controls {
 
 .sidebar-item-btn:hover {
     background-color: var(--sidebar-hover);
-    color: var(--text-color);
+    color: #000000;
 }
 
 .sidebar-item-btn svg,
