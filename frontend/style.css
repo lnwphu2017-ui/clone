@@ -589,7 +589,7 @@ body:not(.sidebar-collapsed) .header-control-btn {
     background-color: rgba(255, 255, 255, 0.7); /* ✅ ปรับให้ใสขึ้นเล็กน้อย */
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: none;
     position: sticky;
     top: 0;
     z-index: 100;

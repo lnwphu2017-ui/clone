@@ -168,16 +168,6 @@ function setupSidebarToggle() {
 
     if (mainSidebarToggle) mainSidebarToggle.onclick = toggleSidebar;
     if (toggleSidebarBtn) toggleSidebarBtn.onclick = toggleSidebar;
-
-    // เชื่อมต่อปุ่ม New Chat ตัวใหม่ (ที่อยู่ข้างนอกถาวร)
-    if (newChatBtnPersistent) {
-        newChatBtnPersistent.onclick = () => {
-            currentChatId = null;
-            if (chatHeaderTitle) chatHeaderTitle.textContent = 'New chat';
-            updateLayoutState(true);
-            clearMessages();
-        };
-    }
 }
 
 // ===== จัดการหน้าจอ Login =====
@@ -659,6 +649,7 @@ function setupEventListeners() {
     // ระบบสร้างแชทใหม่ (รองรับทั้งปุ่มข้างนอกและปุ่มใน Sidebar)
     const handleNewChatAction = () => {
         currentChatId = null;
+        if (chatHeaderTitle) chatHeaderTitle.textContent = 'New chat';
         updateLayoutState(true);
         clearMessages();
     };
