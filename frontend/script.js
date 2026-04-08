@@ -342,7 +342,6 @@ async function HandleLogout() {
 
     current_user_uid = null;
     ShowAuthModal(); // กลับไปแสดงหน้า Auth modal (Step 1)
-    HideSetupWizard();
     app_container.style.display = 'none';
     CloseSettingsScreen();
     localStorage.removeItem('openrouter_api_key');
