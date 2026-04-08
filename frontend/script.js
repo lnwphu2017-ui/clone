@@ -1,493 +1,429 @@
 // URL หลักของ API สำหรับคุยกับ Backend
 const BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '/api';
-let currentChatId = null;
-let abortController = null;
-let currentUserUid = null;
-let currentUserPhoto = '';
+let current_chat_id = null;
+let abort_controller = null;
+let current_user_uid = null;
+let current_user_photo = '';
+let pending_message = null; // ✅ เก็บข้อความที่พิมพ์ค้างไว้ก่อน Login
+let pending_files = [];    // ✅ เก็บไฟล์ที่แนบค้างไว้ก่อน Login
 
 // ===== ตัวแปรสำหรับจัดการ API Key และ Model (เก็บใน localStorage เหมือน st.session_state) =====
-let apiKey = localStorage.getItem('openrouter_api_key') || '';
-let selectedModel = localStorage.getItem('selected_model') || 'google/gemini-2.0-flash-001';
+let api_key = localStorage.getItem('openrouter_api_key') || '';
+let selected_model = localStorage.getItem('selected_model') || 'google/gemini-2.0-flash-001';
 
 // อ้างอิง Element หลัก
-const chatListEl = document.getElementById('history-list');
-const chatContainer = document.getElementById('chat-container');
-const messageInput = document.getElementById('message-input');
-const actionBtn = document.getElementById('action-btn');
-const newChatBtn = document.getElementById('new-chat-btn');
-const searchInput = document.getElementById('search-chat');
-const welcomeScreen = document.getElementById('welcome-screen');
-const deleteModal = document.getElementById('delete-modal');
-const deleteChatTitle = document.getElementById('delete-chat-title');
-const confirmDeleteBtn = document.getElementById('confirm-delete');
-const cancelDeleteBtn = document.getElementById('cancel-delete');
-const fileInput = document.getElementById('file-input');
-const filePreviewContainer = document.getElementById('file-preview-container');
-const attachBtn = document.getElementById('attach-btn');
-const sidebar = document.getElementById('sidebar');
-const toggleSidebarBtn = document.getElementById('toggle-sidebar-btn');
-const mainSidebarToggle = document.getElementById('main-sidebar-toggle');
-const newChatBtnPersistent = document.getElementById('new-chat-btn-persistent');
+const chat_list_el = document.getElementById('history-list');
+const chat_container = document.getElementById('chat-container');
+const message_input = document.getElementById('message-input');
+const action_btn = document.getElementById('action-btn');
+const new_chat_btn = document.getElementById('new-chat-btn');
+const search_input = document.getElementById('search-chat');
+const welcome_screen = document.getElementById('welcome-screen');
+const delete_modal = document.getElementById('delete-modal');
+const delete_chat_title = document.getElementById('delete-chat-title');
+const confirm_delete_btn = document.getElementById('confirm-delete');
+const cancel_delete_btn = document.getElementById('cancel-delete');
+const file_input = document.getElementById('file-input');
+const file_preview_container = document.getElementById('file-preview-container');
+const attach_btn = document.getElementById('attach-btn');
+const sidebar_el = document.getElementById('sidebar');
+const toggle_sidebar_btn = document.getElementById('toggle-sidebar-btn');
+const main_sidebar_toggle = document.getElementById('main-sidebar-toggle');
+const new_chat_btn_persistent = document.getElementById('new-chat-btn-persistent');
 
 // ปุ่มใหม่ใน Sidebar Internal
-const toggleSidebarInternal = document.getElementById('toggle-sidebar-internal');
-const newChatInternal = document.getElementById('new-chat-internal');
-const launchBtn = document.getElementById('launch-btn');
-const settingsBtn = document.getElementById('settings-btn');
-const chatHeaderTitle = document.getElementById('chat-header-title');
-const mainContent = document.querySelector('.main-content');
+const toggle_sidebar_internal = document.getElementById('toggle-sidebar-internal');
+const new_chat_internal = document.getElementById('new-chat-internal');
+const launch_btn = document.getElementById('launch-btn');
+const settings_btn = document.getElementById('settings-btn');
+const chat_header_title = document.getElementById('chat-header-title');
+const main_content = document.querySelector('.main-content');
 
-let attachedFiles = [];
+let attached_files = [];
 
-// อ้างอิง Element สำหรับ API Key และ Model
-const apiKeyScreen = document.getElementById('api-key-screen');
-const apiKeyInput = document.getElementById('api-key-input');
-const saveApiKeyBtn = document.getElementById('save-api-key-btn');
-const toggleKeyVisibility = document.getElementById('toggle-key-visibility');
-const appContainer = document.getElementById('app-container');
-const modelSelect = document.getElementById('model-select');
-const changeKeyBtn = document.getElementById('change-key-btn');
-const userProfile = document.getElementById('user-profile');
+// อ้างอิง Element สำหรับ Setup Wizard (Unified Modal)
+const setup_wizard_modal = document.getElementById('setup-wizard-modal');
+const wizard_step_1 = document.getElementById('wizard-step-1');
+const wizard_step_2 = document.getElementById('wizard-step-2');
+const wizard_api_key_input = document.getElementById('wizard-api-key-input');
+const save_wizard_api_key_btn = document.getElementById('save-wizard-api-key-btn');
+const toggle_wizard_key_visibility = document.getElementById('toggle-wizard-key-visibility');
+const close_setup_modal_btn = document.getElementById('close-setup-modal');
+
+// อ้างอิง Element อื่นๆ
+const app_container = document.getElementById('app-container');
+const model_select = document.getElementById('model-select');
+const change_key_btn = document.getElementById('change-key-btn');
+const user_profile = document.getElementById('user-profile');
 
 // อ้างอิง Element สำหรับ Settings Screen
-const settingsScreen = document.getElementById('settings-screen');
-const closeSettingsBtn = document.getElementById('close-settings');
-const settingsAvatar = document.getElementById('settings-avatar');
-const settingsUserName = document.getElementById('settings-user-name');
-const settingsUserEmail = document.getElementById('settings-user-email');
-const settingsApiKeyInput = document.getElementById('settings-api-key');
-const saveSettingsKeyBtn = document.getElementById('save-settings-key');
-const toggleSettingsKey = document.getElementById('toggle-settings-key');
-const settingsAuthBtn = document.getElementById('settings-auth-btn');
+const settings_screen = document.getElementById('settings-screen');
+const close_settings_btn = document.getElementById('close-settings');
+const settings_avatar = document.getElementById('settings-avatar');
+const settings_user_name = document.getElementById('settings-user-name');
+const settings_user_email = document.getElementById('settings-user-email');
+const settings_api_key_input = document.getElementById('settings-api-key');
+const save_settings_key_btn = document.getElementById('save-settings-key');
+const toggle_settings_key = document.getElementById('toggle-settings-key');
+const settings_auth_btn = document.getElementById('settings-auth-btn');
 
-let chatIdToDelete = null;
-let allChats = [];
-let allModels = []; // ✅ เก็บรายชื่อโมเดลทั้งหมดเพื่อใช้ในการ Filter
-let eventListenersSetup = false; // ป้องกันการตั้ง Event ซ้ำ
-let isAutoScrollEnabled = true;
+let chat_id_to_delete = null;
+let all_chats = [];
+let all_models = []; // ✅ เก็บรายชื่อโมเดลทั้งหมดเพื่อใช้ในการ Filter
+let event_listeners_setup = false; // ป้องกันการตั้ง Event ซ้ำ
+let is_auto_scroll_enabled = true;
 let is_sending = false; // ✅ ป้องกันการกดส่งซ้ำ
 
 // ✅ Elements สำหรับ Custom Model Selector
-const modelToggleBtn = document.getElementById('model-toggle-btn');
-const modelDropdownMenu = document.getElementById('model-dropdown-menu');
-const modelSearchInput = document.getElementById('model-search-input');
-const modelListContainer = document.getElementById('model-list-container');
-const currentModelDisplay = document.getElementById('current-model-display');
+const model_toggle_btn = document.getElementById('model-toggle-btn');
+const model_dropdown_menu = document.getElementById('model-dropdown-menu');
+const model_search_input = document.getElementById('model-search-input');
+const model_list_container = document.getElementById('model-list-container');
+const current_model_display = document.getElementById('current-model-display');
 
 window.initApp = async function () {
-    await init();
+    await Init();
 };
 
 // ฟังก์ชันเริ่มต้นการทำงาน
-async function init() {
-    setupApiKeyScreen();
-    setupLoginScreen();
+async function Init() {
+    SetupSetupWizard(); // ✅ ใช้ Wizard แทนหน้าจอแยกเดิม
+    
+    // ... rest of Init remains similar logic ...
 
-    // จัดการผลลัพธ์หลังจาก Redirect มาจาก Google
-    try {
-        const result = await window.getRedirectResult(window.firebaseAuth);
+    // ✅ ปรับเปลี่ยน: เริ่มต้นแอปในสถานะปกติ (ไม่ต้องรอ Firebase)
+    // แต่จะไม่เซ็ตเป็น Guest อัตโนมัติ เพื่อให้เด้ง Login เมื่อพยายามแชท
+    if (!current_user_uid) {
+        if (user_profile) {
+            user_profile.innerHTML = `<i class="fa-solid fa-circle-user" style="font-size:20px; opacity:0.7;"></i> <span style="font-weight:500; opacity:0.8;">Sign in to chat</span>`;
+        }
+        ShowApp(); // แสดงหน้าแอปหลักเป็นหน้าแรกเสมอ
+    }
+
+    // จัดการผลลัพธ์หลังจาก Redirect มาจาก Google (Non-blocking เพื่อป้องกันการโหลดค้าง)
+    window.getRedirectResult(window.firebaseAuth).then((result) => {
         if (result && result.user) {
             console.log("🔥 Redirect result found:", result.user.email);
-            // บังคับให้ข้ามหน้า Login ทันที
-            currentUserUid = result.user.email;
+            current_user_uid = result.user.email;
+            // ถ้าได้ผลลัพธ์จะไปอัปเดตต่อใน onAuthStateChanged
         }
-    } catch (error) {
-        console.error("❌ Redirect Result Error:", error);
-        alert("เกิดปัญหาในการรับข้อมูลจาก Google: " + error.message + "\n(กรุณาเช็คการตั้งค่า Authorized Domain ใน Firebase/Google Cloud ครับ)");
-    }
+    }).catch((error) => {
+        if (error.code !== 'auth/internal-error') {
+            console.error("❌ Redirect Result Error:", error);
+        }
+    });
 
     // ดักจับสถานะล็อกอินผ่าน Firebase
     window.onAuthStateChanged(window.firebaseAuth, (user) => {
         console.log("🎯 Auth State Changed:", user ? user.email : "Logged Out");
-        
-        // ถ้าเป็น Guest และไม่มีผู้ใช้ Firebase (user เป็น null) ให้คงสถานะ Guest ไว้
-        if (!user && currentUserUid === "guest") return;
 
         if (user) {
-            currentUserUid = user.email;
-            currentUserPhoto = user.photoURL || '';
-            document.getElementById('login-screen').style.display = 'none';
+            current_user_uid = user.email;
+            current_user_photo = user.photoURL || '';
+            // document.getElementById('login-screen').style.display = 'none'; // ✅ ลบบรรทัดที่เป็นบั๊กออก (Element นี้ถูกลบไปแล้ว)
 
-            if (userProfile) {
-                userProfile.innerHTML = `<img src="${user.photoURL || ''}" style="width:24px;height:24px;border-radius:50%;" onerror="this.style.display='none'"> <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${user.email}</span>`;
+            if (user_profile) {
+                user_profile.innerHTML = `<img src="${user.photoURL || ''}" style="width:24px;height:24px;border-radius:50%;" onerror="this.style.display='none'"> <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${user.email}</span>`;
             }
 
             // อัปเดตข้อมูลในหน้า Settings
-            if (settingsUserName) settingsUserName.textContent = user.displayName || 'User';
-            if (settingsUserEmail) settingsUserEmail.textContent = user.email;
-            if (settingsAvatar) settingsAvatar.src = user.photoURL || '';
-            if (settingsApiKeyInput) settingsApiKeyInput.value = apiKey;
-            if (settingsAuthBtn) settingsAuthBtn.textContent = 'Sign out';
+            if (settings_user_name) settings_user_name.textContent = user.displayName || 'User';
+            if (settings_user_email) settings_user_email.textContent = user.email;
+            if (settings_avatar) settings_avatar.src = user.photoURL || '';
+            if (settings_api_key_input) settings_api_key_input.value = api_key;
+            if (settings_auth_btn) settings_auth_btn.textContent = 'Sign out';
 
-            // ตัดสินใจว่าจะไปหน้าไหน
-            if (apiKey) {
-                showApp();
+            // ✅ ถ้ามีข้อความค้างอยู่ (Pending Message) หลังจากล็อกอินสำเร็จ
+            if (pending_message) {
+                if (api_key) {
+                    HideSetupWizard();
+                    HandleAction(); // ดำเนินการส่งต่อทันที
+                } else {
+                    ShowSetupWizard(2); // ✅ ถ้ายังไม่มี Key ให้สลับไปหน้า Step 2 ใน Modal เดิม
+                }
+            } else if (api_key) {
+                HideSetupWizard();
+                ShowApp();
             } else {
-                showApiKeyScreen();
+                // ถ้าล็อกอินแล้วแต่ไม่มี Key และไม่ได้กดแชทค้างไว้ 
+                // ให้เช็คว่าอยู่ที่หน้าไหน ถ้าอยู่หน้าแอปให้โชว์ Wizard Step 2
+                if (setup_wizard_modal.style.display === 'flex' || app_container.style.display === 'none') {
+                    ShowSetupWizard(2);
+                }
             }
         } else if (!user) {
-            currentUserUid = null;
-            document.getElementById('login-screen').style.display = 'flex';
-            document.getElementById('api-key-screen').style.display = 'none';
-            document.getElementById('app-container').style.display = 'none';
+            // ✅ สถานะ Unauthenticated
+            current_user_uid = null;
+            current_user_photo = '';
             
-            // อัปเดตข้อมูลในหน้า Settings ให้เป็น Guest
-            if (settingsUserName) settingsUserName.textContent = 'Guest User';
-            if (settingsUserEmail) settingsUserEmail.textContent = 'guest@clonemodel.ai';
-            if (settingsAuthBtn) settingsAuthBtn.textContent = 'Sign in';
+            // อัปเดตข้อมูลในหน้า Settings ให้เป็นสถานะยังไม่ได้ล็อกอิน
+            if (settings_user_name) settings_user_name.textContent = 'Please sign in';
+            if (settings_user_email) settings_user_email.textContent = 'Sign in to save your chats';
+            if (user_profile) {
+                user_profile.innerHTML = `<i class="fa-solid fa-circle-user" style="font-size:20px; opacity:0.7;"></i> <span style="font-weight:500; opacity:0.8;">Sign in to chat</span>`;
+            }
+            if (settings_auth_btn) settings_auth_btn.textContent = 'Sign in';
         }
     });
 
-    // ปุ่ม Sign In (ถ้าเป็น Guest) ในหน้า Settings
-    const loginBtn = document.getElementById('settings-auth-btn');
-    if (loginBtn && currentUserUid === "guest") loginBtn.onclick = showLoginScreen;
-
     // ตั้งค่าให้กดที่ Profile ใน Sidebar เพื่อเปิด Settings ได้เลย (Shortcut)
-    if (userProfile) userProfile.onclick = showSettingsScreen;
-    if (userProfile) userProfile.style.cursor = 'pointer';
+    if (user_profile) {
+        user_profile.onclick = ShowSettingsScreen;
+        user_profile.style.cursor = 'pointer';
+    }
 
     // ระบบหุ้ม Sidebar (Collapse)
-    setupSidebarToggle();
+    SetupSidebarToggle();
 }
 
 // ฟังก์ชันควบคุมการหด-ขยาย Sidebar
-function setupSidebarToggle() {
+function SetupSidebarToggle() {
     // โหลดสถานะล่าสุดจาก localStorage
-    const isCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
-    if (isCollapsed) {
-        sidebar.classList.add('collapsed');
+    const is_collapsed = localStorage.getItem('sidebar_collapsed') === 'true';
+    if (is_collapsed) {
+        sidebar_el.classList.add('collapsed');
         document.body.classList.add('sidebar-collapsed');
     }
 
     // ฟังก์ชันช่วยสลับสถานะ
-    const toggleSidebar = () => {
-        const isCurrentlyCollapsed = sidebar.classList.toggle('collapsed');
-        document.body.classList.toggle('sidebar-collapsed', isCurrentlyCollapsed);
-        localStorage.setItem('sidebar_collapsed', isCurrentlyCollapsed);
+    const ToggleSidebar = () => {
+        const is_currently_collapsed = sidebar_el.classList.toggle('collapsed');
+        document.body.classList.toggle('sidebar-collapsed', is_currently_collapsed);
+        localStorage.setItem('sidebar_collapsed', is_currently_collapsed);
     };
 
-    if (mainSidebarToggle) mainSidebarToggle.onclick = toggleSidebar;
-    if (toggleSidebarBtn) toggleSidebarBtn.onclick = toggleSidebar;
+    if (main_sidebar_toggle) main_sidebar_toggle.onclick = ToggleSidebar;
+    if (toggle_sidebar_btn) toggle_sidebar_btn.onclick = ToggleSidebar;
 }
 
-// ===== จัดการหน้าจอ Login =====
-function setupLoginScreen() {
-    let isSignUpMode = false;
+// ===== จัดการหน้าจอ Auth Modal ใหม่ (Google Only) =====
 
-    // อ้างอิง Element ใหม่จากดีไซน์ SiamGPT
-    const authTitle = document.getElementById('auth-title');
-    const nameGroup = document.getElementById('name-group');
-    const authMainBtn = document.getElementById('auth-main-btn');
-    const toggleAuthMode = document.getElementById('toggle-auth-mode');
-    const toggleMsg = document.getElementById('toggle-msg');
-    const loginEmail = document.getElementById('login-email');
-    const loginPassword = document.getElementById('login-password');
-    const toggleLoginPassword = document.getElementById('toggle-login-password');
-    const guestLoginBtn = document.getElementById('guest-login-btn');
-    const googleLoginBtn = document.getElementById('login-google-btn');
-    const passwordHint = document.getElementById('password-hint');
+// ===== จัดการ Unified Setup Wizard (Login + API Key) =====
 
-    // ฟังก์ชันสลับโหมด Sign In / Sign Up
-    toggleAuthMode.onclick = (e) => {
-        e.preventDefault();
-        isSignUpMode = !isSignUpMode;
+function SetupSetupWizard() {
+    const google_login_btn_modal = document.getElementById('login-google-btn-modal');
 
-        if (isSignUpMode) {
-            authTitle.innerText = "Create Account";
-            nameGroup.style.display = "block";
-            authMainBtn.innerText = "Create Account";
-            toggleMsg.innerText = "Already have an account?";
-            toggleAuthMode.innerText = "Sign in";
-            passwordHint.style.display = "block";
-        } else {
-            authTitle.innerText = "Sign in to CLONE";
-            nameGroup.style.display = "none";
-            authMainBtn.innerText = "Sign In";
-            toggleMsg.innerText = "Don't have an account?";
-            toggleAuthMode.innerText = "Sign up";
-            passwordHint.style.display = "none";
-        }
-    };
-
-    // แสดง/ซ่อนรหัสผ่าน
-    toggleLoginPassword.onclick = () => {
-        const isPassword = loginPassword.type === 'password';
-        loginPassword.type = isPassword ? 'text' : 'password';
-        toggleLoginPassword.querySelector('i').className = isPassword ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
-    };
-
-    // ปุ่มหลัก (Sign In / Sign Up ด้วย Email)
-    authMainBtn.onclick = async () => {
-        const email = loginEmail.value.trim();
-        const password = loginPassword.value;
-        const name = document.getElementById('reg-name').value.trim();
-
-        if (!email || !password) {
-            alert("กรุณากรอกอีเมลและรหัสผ่าน");
-            return;
-        }
-
-        authMainBtn.disabled = true;
-        authMainBtn.innerText = "Processing...";
-
-        try {
-            if (isSignUpMode) {
-                // สมัครสมาชิกใหม่
-                const userCredential = await window.createUserWithEmailAndPassword(window.firebaseAuth, email, password);
-                if (name) {
-                    await window.updateProfile(userCredential.user, { displayName: name });
-                }
-                alert("สร้างบัญชีสำเร็จ!");
-            } else {
-                // เข้าสู่ระบบ
-                await window.signInWithEmailAndPassword(window.firebaseAuth, email, password);
-            }
-        } catch (error) {
-            console.error('Auth Error:', error);
-            let msg = "เกิดข้อผิดพลาด: ";
-            if (error.code === 'auth/email-already-in-use') msg += "อีเมลนี้ถูกใช้งานแล้ว";
-            else if (error.code === 'auth/weak-password') msg += "รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร";
-            else if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') msg += "อีเมลหรือรหัสผ่านไม่ถูกต้อง";
-            else msg += error.message;
-            alert(msg);
-        } finally {
-            authMainBtn.disabled = false;
-            authMainBtn.innerText = isSignUpMode ? "Create Account" : "Sign In";
-        }
-    };
-
-    // เข้าสู่ระบบด้วย Google (ท่าไม้ตายพรีเมียม: สวย เสถียร และไม่โดนบล็อก)
-    googleLoginBtn.onclick = () => {
-        const originalGoogleBtnHtml = googleLoginBtn.innerHTML;
-        
-        // 1. เปลี่ยนสถานะปุ่มให้ดูเหมือนการ Redirect พรีเมียม
-        googleLoginBtn.disabled = true;
-        googleLoginBtn.style.opacity = "0.7";
-        googleLoginBtn.innerHTML = `<i class="fa fa-spinner fa-spin"></i> <span>Redirecting to Google...</span>`;
-
-        // 2. ตั้งค่าให้เลือกบัญชีได้เสมอ
-        window.googleProvider.setCustomParameters({ prompt: 'select_account' });
-
-        // 3. เรียกหน้าต่างล็อกอิน Google
-        window.signInWithPopup(window.firebaseAuth, window.googleProvider)
-            .then(() => {
-                // สำเร็จแล้ว คืนค่าปุ่มหากหน้าจอยังไม่เปลี่ยน (เผื่อกรณีระบบดีเลย์)
-                googleLoginBtn.disabled = false;
-                googleLoginBtn.style.opacity = "1";
-                googleLoginBtn.innerHTML = originalGoogleBtnHtml;
-            })
-            .catch((error) => {
-                console.error('Google Sign In Error:', error);
-                if (error.code === 'auth/popup-blocked') {
-                    alert('⚠️ Browser บล็อกหน้าต่างล็อกอิน! กรุณากด "อนุญาต (Allow Pop-ups)" ที่มุมขวาบนของช่องกรอก URL แล้วลองใหม่อีกครั้งครับ');
-                } else if (error.code !== 'auth/popup-closed-by-user') {
-                    alert('ล็อกอินผิดพลาด: ' + error.message);
-                }
-                // คืนค่าปุ่มหากกดยกเลิกหรือผิดพลาด
-                googleLoginBtn.disabled = false;
-                googleLoginBtn.style.opacity = "1";
-                googleLoginBtn.innerHTML = originalGoogleBtnHtml;
-            });
-    };
-
-    // เข้าสู่ระบบในฐานะ Guest (Local Bypass - สร้าง ID ใหม่ทุกครั้งเพื่อความเป็นส่วนตัว)
-    guestLoginBtn.onclick = () => {
-        // สุ่ม ID ใหม่ทุกครั้งที่เข้า เพื่อไม่ให้ประวัติปนกับคนอื่น
-        currentUserUid = "guest_" + Math.random().toString(36).substring(2, 10);
-        document.getElementById('login-screen').style.display = 'none';
-        const userProfile = document.getElementById('user-profile');
-        if (userProfile) {
-            userProfile.innerHTML = `<i class="fa fa-user-secret" style="font-size:18px;"></i> <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Guest Mode</span>`;
-        }
-        if (apiKey) showApp();
-        else showApiKeyScreen();
-    };
-}
-
-// ฟังก์ชัน Logout ส่วนกลาง
-async function handleLogout() {
-    try {
-        if (currentUserUid !== "guest") {
-            await window.signOut(window.firebaseAuth);
-        }
-    } catch (error) {
-        console.error("Sign Out Error:", error);
+    // ปุ่มปิด Modal
+    if (close_setup_modal_btn) {
+        close_setup_modal_btn.onclick = HideSetupWizard;
     }
+
+    // Google Login Logic
+    if (google_login_btn_modal) {
+        google_login_btn_modal.onclick = () => {
+            const original_btn_html = google_login_btn_modal.innerHTML;
+            google_login_btn_modal.disabled = true;
+            google_login_btn_modal.style.opacity = "0.7";
+            google_login_btn_modal.querySelector('span').textContent = 'Authenticating...';
+
+            window.signInWithPopup(window.firebaseAuth, window.googleProvider)
+                .then(() => {
+                    // Note: onAuthStateChanged จะเป็นคนเช็คต่อว่าได้รับ User หรือยัง
+                    // ถ้าได้แล้ว มันจะสลับไป Step 2 (API Key) หรือปิด Modal ให้เอง
+                })
+                .catch((error) => {
+                    console.error('Google Sign In Error:', error);
+                    alert('ล็อกอินผิดพลาด: ' + (error.message || 'Unknown error'));
+                    google_login_btn_modal.disabled = false;
+                    google_login_btn_modal.style.opacity = "1";
+                    google_login_btn_modal.innerHTML = original_btn_html;
+                });
+        };
+    }
+
+    // API Key Step Logic
+    if (toggle_wizard_key_visibility) {
+        toggle_wizard_key_visibility.onclick = () => {
+            const is_password = wizard_api_key_input.type === 'password';
+            wizard_api_key_input.type = is_password ? 'text' : 'password';
+            toggle_wizard_key_visibility.querySelector('i').className = is_password ? 'fa fa-eye-slash' : 'fa fa-eye';
+        };
+    }
+
+    if (wizard_api_key_input) {
+        wizard_api_key_input.addEventListener('input', () => {
+            save_wizard_api_key_btn.disabled = wizard_api_key_input.value.trim() === '';
+        });
+        wizard_api_key_input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !save_wizard_api_key_btn.disabled) SaveWizardApiKey();
+        });
+    }
+
+    if (save_wizard_api_key_btn) {
+        save_wizard_api_key_btn.onclick = SaveWizardApiKey;
+    }
+
+    // ปิด Modal เมื่อคลิกด้านนอก
+    window.addEventListener('click', (e) => {
+        if (e.target === setup_wizard_modal) HideSetupWizard();
+    });
+}
+
+function ShowSetupWizard(step = 1) {
+    if (!setup_wizard_modal) return;
     
-    allChats = [];
-    currentChatId = null;
-    chatListEl.innerHTML = '';
-    clearMessages();
-    updateLayoutState(true);
-
-    currentUserUid = null;
-    document.getElementById('login-screen').style.display = 'flex';
-    document.getElementById('api-key-screen').style.display = 'none';
-    document.getElementById('app-container').style.display = 'none';
-    closeSettingsScreen();
-    localStorage.removeItem('openrouter_api_key');
-    apiKey = '';
-}
-
-// ===== จัดการหน้าจอ API Key =====
-
-// แสดงหน้าจอให้กรอก API Key
-function showApiKeyScreen() {
-    apiKeyScreen.style.display = 'flex';
-    appContainer.style.display = 'none';
-    apiKeyInput.value = '';
-    setTimeout(() => apiKeyInput.focus(), 100);
-}
-
-function showLoginScreen() {
-    document.getElementById('login-screen').style.display = 'flex';
-    document.getElementById('api-key-screen').style.display = 'none';
-    document.getElementById('app-container').style.display = 'none';
-    closeSettingsScreen();
-}
-
-// ===== ฟังก์ชันสำหรับหน้า Settings =====
-
-function showSettingsScreen() {
-    if (settingsScreen) {
-        settingsScreen.style.display = 'flex';
-        if (settingsApiKeyInput) settingsApiKeyInput.value = apiKey;
+    setup_wizard_modal.style.display = 'flex';
+    is_sending = false;
+    
+    if (step === 1) {
+        wizard_step_1.style.display = 'block';
+        wizard_step_2.style.display = 'none';
+    } else {
+        wizard_step_1.style.display = 'none';
+        wizard_step_2.style.display = 'block';
+        setTimeout(() => wizard_api_key_input.focus(), 100);
     }
 }
 
-function closeSettingsScreen() {
-    if (settingsScreen) {
-        settingsScreen.style.display = 'none';
-    }
+function HideSetupWizard() {
+    if (setup_wizard_modal) setup_wizard_modal.style.display = 'none';
 }
 
-async function saveSettingsApiKey() {
-    const key = settingsApiKeyInput.value.trim();
+function ShowAuthModal() {
+    ShowSetupWizard(1);
+}
+
+function ShowApiKeyScreen() {
+    ShowSetupWizard(2);
+}
+
+// บันทึก API Key จาก Wizard
+async function SaveWizardApiKey() {
+    const key = wizard_api_key_input.value.trim();
     if (!key) return;
 
-    saveSettingsKeyBtn.disabled = true;
-    saveSettingsKeyBtn.textContent = 'Saving...';
+    save_wizard_api_key_btn.disabled = true;
+    const original_text = save_wizard_api_key_btn.innerHTML;
+    save_wizard_api_key_btn.innerHTML = '<span>Validating...</span>';
 
     try {
         const res = await fetch(`${BASE_URL}/validate-key`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-User-Id': currentUserUid || 'guest' },
+            headers: { 'Content-Type': 'application/json', 'X-User-Id': current_user_uid || 'guest' },
             body: JSON.stringify({ api_key: key })
         });
         const result = await res.json();
 
         if (result.valid) {
-            apiKey = key;
-            localStorage.setItem('openrouter_api_key', apiKey);
-            alert('API Key saved successfully!');
-            closeSettingsScreen();
+            api_key = key;
+            localStorage.setItem('openrouter_api_key', api_key);
+            
+            HideSetupWizard();
+            ShowApp();
+
+            // ✅ ถ้ามีข้อความค้างอยู่ ให้ส่งทันที
+            if (pending_message) {
+                HandleAction();
+            }
         } else {
             alert('Invalid API Key: ' + result.message);
         }
     } catch (e) {
-        alert('Failed to connect to server.');
+        alert('Connection error. Please try again.');
     } finally {
-        saveSettingsKeyBtn.disabled = false;
-        saveSettingsKeyBtn.textContent = 'Save Key';
+        save_wizard_api_key_btn.disabled = false;
+        save_wizard_api_key_btn.innerHTML = original_text;
     }
+}
+
+// ฟังก์ชัน Logout ส่วนกลาง
+async function HandleLogout() {
+    try {
+        await window.signOut(window.firebaseAuth);
+    } catch (error) {
+        console.error("Sign Out Error:", error);
+    }
+    
+    all_chats = [];
+    current_chat_id = null;
+    chat_list_el.innerHTML = '';
+    ClearMessages(); // ✅ สมมติว่ามีฟังก์ชันนี้ และเดี๋ยวจะเปลี่ยนเป็น PascalCase
+    UpdateLayoutState(true);
+
+    current_user_uid = null;
+    ShowAuthModal(); // กลับไปแสดงหน้า Auth modal (Step 1)
+    HideSetupWizard(); 
+    app_container.style.display = 'none';
+    CloseSettingsScreen();
+    localStorage.removeItem('openrouter_api_key');
+    api_key = '';
+}
+
+function ShowSettingsScreen() {
+    if (settings_screen) {
+        settings_screen.style.display = 'flex';
+        if (settings_api_key_input) settings_api_key_input.value = api_key;
+        
+        // อัปเดตสถานะปุ่ม Auth ในหน้า Settings
+        if (settings_auth_btn) {
+            if (current_user_uid && current_user_uid !== "guest") {
+                settings_auth_btn.innerHTML = `<i class="fa-solid fa-right-from-bracket"></i> Logout`;
+                settings_auth_btn.classList.add('logout-mode');
+            } else {
+                settings_auth_btn.innerHTML = `<i class="fa-brands fa-google"></i> Login with Google`;
+                settings_auth_btn.classList.remove('logout-mode');
+            }
+        }
+    }
+}
+
+function CloseSettingsScreen() {
+    if (settings_screen) settings_screen.style.display = 'none';
+}
+
+async function SaveSettingsApiKey() {
+    const key = settings_api_key_input.value.trim();
+    if (!key) return;
+
+    save_settings_key_btn.disabled = true;
+    save_settings_key_btn.textContent = 'Saving...';
+
+    api_key = key;
+    localStorage.setItem('openrouter_api_key', api_key);
+    
+    setTimeout(() => {
+        save_settings_key_btn.disabled = false;
+        save_settings_key_btn.textContent = 'Save changes';
+        CloseSettingsScreen();
+    }, 500);
+}
+
+function ShowLoginScreen() {
+    CloseSettingsScreen();
+    ShowAuthModal();
 }
 
 // แสดงหน้าแอปหลักหลังจากมี API Key แล้ว
-async function showApp() {
-    apiKeyScreen.style.display = 'none';
-    appContainer.style.display = 'flex';
+async function ShowApp() {
+    HideSetupWizard();
+    app_container.style.display = 'flex';
     
     // ✅ ตรวจสอบสถานะเริ่มต้น ถ้าไม่มีแชทให้โชว์หน้า New Chat
-    if (!currentChatId) {
-        updateLayoutState(true);
+    if (!current_chat_id) {
+        UpdateLayoutState(true);
     }
     
-    await fetchModels();
-    await fetchChats();
-    if (!eventListenersSetup) {
-        setupEventListeners();
-        eventListenersSetup = true;
+    await FetchModels();
+    await FetchChats();
+    if (!event_listeners_setup) {
+        SetupEventListeners();
+        event_listeners_setup = true;
     }
-}
-
-// ตั้งค่า Event สำหรับหน้าจอ API Key
-function setupApiKeyScreen() {
-    // เปิด/ปิดการแสดง API Key
-    toggleKeyVisibility.onclick = () => {
-        const isPassword = apiKeyInput.type === 'password';
-        apiKeyInput.type = isPassword ? 'text' : 'password';
-        toggleKeyVisibility.querySelector('i').className = isPassword ? 'fa fa-eye-slash' : 'fa fa-eye';
-    };
-    // เปิดปุ่ม Save เมื่อพิมพ์ API Key
-    apiKeyInput.addEventListener('input', () => {
-        saveApiKeyBtn.disabled = apiKeyInput.value.trim() === '';
-    });
-    // กด Enter เพื่อบันทึก
-    apiKeyInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') saveApiKey();
-    });
-    saveApiKeyBtn.onclick = saveApiKey;
-}
-
-// บันทึก API Key — ตรวจสอบกับ Backend ก่อนว่าใช้ได้จริง
-async function saveApiKey() {
-    const key = apiKeyInput.value.trim();
-    if (!key) return;
-
-    // แสดงสถานะกำลังตรวจสอบ
-    saveApiKeyBtn.disabled = true;
-    saveApiKeyBtn.querySelector('span').textContent = 'กำลังตรวจสอบ...';
-
-    try {
-        const res = await fetch(`${BASE_URL}/validate-key`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-User-Id': currentUserUid || 'guest' },
-            body: JSON.stringify({ api_key: key })
-        });
-        const result = await res.json();
-
-        if (result.valid) {
-            // ✅ Key ใช้ได้ — บันทึกและเข้าแอป
-            apiKey = key;
-            localStorage.setItem('openrouter_api_key', apiKey);
-            showApp();
-        } else {
-            // ❌ Key ใช้ไม่ได้ — แสดง error
-            showApiKeyError(result.message);
-        }
-    } catch (e) {
-        showApiKeyError('ไม่สามารถเชื่อมต่อ Server ได้ กรุณาตรวจสอบว่า Backend ทำงานอยู่');
-    } finally {
-        saveApiKeyBtn.disabled = false;
-        saveApiKeyBtn.querySelector('span').textContent = 'เริ่มต้นใช้งาน';
-    }
-}
-
-// แสดงข้อความ error ใต้ช่องกรอก API Key
-function showApiKeyError(message) {
-    let errorEl = document.getElementById('api-key-error');
-    if (!errorEl) {
-        errorEl = document.createElement('div');
-        errorEl.id = 'api-key-error';
-        errorEl.style.cssText = 'color:#ef4444;font-size:13px;margin-top:-8px;margin-bottom:8px;text-align:left;';
-        saveApiKeyBtn.parentNode.insertBefore(errorEl, saveApiKeyBtn);
-    }
-    errorEl.textContent = message;
 }
 
 // ===== จัดการโมเดล (เหมือน st.sidebar.selectbox) =====
 
 // ดึงรายการโมเดลจาก Backend
-async function fetchModels() {
+async function FetchModels() {
     try {
-        const res = await fetch(`${BASE_URL}/models`, { headers: { 'X-User-Id': currentUserUid || 'guest' } });
+        const res = await fetch(`${BASE_URL}/models`, { headers: { 'X-User-Id': current_user_uid || 'guest' } });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const models = await res.json();
-        renderModelOptions(models);
+        RenderModelOptions(models);
     } catch (e) {
         console.error('Failed to fetch models:', e);
         // Fallback ถ้า server ยังไม่พร้อม
-        renderModelOptions([
+        RenderModelOptions([
             { id: 'google/gemini-2.0-flash-001', name: 'Gemini 2.0 Flash (Free)' },
             { id: 'deepseek/deepseek-chat-v3-0324:free', name: 'DeepSeek V3 (Free)' },
             { id: 'openai/gpt-oss-20b:free', name: 'GPT-OSS 20B (Free)' },
@@ -496,485 +432,480 @@ async function fetchModels() {
 }
 
 // แสดงตัวเลือกโมเดลใน Custom Dropdown และตรวจสอบว่าโมเดลที่เลือกไว้ยังมีอยู่ในรายการ
-function renderModelOptions(models) {
-    allModels = models; // เก็บไว้ใช้ค้นหา
+function RenderModelOptions(models) {
+    all_models = models; // เก็บไว้ใช้ค้นหา
     
     // ตรวจสอบว่าโมเดลที่เก็บใน localStorage ยังมีอยู่จริงหรือไม่
-    const modelExists = models.some(m => m.id === selectedModel);
-    if (!modelExists && models.length > 0) {
-        selectedModel = models[0].id;
-        localStorage.setItem('selected_model', selectedModel);
+    const model_exists = models.some(m => m.id === selected_model);
+    if (!model_exists && models.length > 0) {
+        selected_model = models[0].id;
+        localStorage.setItem('selected_model', selected_model);
     }
 
     // อัปเดตชื่อโมเดลที่ปุ่ม Toggle
-    const currentModel = models.find(m => m.id === selectedModel);
-    if (currentModel && currentModelDisplay) {
-        currentModelDisplay.textContent = currentModel.name;
+    const current_model = models.find(m => m.id === selected_model);
+    if (current_model && current_model_display) {
+        current_model_display.textContent = current_model.name;
     }
 
-    renderCustomModelList(models);
+    RenderCustomModelList(models);
 }
 
 // เรนเดอร์รายการโมเดลใน Dropdown
-function renderCustomModelList(filteredModels) {
-    if (!modelListContainer) return;
-    modelListContainer.innerHTML = '';
+function RenderCustomModelList(filtered_models) {
+    if (!model_list_container) return;
+    model_list_container.innerHTML = '';
     
-    filteredModels.forEach(m => {
+    filtered_models.forEach(m => {
         const item = document.createElement('div');
-        item.className = `model-item ${m.id === selectedModel ? 'active' : ''}`;
+        item.className = `model-item ${m.id === selected_model ? 'active' : ''}`;
         item.innerHTML = `
             <span>${m.name}</span>
-            ${m.id === selectedModel ? '<i class="fa fa-check"></i>' : '<i class="fa-regular fa-cloud"></i>'}
+            ${m.id === selected_model ? '<i class="fa-solid fa-check" style="color: #4c82f7;"></i>' : ''}
         `;
         item.onclick = () => {
-            selectedModel = m.id;
-            localStorage.setItem('selected_model', selectedModel);
-            if (currentModelDisplay) currentModelDisplay.textContent = m.name;
-            if (modelDropdownMenu) modelDropdownMenu.style.display = 'none';
-            renderCustomModelList(allModels); // รีเฟรชสถานะ active
+            selected_model = m.id;
+            localStorage.setItem('selected_model', selected_model);
+            if (current_model_display) current_model_display.textContent = m.name;
+            if (model_dropdown_menu) model_dropdown_menu.style.display = 'none';
+            RenderCustomModelList(all_models); // รีเฟรชสถานะ active
         };
-        modelListContainer.appendChild(item);
+        model_list_container.appendChild(item);
     });
 
-    if (filteredModels.length === 0) {
+    if (filtered_models.length === 0) {
         const empty = document.createElement('div');
         empty.style.padding = '20px';
         empty.style.textAlign = 'center';
         empty.style.color = '#888';
         empty.style.fontSize = '13px';
         empty.textContent = 'No models found';
-        modelListContainer.appendChild(empty);
+        model_list_container.appendChild(empty);
     }
 }
 
 // ===== จัดการแชท =====
 
-async function fetchChats() {
+async function FetchChats() {
     try {
-        const res = await fetch(`${BASE_URL}/chats`, { headers: { 'X-User-Id': currentUserUid || 'guest' } });
+        const res = await fetch(`${BASE_URL}/chats`, { headers: { 'X-User-Id': current_user_uid || 'guest' } });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        allChats = await res.json();
-        renderChatList(allChats);
+        all_chats = await res.json();
+        RenderChatList(all_chats);
     } catch (e) {
         console.error('Failed to fetch chats:', e);
     }
 }
 
-function renderChatList(chats) {
-    chatListEl.innerHTML = '';
+function RenderChatList(chats) {
+    chat_list_el.innerHTML = '';
     chats.forEach(chat => {
         const div = document.createElement('div');
-        div.className = `chat-item ${chat.id === currentChatId ? 'active' : ''}`;
+        div.className = `chat-item ${chat.id === current_chat_id ? 'active' : ''}`;
         div.dataset.id = chat.id;
         div.innerHTML = `
             <div class="chat-title" title="${chat.title}">${chat.title}</div>
-            <button class="delete-btn" onclick="deleteChat(${chat.id}, event)">
+            <button class="delete-btn" onclick="DeleteChat(${chat.id}, event)">
                 <i class="fa fa-trash"></i>
             </button>
         `;
-        div.onclick = () => selectChat(chat.id);
-        chatListEl.appendChild(div);
+        div.onclick = () => SelectChat(chat.id);
+        chat_list_el.appendChild(div);
     });
 }
 
-async function selectChat(chatId) {
-    currentChatId = chatId;
-    const chat = allChats.find(c => c.id === chatId);
-    if (chatHeaderTitle) {
-        chatHeaderTitle.textContent = chat ? chat.title : 'New chat';
+async function SelectChat(chat_id) {
+    current_chat_id = chat_id;
+    const chat = all_chats.find(c => c.id === chat_id);
+    if (chat_header_title) {
+        chat_header_title.textContent = chat ? chat.title : 'New chat';
     }
-    renderChatList(allChats);
-    clearMessages();
-    updateLayoutState(true);
+    RenderChatList(all_chats);
+    ClearMessages();
+    UpdateLayoutState(true);
     try {
-        const res = await fetch(`${BASE_URL}/chats/${chatId}/messages`, { headers: { 'X-User-Id': currentUserUid || 'guest' } });
+        const res = await fetch(`${BASE_URL}/chats/${chat_id}/messages`, { headers: { 'X-User-Id': current_user_uid || 'guest' } });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const messages = await res.json();
         if (messages.length > 0) {
-            updateLayoutState(false);
-            messages.forEach(msg => appendMessage(msg.role, msg.content, false, msg.model_name));
-            scrollToBottom();
+            UpdateLayoutState(false);
+            messages.forEach(msg => AppendMessage(msg.role, msg.content, false, msg.model_name));
+            ScrollToBottom();
         }
     } catch (e) {
         console.error('Failed to select chat:', e);
     }
 }
 
-async function createNewChat() {
+async function CreateNewChat() {
     try {
-        const res = await fetch(`${BASE_URL}/chats`, { method: 'POST', headers: { 'X-User-Id': currentUserUid || 'guest' } });
+        const res = await fetch(`${BASE_URL}/chats`, { method: 'POST', headers: { 'X-User-Id': current_user_uid || 'guest' } });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const chat = await res.json();
-        allChats.unshift(chat);
-        selectChat(chat.id);
+        all_chats.unshift(chat);
+        SelectChat(chat.id);
     } catch (e) {
         console.error('Failed to create chat:', e);
     }
 }
 
-function deleteChat(chatId, event) {
+function DeleteChat(chat_id, event) {
     event.stopPropagation();
-    chatIdToDelete = chatId;
-    const chat = allChats.find(c => c.id === chatId);
-    deleteChatTitle.textContent = chat ? chat.title : 'this chat';
-    deleteModal.style.display = 'flex';
+    chat_id_to_delete = chat_id;
+    const chat = all_chats.find(c => c.id === chat_id);
+    delete_chat_title.textContent = chat ? chat.title : 'this chat';
+    delete_modal.style.display = 'flex';
 }
 
-async function confirmDeleteChat() {
-    if (!chatIdToDelete) return;
+async function ConfirmDeleteChat() {
+    if (!chat_id_to_delete) return;
     try {
-        await fetch(`${BASE_URL}/chats/${chatIdToDelete}`, { method: 'DELETE', headers: { 'X-User-Id': currentUserUid || 'guest' } });
-        allChats = allChats.filter(c => c.id !== chatIdToDelete);
-        if (currentChatId === chatIdToDelete) {
-            currentChatId = null;
-            clearMessages();
-            updateLayoutState(true);
+        await fetch(`${BASE_URL}/chats/${chat_id_to_delete}`, { method: 'DELETE', headers: { 'X-User-Id': current_user_uid || 'guest' } });
+        all_chats = all_chats.filter(c => c.id !== chat_id_to_delete);
+        if (current_chat_id === chat_id_to_delete) {
+            current_chat_id = null;
+            ClearMessages();
+            UpdateLayoutState(true);
         }
-        closeDeleteModal();
-        renderChatList(allChats);
+        CloseDeleteModal();
+        RenderChatList(all_chats);
     } catch (e) {
         console.error('Failed to delete chat:', e);
     }
 }
 
-function closeDeleteModal() {
-    deleteModal.style.display = 'none';
-    chatIdToDelete = null;
+function CloseDeleteModal() {
+    delete_modal.style.display = 'none';
+    chat_id_to_delete = null;
 }
 
 // ===== Event Listeners =====
 
-function setupEventListeners() {
+function SetupEventListeners() {
     // ระบบสร้างแชทใหม่ (รองรับทั้งปุ่มข้างนอกและปุ่มใน Sidebar)
-    const handleNewChatAction = () => {
-        currentChatId = null;
-        if (chatHeaderTitle) chatHeaderTitle.textContent = 'New chat';
-        updateLayoutState(true);
-        clearMessages();
+    const HandleNewChatAction = () => {
+        current_chat_id = null;
+        if (chat_header_title) chat_header_title.textContent = '';
+        UpdateLayoutState(true);
+        ClearMessages();
     };
 
-    if (newChatBtn) newChatBtn.onclick = handleNewChatAction;
-    if (newChatBtnPersistent) newChatBtnPersistent.onclick = handleNewChatAction;
-    if (newChatInternal) newChatInternal.onclick = handleNewChatAction;
+    if (new_chat_btn) new_chat_btn.onclick = HandleNewChatAction;
+    if (new_chat_btn_persistent) new_chat_btn_persistent.onclick = HandleNewChatAction;
+    if (new_chat_internal) new_chat_internal.onclick = HandleNewChatAction;
 
     // ปุ่มสลับสถานะ Sidebar
-    const toggleSidebar = () => {
-        const isCurrentlyCollapsed = sidebar.classList.toggle('collapsed');
-        document.body.classList.toggle('sidebar-collapsed', isCurrentlyCollapsed);
-        localStorage.setItem('sidebar_collapsed', isCurrentlyCollapsed);
+    const ToggleSidebar = () => {
+        const is_currently_collapsed = sidebar_el.classList.toggle('collapsed');
+        document.body.classList.toggle('sidebar-collapsed', is_currently_collapsed);
+        localStorage.setItem('sidebar_collapsed', is_currently_collapsed);
     };
 
-    if (mainSidebarToggle) mainSidebarToggle.onclick = toggleSidebar;
-    if (toggleSidebarBtn) toggleSidebarBtn.onclick = toggleSidebar;
-    if (toggleSidebarInternal) toggleSidebarInternal.onclick = toggleSidebar;
+    if (main_sidebar_toggle) main_sidebar_toggle.onclick = ToggleSidebar;
+    if (toggle_sidebar_btn) toggle_sidebar_btn.onclick = ToggleSidebar;
+    if (toggle_sidebar_internal) toggle_sidebar_internal.onclick = ToggleSidebar;
 
     // ปุ่ม Launch & Settings (พื้นฐาน)
-    if (launchBtn) {
-        launchBtn.onclick = () => alert("Launch functionality coming soon!");
+    if (launch_btn) {
+        launch_btn.onclick = () => alert("Launch functionality coming soon!");
     }
-    if (settingsBtn) {
-        settingsBtn.onclick = showSettingsScreen;
+    if (settings_btn) {
+        settings_btn.onclick = ShowSettingsScreen;
     }
-    if (closeSettingsBtn) {
-        closeSettingsBtn.onclick = closeSettingsScreen;
+    if (close_settings_btn) {
+        close_settings_btn.onclick = CloseSettingsScreen;
     }
-    if (saveSettingsKeyBtn) {
-        saveSettingsKeyBtn.onclick = saveSettingsApiKey;
+    if (save_settings_key_btn) {
+        save_settings_key_btn.onclick = SaveSettingsApiKey;
     }
-    if (toggleSettingsKey) {
-        toggleSettingsKey.onclick = () => {
-            const isPassword = settingsApiKeyInput.type === 'password';
-            settingsApiKeyInput.type = isPassword ? 'text' : 'password';
-            toggleSettingsKey.querySelector('i').className = isPassword ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
+    if (toggle_settings_key) {
+        toggle_settings_key.onclick = () => {
+            const is_password = settings_api_key_input.type === 'password';
+            settings_api_key_input.type = is_password ? 'text' : 'password';
+            toggle_settings_key.querySelector('i').className = is_password ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
         };
     }
-    if (settingsAuthBtn) {
-        settingsAuthBtn.onclick = () => {
-            if (currentUserUid && currentUserUid !== "guest") {
-                handleLogout();
+    if (settings_auth_btn) {
+        settings_auth_btn.onclick = () => {
+            if (current_user_uid && current_user_uid !== "guest") {
+                HandleLogout();
             } else {
-                showLoginScreen();
+                ShowLoginScreen();
             }
         };
     }
 
     // ✅ Listeners สำหรับการแนบไฟล์
-    if (attachBtn && fileInput) {
-        attachBtn.onclick = () => fileInput.click();
-        fileInput.onchange = handleFileSelect;
+    if (attach_btn && file_input) {
+        attach_btn.onclick = () => file_input.click();
+        file_input.onchange = HandleFileSelect;
     }
 
     // ✅ Logic สำหรับ Custom Model Selector (Premium Dropdown)
-    if (modelToggleBtn && modelDropdownMenu) {
-        modelToggleBtn.onclick = (e) => {
+    if (model_toggle_btn && model_dropdown_menu) {
+        model_toggle_btn.onclick = (e) => {
             e.stopPropagation();
-            const isVisible = modelDropdownMenu.style.display === 'flex';
-            modelDropdownMenu.style.display = isVisible ? 'none' : 'flex';
+            const is_visible = model_dropdown_menu.style.display === 'flex';
+            model_dropdown_menu.style.display = is_visible ? 'none' : 'flex';
             
-            if (!isVisible) {
+            if (!is_visible) {
                 // รีเซ็ตช่องค้นหาเมื่อเปิดเมนู
-                if (modelSearchInput) {
-                    modelSearchInput.value = '';
-                    renderCustomModelList(allModels);
-                    setTimeout(() => modelSearchInput.focus(), 50);
+                if (model_search_input) {
+                    model_search_input.value = '';
+                    RenderCustomModelList(all_models);
+                    setTimeout(() => model_search_input.focus(), 50);
                 }
             }
         };
 
-        if (modelSearchInput) {
-            modelSearchInput.onclick = (e) => e.stopPropagation(); // กันเมนูปิดเวลาคลิกช่องค้นหา
-            modelSearchInput.oninput = (e) => {
+        if (model_search_input) {
+            model_search_input.onclick = (e) => e.stopPropagation(); // กันเมนูปิดเวลาคลิกช่องค้นหา
+            model_search_input.oninput = (e) => {
                 const query = e.target.value.toLowerCase();
-                const filtered = allModels.filter(m => m.name.toLowerCase().includes(query));
-                renderCustomModelList(filtered);
+                const filtered = all_models.filter(m => m.name.toLowerCase().includes(query));
+                RenderCustomModelList(filtered);
             };
         }
 
         // ปิดเมนูเมื่อคลิกที่อื่นในหน้าจอ
         document.addEventListener('click', () => {
-            if (modelDropdownMenu) modelDropdownMenu.style.display = 'none';
+            if (model_dropdown_menu) model_dropdown_menu.style.display = 'none';
         });
     }
 
-    if (searchInput) {
-        searchInput.oninput = (e) => {
+    if (search_input) {
+        search_input.oninput = (e) => {
             const query = e.target.value.toLowerCase();
-            const filtered = allChats.filter(c => c.title.toLowerCase().includes(query));
-            renderChatList(filtered);
+            const filtered = all_chats.filter(c => c.title.toLowerCase().includes(query));
+            RenderChatList(filtered);
         };
     }
 
-    if (messageInput) {
-        messageInput.addEventListener('input', () => {
-            messageInput.style.height = 'auto';
-            messageInput.style.height = messageInput.scrollHeight + 'px';
+    if (message_input) {
+        message_input.addEventListener('input', () => {
+            message_input.style.height = 'auto';
+            message_input.style.height = message_input.scrollHeight + 'px';
             
-            // ถ้าไม่ได้กำลัง Stream อยู่ ให้คอยอัปเดตสถานะปุ่มส่งตามข้อความที่พิมพ์
-            if (!abortController) {
-                setStopMode(false);
+            if (!abort_controller) {
+                SetStopMode(false);
             }
         });
 
-        messageInput.addEventListener('keydown', (e) => {
+        message_input.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                handleAction();
+                e.stopImmediatePropagation();
+                if (!is_sending) HandleAction(); // ✅ เช็คสถานะก่อนเรียกใช้งานซ้ำ
             }
         });
     }
 
-    if (actionBtn) actionBtn.onclick = handleAction;
-    if (confirmDeleteBtn) confirmDeleteBtn.onclick = confirmDeleteChat;
-    if (cancelDeleteBtn) cancelDeleteBtn.onclick = closeDeleteModal;
-    
-    // ✅ Logic สำหรับ Custom Model Selector
-    if (modelToggleBtn) {
-        modelToggleBtn.onclick = (e) => {
-            e.stopPropagation();
-            const isVisible = modelDropdownMenu.style.display === 'flex';
-            modelDropdownMenu.style.display = isVisible ? 'none' : 'flex';
-            if (!isVisible) {
-                modelSearchInput.value = '';
-                renderCustomModelList(allModels);
-                setTimeout(() => modelSearchInput.focus(), 100);
-            }
-        };
-    }
+    if (action_btn) action_btn.onclick = HandleAction;
+    if (confirm_delete_btn) confirm_delete_btn.onclick = ConfirmDeleteChat;
+    if (cancel_delete_btn) cancel_delete_btn.onclick = CloseDeleteModal;
 
-    if (modelSearchInput) {
-        modelSearchInput.oninput = (e) => {
-            const query = e.target.value.toLowerCase();
-            const filtered = allModels.filter(m => m.name.toLowerCase().includes(query));
-            renderCustomModelList(filtered);
-        };
-        // ป้องกันการปิดเมื่อคลิกในช่องค้นหา
-        modelSearchInput.onclick = (e) => e.stopPropagation();
-    }
-
-    // ปิด Dropdown เมื่อคลิกที่อื่น
-    document.addEventListener('click', () => {
-        if (modelDropdownMenu) modelDropdownMenu.style.display = 'none';
-    });
-
-    // ✅ ระบบตรวจจับการ Scroll เพื่อเปิด/ปิด Auto-scroll อัจฉริยะแบบแม่นยำสูง
-    if (chatContainer) {
-        chatContainer.addEventListener('scroll', () => {
+    // ระบบตรวจจับการ Scroll
+    if (chat_container) {
+        chat_container.addEventListener('scroll', () => {
             // ✅ เพิ่ม Threshold เป็น 100px เพื่อให้ Smart Scroll ทำงานได้ยืดหยุ่นขึ้น
-            const isAtBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight <= 100;
-            isAutoScrollEnabled = isAtBottom;
+            const is_at_bottom = chat_container.scrollHeight - chat_container.scrollTop - chat_container.clientHeight <= 100;
+            is_auto_scroll_enabled = is_at_bottom;
         });
     }
     
     window.onclick = (event) => {
-        if (event.target === deleteModal) closeDeleteModal();
+        if (event.target === delete_modal) CloseDeleteModal();
     };
 }
 
 // ===== ส่งข้อความ + Streaming =====
 
-async function handleAction() {
-    // ✅ ถ้ามี AbortController อยู่ หมายความว่าอยู่ใน Stop Mode ให้ทำการยกเลิกการทำงาน
-    if (abortController) {
+async function HandleAction() {
+    // ✅ ถ้ามี abort_controller อยู่ หมายความว่าอยู่ใน Stop Mode ให้ทำการยกเลิกการทำงาน
+    if (abort_controller) {
         console.log("🛑 User requested to stop streaming...");
-        abortController.abort();
+        abort_controller.abort();
         return;
     }
 
     if (is_sending) return;
     
-    const content = messageInput.value.trim();
-    if (!content) return;
-    
-    is_sending = true;
-    // ปิดปุ่มและล้างช่องพิมพ์ทันทีเพื่อป้องกันการกดเบิ้ล (Race Condition)
-    actionBtn.disabled = true;
-    // ปลดล็อกการใช้สีจาก CSS
-    actionBtn.style.background = '';
-    actionBtn.style.color = '';
-    messageInput.value = '';
-    messageInput.style.height = 'auto';
-
-    // ตรวจสอบ API Key ก่อนส่ง
-    if (!apiKey) {
-        showApiKeyScreen();
-        resetToDefaultState(); // คืนค่าปุ่มหากยังไม่มี Key
+    // ✅ จุดเช็คสำคัญ: หากยังไม่ล็อกอิน ให้เก็บข้อความลง Pending และเรียก Auth Modal
+    if (!current_user_uid) {
+        const content_to_save = message_input.value.trim();
+        if (content_to_save) {
+            pending_message = content_to_save;
+            pending_files = [...attached_files];
+            ShowAuthModal();
+        }
         return;
     }
 
-    if (!currentChatId) {
-        await createNewChat();
-        // ✅ หลังจากสร้างแชทใหม่สำเร็จ ให้เคลียร์หน้าจออีกครั้งก่อนเริ่มแสดงข้อความแรก
-        // เพื่อป้องกันข้อความซ้ำซ้อนที่อาจเกิดจาก Sequence การสร้างแชท
-        clearMessages();
+    const content = pending_message || message_input.value.trim();
+    if (!content) return;
+    
+    // ตรวจสอบ API Key ก่อนส่ง
+    if (!api_key) {
+        // หากยังไม่มี Key ให้เก็บข้อความไว้ใน pending_message ก่อน
+        pending_message = content;
+        pending_files = pending_files.length > 0 ? [...pending_files] : [...attached_files];
+        ShowApiKeyScreen();
+        return;
     }
 
-    // รวมข้อความจาก PDF (ถ้ามี)
-    let finalContent = content;
-    const pdfTexts = attachedFiles
-        .filter(f => f.type === 'application/pdf' && f.extractedText)
-        .map(f => `--- ข้อมูลจากไฟล์ PDF: ${f.name} ---\n${f.extractedText}\n--- สิ้นสุดไฟล์ PDF ---`)
-        .join("\n\n");
+    // ล้างสถานะ Pending เมื่อมั่นใจว่ามี Key และกำลังจะส่งแน่นอน
+    pending_message = null;
+    const current_files = pending_files.length > 0 ? [...pending_files] : [...attached_files];
+    pending_files = [];
 
-    if (pdfTexts) {
-        finalContent = `[เอกสารแนบเพื่ออ้างอิงและสรุป]\n${pdfTexts}\n\n[คำสั่งจากผู้ใช้]: ${content}`;
-    }
-
-    appendMessage('user', content, false, null, attachedFiles); // ส่งไฟล์ปัจจุบันไปโชว์ด้วย
-    abortController = new AbortController();
-    setStopMode(true);
-    isAutoScrollEnabled = true; // ✅ บังคับให้ Auto-scroll ทำงานเมื่อเริ่มส่งข้อความใหม่
+    // 🔒 [LOCK] เริ่มกระบวนการส่งข้อความ
+    is_sending = true;
     
-    // อัปเดตชื่อแชทใน Sidebar ทันทีถ้าเป็นข้อความแรก (เพื่อความลื่นไหลของ UI)
-    const sidebarItems = chatListEl.querySelectorAll('.chat-item');
-    sidebarItems.forEach(item => {
-        if (item.dataset.id == String(currentChatId)) {
-            const titleSpan = item.querySelector('.chat-title');
-            if (titleSpan && (titleSpan.textContent === 'New Chat' || titleSpan.textContent === '')) {
-                const newTitle = content.substring(0, 30) + (content.length > 30 ? '...' : '');
-                titleSpan.textContent = newTitle;
-                if (chatHeaderTitle) chatHeaderTitle.textContent = newTitle;
-            }
-        }
-    });
-
-    // updateLayoutState จะถูกเรียกโดยอัตโนมัติจาก appendMessage หรือที่อื่นๆ
-    
-    const aiMessageContainer = appendMessage('assistant', '', true, selectedModel);
-
     try {
-        const res = await fetch(`${BASE_URL}/chats/${currentChatId}/stream`, {
+        // ปรับแต่ง UI ทันทีเมื่อเริ่มส่ง
+        action_btn.disabled = true;
+        action_btn.style.opacity = '0.5';
+        message_input.value = '';
+        message_input.style.height = 'auto';
+
+        // 🏠 [STEP 1] จัดการห้องแชท
+        if (!current_chat_id) {
+            await CreateNewChat();
+            ClearMessages();
+        }
+
+        // 📄 [STEP 2] เตรียมเนื้อหา (PDF + Message)
+        let final_content = content;
+        const pdf_texts = attached_files
+            .filter(f => f.type === 'application/pdf' && f.extractedText)
+            .map(f => `--- ข้อมูลจากไฟล์ PDF: ${f.name} ---\n${f.extractedText}\n--- สิ้นสุดไฟล์ PDF ---`)
+            .join("\n\n");
+
+        if (pdf_texts) {
+            final_content = `[เอกสารแนบเพื่ออ้างอิงและสรุป]\n${pdf_texts}\n\n[คำสั่งจากผู้ใช้]: ${content}`;
+        }
+
+        // 💬 [STEP 3] แสดงข้อความผู้ใช้ในหน้าจอ
+        AppendMessage('user', content, false, null, current_files);
+        
+        // 🚨 [STEP 4] เตรียม Streaming
+        abort_controller = new AbortController();
+        SetStopMode(true);
+        is_auto_scroll_enabled = true;
+        
+        // ล้างไฟล์แนบหลังเตรียมส่ง
+        attached_files = [];
+        if (file_preview_container) file_preview_container.innerHTML = '';
+        UpdateLayoutState(false);
+
+        // อัปเดตชื่อแชทใน Sidebar ทันที
+        const sidebar_items = chat_list_el.querySelectorAll('.chat-item');
+        sidebar_items.forEach(item => {
+            if (item.dataset.id == String(current_chat_id)) {
+                const title_span = item.querySelector('.chat-title');
+                if (title_span && (title_span.textContent === 'New Chat' || title_span.textContent === '')) {
+                    const new_title = content.substring(0, 30) + (content.length > 30 ? '...' : '');
+                    title_span.textContent = new_title;
+                    if (chat_header_title) chat_header_title.textContent = new_title;
+                }
+            }
+        });
+
+        // 🤖 [STEP 5] เริ่มการ Streaming จาก AI
+        const ai_message_container = AppendMessage('assistant', '', true, selected_model);
+
+        const res = await fetch(`${BASE_URL}/chats/${current_chat_id}/stream`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-User-Id': currentUserUid || 'guest' },
+            headers: { 'Content-Type': 'application/json', 'X-User-Id': current_user_uid || 'guest' },
             body: JSON.stringify({
-                content: finalContent,
-                api_key: apiKey,
-                model: selectedModel
+                content: final_content,
+                api_key: api_key,
+                model: selected_model
             }),
-            signal: abortController.signal
+            signal: abort_controller.signal
         });
 
         if (!res.ok) {
-            const errorData = await res.json().catch(() => ({ detail: 'Unknown error' }));
-            throw new Error(errorData.detail || `Server Error (${res.status})`);
+            const error_data = await res.json().catch(() => ({ detail: 'Unknown error' }));
+            throw new Error(error_data.detail || `Server Error (${res.status})`);
         }
 
         const reader = res.body.getReader();
         const decoder = new TextDecoder('utf-8');
-        let fullContent = ''; // เนื้อหาผลลัพธ์สุทธิที่เราค่อยๆ พ่นลงจอ
-        let rawContentBuffer = ''; // เนื้อหาดิบที่ได้รับจาก Network รอเข้าคิวพ่น
-        let fullReasoning = '';
-        let lineBuffer = ''; // ✅ ตัวเก็บข้อมูลบรรทัดที่พ่นออกมาไม่ครบ (Chunk Fragmentation)
+        let full_content = ''; // เนื้อหาผลลัพธ์สุทธิที่เราค่อยๆ พ่นลงจอ
+        let raw_content_buffer = ''; // เนื้อหาดิบที่ได้รับจาก Network รอเข้าคิวพ่น
+        let full_reasoning = '';
+        let line_buffer = ''; // ✅ ตัวเก็บข้อมูลบรรทัดที่พ่นออกมาไม่ครบ (Chunk Fragmentation)
         
         // --- ระบบ Ticker (Smooth Streaming สไตล์ Gemini) ---
-        let isStreamingFinished = false;
+        let is_streaming_finished = false;
         const STREAM_SPEED_MS = 25; // ความเร็วในการพ่นตัวอักษรลงจอ (มิลลิวินาที)
         
-        const displayTicker = setInterval(() => {
-            if (rawContentBuffer.length > 0) {
+        const display_ticker = setInterval(() => {
+            if (raw_content_buffer.length > 0) {
                 // ดึงตัวอักษรออกมา 1-3 ตัวต่อรอบ (ปรับให้ดูสมูทได้)
                 // ถ้า buffer เยอะมาก ให้พ่นเร็วขึ้นเพื่อให้ UI ไม่ดีเลย์จนเกินไป
-                const takeLen = rawContentBuffer.length > 500 ? 10 : (rawContentBuffer.length > 100 ? 5 : 2);
-                const chunkToDisplay = rawContentBuffer.substring(0, takeLen);
-                rawContentBuffer = rawContentBuffer.substring(takeLen);
-                fullContent += chunkToDisplay;
-                updateMessageContent(aiMessageContainer, fullContent, fullReasoning);
-                scrollToBottom();
-            } else if (isStreamingFinished) {
-                clearInterval(displayTicker);
+                const take_len = raw_content_buffer.length > 500 ? 10 : (raw_content_buffer.length > 100 ? 5 : 2);
+                const chunk_to_display = raw_content_buffer.substring(0, take_len);
+                raw_content_buffer = raw_content_buffer.substring(take_len);
+                full_content += chunk_to_display;
+                UpdateMessageContent(ai_message_container, full_content, full_reasoning);
+                ScrollToBottom();
+            } else if (is_streaming_finished) {
+                clearInterval(display_ticker);
                 // ปิดท้ายเพื่อให้แน่ใจว่า Render ตัวสุดท้ายครบถ้วน
-                updateMessageContent(aiMessageContainer, fullContent, fullReasoning);
+                UpdateMessageContent(ai_message_container, full_content, full_reasoning);
             }
         }, STREAM_SPEED_MS);
         // ------------------------------------------------
 
         // เพิ่ม Cursor กระพริบเพื่อให้ดู "ไหล"
-        if (aiMessageContainer && aiMessageContainer.contentDiv) {
-            aiMessageContainer.contentDiv.classList.add('streaming-active');
+        if (ai_message_container && ai_message_container.contentDiv) {
+            ai_message_container.contentDiv.classList.add('streaming-active');
         }
 
         while (true) {
             const { done, value } = await reader.read();
             if (done) break;
 
-            lineBuffer += decoder.decode(value, { stream: true });
-            const lines = lineBuffer.split('\n');
-            lineBuffer = lines.pop(); // ✅ เก็บส่วนที่ยังไม่จบบรรทัดไว้ใน buffer
+            line_buffer += decoder.decode(value, { stream: true });
+            const lines = line_buffer.split('\n');
+            line_buffer = lines.pop(); // ✅ เก็บส่วนที่ยังไม่จบบรรทัดไว้ใน buffer
 
             for (let line of lines) {
-                const trimmedLine = line.trim();
-                if (!trimmedLine || !trimmedLine.startsWith('data: ')) continue;
+                const trimmed_line = line.trim();
+                if (!trimmed_line || !trimmed_line.startsWith('data: ')) continue;
 
-                const dataStr = trimmedLine.replace('data: ', '').trim();
-                if (dataStr === '[DONE]') break;
-                if (!dataStr) continue;
+                const data_str = trimmed_line.replace('data: ', '').trim();
+                if (data_str === '[DONE]') break;
+                if (!data_str) continue;
 
                 try {
-                    const parsed = JSON.parse(dataStr);
+                    const parsed = JSON.parse(data_str);
                     // รองรับทั้งเนื้อหาหลักและเนื้อหาการคิด (Reasoning)
                     if (parsed.reasoning_content !== undefined) {
-                        fullReasoning += parsed.reasoning_content;
+                        full_reasoning += parsed.reasoning_content;
                         // Reasoning มักจะมาเร็ว เราพ่นลงจอตรงๆ ได้เลยเพื่อความพรีเมียม
-                        updateMessageContent(aiMessageContainer, fullContent, fullReasoning);
+                        UpdateMessageContent(ai_message_container, full_content, full_reasoning);
                     } else if (parsed.content !== undefined) {
                         // แทนที่จะ update ลงจอตรงๆ เราโยนใส่ Buffer เพื่อให้ Ticker พ่นอย่างนุ่มนวล
-                        rawContentBuffer += parsed.content;
+                        raw_content_buffer += parsed.content;
                     } else if (parsed.error) {
-                        fullContent += `\n**Error:** ${parsed.error}`;
-                        updateMessageContent(aiMessageContainer, fullContent, fullReasoning);
+                        full_content += `\n**Error:** ${parsed.error}`;
+                        UpdateMessageContent(ai_message_container, full_content, full_reasoning);
                     }
-                    } catch (e) {
-                        console.warn('Failed to parse SSE data:', e);
-                    }
+                } catch (e) {
+                    console.warn('Failed to parse SSE data:', e);
+                }
             }
-            scrollToBottom();
+            ScrollToBottom();
         }
-        isStreamingFinished = true; // ✅ บอก Ticker ว่า Network จบแล้วนะ ให้เคลียร์ Buffer ที่เหลือ
+        is_streaming_finished = true; // ✅ บอก Ticker ว่า Network จบแล้วนะ ให้เคลียร์ Buffer ที่เหลือ
     } catch (e) {
         if (e.name === 'AbortError') {
             // ผู้ใช้กดสตอป — พับ thought block ทันที
             console.log('Stream aborted');
-            const tc = aiMessageContainer?.thoughtDiv?.parentElement;
+            const tc = ai_message_container?.thoughtDiv?.parentElement;
             if (tc && !tc.classList.contains('collapsed')) {
                 tc.classList.add('collapsed');
                 const ch = tc.querySelector('.bulb');
@@ -982,136 +913,141 @@ async function handleAction() {
             }
         } else {
             console.error('Stream error:', e);
-            const errorMsg = `\n\n❌ **Error:** ${e.message || 'ไม่สามารถติดต่อ AI ได้ในขณะนี้'}`;
-            if (aiMessageContainer) {
-                // แสดง Error ในกล่องข้อความ AI
-                updateMessageContent(aiMessageContainer, errorMsg, "");
+            const error_msg = `\n\n❌ **Error:** ${e.message || 'ไม่สามารถติดต่อ AI ได้ในขณะนี้'}`;
+            // หากเกิด Error ระหว่างทาง และ message ถูกสร้างแล้ว
+            if (typeof ai_message_container !== 'undefined') {
+                UpdateMessageContent(ai_message_container, error_msg, "");
+            } else {
+                // หาก Error เกิดก่อน AppendMessage บังคับแจ้งเตือน User
+                alert(error_msg.replace(/\*/g, ''));
             }
         }
     } finally {
         is_sending = false;
-        if (aiMessageContainer && aiMessageContainer.contentDiv) {
-            aiMessageContainer.contentDiv.classList.remove('streaming-active');
+        action_btn.style.opacity = '1';
+        
+        if (typeof ai_message_container !== 'undefined' && ai_message_container.contentDiv) {
+            ai_message_container.contentDiv.classList.remove('streaming-active');
         }
-        isStreamingFinished = true; // มั่นใจอีกทีว่าหยุด Ticker
+        
+        is_streaming_finished = true; // มั่นใจอีกทีว่าหยุด Ticker
         
         // บังคับคืนค่าปุ่มทันที
-        resetToDefaultState();
+        ResetToDefaultState();
         
         // หลังจาก Stream จบ ให้เปิดการแสดงผลปุ่ม Copy
-        if (aiMessageContainer && aiMessageContainer.contentDiv && aiMessageContainer.contentDiv.parentElement) {
-            const actionRow = aiMessageContainer.contentDiv.parentElement.querySelector('.message-actions');
-            if (actionRow) actionRow.style.display = 'flex';
+        if (typeof ai_message_container !== 'undefined' && ai_message_container.contentDiv && ai_message_container.contentDiv.parentElement) {
+            const action_row = ai_message_container.contentDiv.parentElement.querySelector('.message-actions');
+            if (action_row) action_row.style.display = 'flex';
         }
         
         // พับ thought block หลัง stream จบ — แต่ต้องให้ user เห็นนานพอ
-        const tContainer = aiMessageContainer?.thoughtDiv?.parentElement;
-        if (tContainer) {
-            // คำนวณเวลาที่เหลือก่อนพับ (อย่างน้อย 1500ms นับจากที่ message ถูกสร้าง)
-            const MIN_THOUGHT_DISPLAY_MS = 1500;
-            const elapsed = aiMessageContainer.createdAt ? (Date.now() - aiMessageContainer.createdAt) : MIN_THOUGHT_DISPLAY_MS;
-            const delay = Math.max(0, MIN_THOUGHT_DISPLAY_MS - elapsed);
-            
-            setTimeout(() => {
-                // หยุด pulse animation ของ lightbulb
-                const bulb = tContainer.querySelector('.bulb');
-                if (bulb) bulb.style.animation = 'none';
-                // พับ thought block (ทุกโมเดล)
-                if (!tContainer.classList.contains('collapsed')) {
-                    tContainer.classList.add('collapsed');
-                    const chevron = tContainer.querySelector('.chevron');
-                    if (chevron) chevron.className = 'fa-solid fa-chevron-right chevron';
-                }
-            }, delay);
+        if (typeof ai_message_container !== 'undefined' && ai_message_container.thoughtDiv) {
+            const t_container = ai_message_container.thoughtDiv.parentElement;
+            if (t_container) {
+                const MIN_THOUGHT_DISPLAY_MS = 1500;
+                const elapsed = ai_message_container.createdAt ? (Date.now() - ai_message_container.createdAt) : MIN_THOUGHT_DISPLAY_MS;
+                const delay = Math.max(0, MIN_THOUGHT_DISPLAY_MS - elapsed);
+                
+                setTimeout(() => {
+                    const bulb = t_container.querySelector('.bulb');
+                    if (bulb) bulb.style.animation = 'none';
+                    if (!t_container.classList.contains('collapsed')) {
+                        t_container.classList.add('collapsed');
+                        const chevron = t_container.querySelector('.chevron');
+                        if (chevron) chevron.className = 'fa-solid fa-chevron-right chevron';
+                    }
+                }, delay);
+            }
         }
-        attachedFiles = []; // ล้างไฟล์แนบหลังส่ง
-        renderFilePreviews();
-        fetchChats();
+        attached_files = []; // ล้างไฟล์แนบหลังส่ง
+        RenderFilePreviews();
+        FetchChats();
     }
 }
 
 // ===== UI Helpers =====
 
-function setStopMode(isStop) {
-    if (isStop) {
-        actionBtn.classList.remove('send-mode');
-        actionBtn.classList.add('stop-mode');
-        actionBtn.disabled = false;
-        actionBtn.style.background = ''; // ใช้สีจาก CSS
-        actionBtn.style.color = '';      // ใช้สีจาก CSS
+function SetStopMode(is_stop) {
+    if (is_stop) {
+        action_btn.classList.remove('send-mode');
+        action_btn.classList.add('stop-mode');
+        action_btn.disabled = false;
+        action_btn.style.background = ''; // ใช้สีจาก CSS
+        action_btn.style.color = '';      // ใช้สีจาก CSS
     } else {
-        actionBtn.classList.add('send-mode');
-        actionBtn.classList.remove('stop-mode');
+        action_btn.classList.add('send-mode');
+        action_btn.classList.remove('stop-mode');
         
-        const hasText = messageInput.value.trim().length > 0;
+        const has_text = message_input.value.trim().length > 0;
         
-        if (hasText) {
-            actionBtn.disabled = false;
-            actionBtn.style.background = ''; // ใช้สีจาก CSS
-            actionBtn.style.color = '';      // ใช้สีจาก CSS
+        if (has_text) {
+            action_btn.disabled = false;
+            action_btn.style.background = ''; // ใช้สีจาก CSS
+            action_btn.style.color = '';      // ใช้สีจาก CSS
         } else {
-            actionBtn.disabled = true;
-            actionBtn.style.background = ''; // ใช้สีจาก CSS
-            actionBtn.style.color = '';      // ใช้สีจาก CSS
+            action_btn.disabled = true;
+            action_btn.style.background = ''; // ใช้สีจาก CSS
+            action_btn.style.color = '';      // ใช้สีจาก CSS
         }
     }
 }
 
-function resetToDefaultState() {
-    abortController = null;
-    setStopMode(false);
+function ResetToDefaultState() {
+    abort_controller = null;
+    SetStopMode(false);
 }
 
-function updateLayoutState(isNewChat) {
-    if (!mainContent) return;
-    if (isNewChat) {
-        mainContent.classList.add('centered-mode');
+function UpdateLayoutState(is_new_chat) {
+    if (!main_content) return;
+    if (is_new_chat) {
+        main_content.classList.add('centered-mode');
         // ✅ เพิ่มคลาสสำหรับจัดวางกึ่งกลาง
-        mainContent.classList.add('is-new-chat');
-        if (!chatContainer.contains(welcomeScreen)) {
-            chatContainer.appendChild(welcomeScreen);
+        main_content.classList.add('is-new-chat');
+        if (!chat_container.contains(welcome_screen)) {
+            chat_container.appendChild(welcome_screen);
         }
-        welcomeScreen.classList.remove('hidden');
+        welcome_screen.classList.remove('hidden');
     } else {
-        mainContent.classList.remove('centered-mode');
+        main_content.classList.remove('centered-mode');
         // ✅ เอาคลาสออกเพื่อให้เลื่อนลงมาข้างล่าง
-        mainContent.classList.remove('is-new-chat');
-        welcomeScreen.classList.add('hidden');
+        main_content.classList.remove('is-new-chat');
+        welcome_screen.classList.add('hidden');
     }
 }
 
-function clearMessages() {
-    chatContainer.querySelectorAll('.message').forEach(el => el.remove());
+function ClearMessages() {
+    chat_container.querySelectorAll('.message').forEach(el => el.remove());
 }
 
-function appendMessage(role, content, isEmptyStream, modelName = null, files = []) {
-    updateLayoutState(false);
+function AppendMessage(role, content, is_empty_stream, model_name = null, files = []) {
+    UpdateLayoutState(false);
     const now = Date.now();
     
     // จัดการการซ่อนข้อความ PDF (Parsing Content)
-    const parsedData = parseMessageContent(content);
-    const displayContent = parsedData.text;
-    const extractedFiles = parsedData.files;
+    const parsed_data = ParseMessageContent(content);
+    const display_content = parsed_data.text;
+    const extracted_files = parsed_data.files;
 
     // จัดการการดึงกระบวนการคิด (Thought Parsing) ออกจากเนื้อหาที่จะแสดงปกติ
-    const thoughtInfo = parseThoughtPart(displayContent);
-    const finalDisplayContent = thoughtInfo.mainText;
-    const initialThought = thoughtInfo.thoughtText;
+    const thought_info = ParseThoughtPart(display_content);
+    const final_display_content = thought_info.mainText;
+    const initial_thought = thought_info.thoughtText;
 
     const div = document.createElement('div');
     div.className = `message ${role}`;
     const inner = document.createElement('div');
     inner.className = 'message-inner';
 
-    let thoughtBody = null;
-    let mainContentDiv = null;
+    let thought_body = null;
+    let main_content_div = null;
 
     if (role === 'assistant') {
-        const aiAvatarDiv = document.createElement('div');
-        aiAvatarDiv.className = 'message-avatar ai-avatar';
-        aiAvatarDiv.style.flexShrink = '0';
-        aiAvatarDiv.innerHTML = `<div style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:var(--sidebar-bg);color:var(--text-color);font-size:18px;border-radius:50%;"><i class="fa-solid fa-robot"></i></div>`;
-        inner.appendChild(aiAvatarDiv);
+        const ai_avatar_div = document.createElement('div');
+        ai_avatar_div.className = 'message-avatar ai-avatar';
+        ai_avatar_div.style.flexShrink = '0';
+        ai_avatar_div.innerHTML = `<div style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:var(--sidebar-bg);color:var(--text-color);font-size:18px;border-radius:50%;"><i class="fa-solid fa-robot"></i></div>`;
+        inner.appendChild(ai_avatar_div);
 
         const wrapper = document.createElement('div');
         wrapper.className = 'message-wrapper';
@@ -1121,33 +1057,33 @@ function appendMessage(role, content, isEmptyStream, modelName = null, files = [
         wrapper.style.width = '100%';
 
         // 1. ส่วนแสดงไฟล์แนบ (ย้ายมาไว้ข้างบนสุด)
-        const allFiles = [...files, ...extractedFiles];
-        if (allFiles.length > 0) {
-            const attachmentRow = document.createElement('div');
-            attachmentRow.className = 'message-attachments';
-            allFiles.forEach(file => {
+        const all_files = [...files, ...extracted_files];
+        if (all_files.length > 0) {
+            const attachment_row = document.createElement('div');
+            attachment_row.className = 'message-attachments';
+            all_files.forEach(file => {
                 const pill = document.createElement('div');
                 pill.className = `message-file-pill ${file.type === 'application/pdf' ? 'pdf-type' : ''}`;
                 const icon = document.createElement('i');
                 icon.className = file.type === 'application/pdf' ? 'fa-solid fa-file-pdf' : 'fa-regular fa-file-lines';
                 pill.appendChild(icon);
-                const nameText = document.createElement('div');
-                nameText.className = 'file-name';
-                nameText.textContent = file.name;
-                pill.appendChild(nameText);
-                attachmentRow.appendChild(pill);
+                const name_text = document.createElement('div');
+                name_text.className = 'file-name';
+                name_text.textContent = file.name;
+                pill.appendChild(name_text);
+                attachment_row.appendChild(pill);
             });
-            wrapper.appendChild(attachmentRow);
+            wrapper.appendChild(attachment_row);
         }
 
         // 2. ส่วนของ Thought (ความเห็นของ AI)
-        if (initialThought || isEmptyStream) {
-            const t = createThoughtBlock();
+        if (initial_thought || is_empty_stream) {
+            const t = CreateThoughtBlock();
             wrapper.appendChild(t.container);
-            thoughtBody = t.body;
-            if (initialThought) {
+            thought_body = t.body;
+            if (initial_thought) {
                 // โมเดลที่มี reasoning จริง (โหลดจากประวัติ) → พับไว้
-                thoughtBody.innerText = initialThought;
+                thought_body.innerText = initial_thought;
                 t.container.classList.add('collapsed');
                 const chevron = t.container.querySelector('.chevron');
                 if (chevron) chevron.className = 'fa-solid fa-chevron-right chevron';
@@ -1160,109 +1096,109 @@ function appendMessage(role, content, isEmptyStream, modelName = null, files = [
         }
 
         // 3. ส่วนเนื้อหาข้อความ
-        mainContentDiv = document.createElement('div');
-        mainContentDiv.className = 'message-content';
-        if (!isEmptyStream) {
-            const textToRender = finalDisplayContent || " ";
-            mainContentDiv.dataset.markdown = textToRender;
-            updateContentHtml(mainContentDiv, textToRender);
+        main_content_div = document.createElement('div');
+        main_content_div.className = 'message-content';
+        if (!is_empty_stream) {
+            const text_to_render = final_display_content || " ";
+            main_content_div.dataset.markdown = text_to_render;
+            UpdateContentHtml(main_content_div, text_to_render);
         }
-        wrapper.appendChild(mainContentDiv);
+        wrapper.appendChild(main_content_div);
 
-        const actionRow = document.createElement('div');
-        actionRow.className = 'message-actions';
-        if (isEmptyStream) {
-            actionRow.style.display = 'none';
+        const action_row = document.createElement('div');
+        action_row.className = 'message-actions';
+        if (is_empty_stream) {
+            action_row.style.display = 'none';
         }
-        actionRow.innerHTML = `
+        action_row.innerHTML = `
             <button class="copy-message-btn" title="Copy">
                 <i class="fa-regular fa-copy"></i>
             </button>
         `;
-        const copyBtn = actionRow.querySelector('.copy-message-btn');
-        copyBtn.onclick = () => {
-            const rawContent = mainContentDiv.dataset.markdown || mainContentDiv.innerText;
-            navigator.clipboard.writeText(rawContent).then(() => {
-                const icon = copyBtn.querySelector('i');
+        const copy_btn = action_row.querySelector('.copy-message-btn');
+        copy_btn.onclick = () => {
+            const raw_content = main_content_div.dataset.markdown || main_content_div.innerText;
+            navigator.clipboard.writeText(raw_content).then(() => {
+                const icon = copy_btn.querySelector('i');
                 icon.className = 'fa-solid fa-check';
                 setTimeout(() => { icon.className = 'fa-regular fa-copy'; }, 2000);
             });
         };
-        wrapper.appendChild(actionRow);
+        wrapper.appendChild(action_row);
         inner.appendChild(wrapper);
     } else {
         // ส่วนรของผู้ใช้ (User)
-        const userWrapper = document.createElement('div');
-        userWrapper.className = 'user-message-wrapper';
-        userWrapper.style.display = 'flex';
-        userWrapper.style.flexDirection = 'column';
-        userWrapper.style.alignItems = 'flex-end';
-        userWrapper.style.gap = '8px';
+        const user_wrapper = document.createElement('div');
+        user_wrapper.className = 'user-message-wrapper';
+        user_wrapper.style.display = 'flex';
+        user_wrapper.style.flexDirection = 'column';
+        user_wrapper.style.alignItems = 'flex-end';
+        user_wrapper.style.gap = '8px';
 
         // 1. ไฟล์แนบของผู้ใช้ (อยู่ด้านบน)
         if (files.length > 0) {
-            const attachmentRow = document.createElement('div');
-            attachmentRow.className = 'message-attachments';
+            const attachment_row = document.createElement('div');
+            attachment_row.className = 'message-attachments';
             files.forEach(file => {
                 const pill = document.createElement('div');
                 pill.className = `message-file-pill ${file.type === 'application/pdf' ? 'pdf-type' : ''}`;
                 const icon = document.createElement('i');
                 icon.className = file.type === 'application/pdf' ? 'fa-solid fa-file-pdf' : 'fa-regular fa-file-lines';
                 pill.appendChild(icon);
-                const nameText = document.createElement('div');
-                nameText.className = 'file-name';
-                nameText.textContent = file.name;
-                pill.appendChild(nameText);
-                attachmentRow.appendChild(pill);
+                const name_text = document.createElement('div');
+                name_text.className = 'file-name';
+                name_text.textContent = file.name;
+                pill.appendChild(name_text);
+                attachment_row.appendChild(pill);
             });
-            userWrapper.appendChild(attachmentRow);
+            user_wrapper.appendChild(attachment_row);
         }
 
         // 2. เนื้อหาข้อความของผู้ใช้
-        mainContentDiv = document.createElement('div');
-        mainContentDiv.className = 'message-content';
-        if (!isEmptyStream) {
-            const userContent = displayContent || " ";
-            mainContentDiv.dataset.markdown = userContent;
-            updateContentHtml(mainContentDiv, userContent);
+        main_content_div = document.createElement('div');
+        main_content_div.className = 'message-content';
+        if (!is_empty_stream) {
+            const user_content = display_content || " ";
+            main_content_div.dataset.markdown = user_content;
+            UpdateContentHtml(main_content_div, user_content);
         }
-        userWrapper.appendChild(mainContentDiv);
-        inner.appendChild(userWrapper);
+        user_wrapper.appendChild(main_content_div);
+        inner.appendChild(user_wrapper);
     }
 
     div.appendChild(inner);
-    chatContainer.appendChild(div);
-    if (!isEmptyStream && mainContentDiv) renderMath(mainContentDiv);
-    scrollToBottom();
+    chat_container.appendChild(div);
+    if (!is_empty_stream && main_content_div) RenderMath(main_content_div);
+    ScrollToBottom();
 
     // คืนค่าทั้ง 2 ส่วนเผื่อการอัปเดตแบบ Stream และเก็บเวลาที่สร้างไว้
-    return { contentDiv: mainContentDiv, thoughtDiv: thoughtBody, createdAt: now };
+    return { content_div: main_content_div, thought_div: thought_body, created_at: now };
 }
 
-function updateMessageContent(elementsObj, rawMarkdownContent, explicitReasoning = "") {
-    if (!elementsObj) return;
-    const { contentDiv, thoughtDiv } = elementsObj;
+function UpdateMessageContent(elements_obj, raw_markdown_content, explicit_reasoning = "") {
+    if (!elements_obj) return;
+    const { content_div, thought_div } = elements_obj;
     
     // 1. จัดการข้อมูลการคิด (Thought/Reasoning)
-    let finalThoughtText = explicitReasoning;
-    let mainText = rawMarkdownContent;
+    let final_thought_text = explicit_reasoning;
+    let main_text = raw_markdown_content;
 
     // ถ้าไม่มีข้อมูลการคิดส่งแยกมา ให้ลองแกะจากเนื้อหาหลัก (Fallback)
-    if (!finalThoughtText) {
-        const thoughtInfo = parseThoughtPart(rawMarkdownContent);
-        mainText = thoughtInfo.mainText;
-        finalThoughtText = thoughtInfo.thoughtText;
+    if (!final_thought_text) {
+        const thought_info = ParseThoughtPart(raw_markdown_content);
+        main_text = thought_info.main_text;
+        final_thought_text = thought_info.thought_text;
     }
 
-    if (finalThoughtText && thoughtDiv) {
-        thoughtDiv.innerText = finalThoughtText;
-        const container = thoughtDiv.parentElement;
+    if (final_thought_text && thought_div) {
+        thought_div.innerText = final_thought_text;
+        const container = thought_div.parentElement;
         if (container) {
             container.style.display = 'block';
             container.classList.remove('hidden');
             
             // ✅ พับเก็บอัตโนมัติถ้าเริ่มแสดงเนื้อหาหลักแล้ว (สไตล์ Gemini)
-            if (mainText.trim().length > 0) {
+            if (main_text.trim().length > 0) {
                 if (!container.classList.contains('collapsed')) {
                     container.classList.add('collapsed');
                     const chevron = container.querySelector('.chevron');
@@ -1275,15 +1211,15 @@ function updateMessageContent(elementsObj, rawMarkdownContent, explicitReasoning
                 container.classList.remove('collapsed');
             }
         }
-    } else if (thoughtDiv && !finalThoughtText) {
+    } else if (thought_div && !final_thought_text) {
         // ไม่มี reasoning จริงๆ (เช่น Gemini Flash) — แสดง thought block ค้างไว้ตลอดระหว่าง stream
         // ให้ "Thought for a moment" โชว์ตลอดขณะที่กำลังตอบ
         // การซ่อน/พับจะเกิดขึ้นใน finally block หลัง stream จบ เท่านั้น
-        const container = thoughtDiv.parentElement;
+        const container = thought_div.parentElement;
         if (container) {
             container.style.display = 'block';
             // ✅ พับเก็บอัตโนมัติถ้าเริ่มแสดงเนื้อหาหลักแล้ว
-            if (mainText.trim().length > 0) {
+            if (main_text.trim().length > 0) {
                 if (!container.classList.contains('collapsed')) {
                     container.classList.add('collapsed');
                     const chevron = container.querySelector('.chevron');
@@ -1298,103 +1234,107 @@ function updateMessageContent(elementsObj, rawMarkdownContent, explicitReasoning
     }
 
     // 2. อัปเดตเนื้อหาหลัก
-    if (contentDiv) {
-        contentDiv.dataset.markdown = mainText;
-        updateContentHtml(contentDiv, mainText);
-        renderMath(contentDiv);
+    if (content_div) {
+        content_div.dataset.markdown = main_text;
+        UpdateContentHtml(content_div, main_text);
+        RenderMath(content_div);
     }
 }
 
-function updateContentHtml(element, markdownContent) {
-    let mathBlocks = [];
-    let text = markdownContent;
-    function stashMath(regex) {
+function UpdateContentHtml(element, markdown_content) {
+    let math_blocks = [];
+    let text = markdown_content;
+    function StashMath(regex) {
         text = text.replace(regex, (match) => {
-            const id = `%%%MATH_${mathBlocks.length}%%%`;
-            mathBlocks.push(match);
+            const id = `%%%MATH_${math_blocks.length}%%%`;
+            math_blocks.push(match);
             return id;
         });
     }
-    stashMath(/\\\[[\s\S]*?\\\]/g);
-    stashMath(/\\\([\s\S]*?\\\)/g);
-    stashMath(/\$\$[\s\S]*?\$\$/g);
-    stashMath(/(?<!\$)\$[^\$]+\$(?!\$)/g);
+    StashMath(/\\\[[\s\S]*?\\\]/g);
+    StashMath(/\\\([\s\S]*?\\\)/g);
+    StashMath(/\$\$[\s\S]*?\$\$/g);
+    StashMath(/(?<!\$)\$[^\$]+\$(?!\$)/g);
     let html = marked.parse(text);
-    mathBlocks.forEach((block, i) => {
+    math_blocks.forEach((block, i) => {
         const id = `%%%MATH_${i}%%%`;
         html = html.replace(id, () => block);
     });
     element.innerHTML = html;
 }
 
-function renderMath(element) {
-    renderMathInElement(element, {
-        delimiters: [
-            { left: '$$', right: '$$', display: true },
-            { left: '\\[', right: '\\]', display: true },
-            { left: '$', right: '$', display: false },
-            { left: '\\(', right: '\\)', display: false }
-        ],
-        throwOnError: false
-    });
+function RenderMath(element) {
+    if (typeof renderMathInElement === 'function') {
+        renderMathInElement(element, {
+            delimiters: [
+                { left: '$$', right: '$$', display: true },
+                { left: '\\[', right: '\\]', display: true },
+                { left: '$', right: '$', display: false },
+                { left: '\\(', right: '\\)', display: false }
+            ],
+            throwOnError: false
+        });
+    } else {
+        console.warn('⚠️ KaTeX renderMathInElement is not available.');
+    }
 }
 
-function scrollToBottom() {
-    // ✅ ถ้าผู้ใช้เลื่อนขึ้นไปอ่านข้อความเก่า (isAutoScrollEnabled = false) ไม่ต้องดึงหน้าจอลงมา
-    if (!isAutoScrollEnabled) return;
-    chatContainer.scrollTop = chatContainer.scrollHeight;
+function ScrollToBottom() {
+    // ✅ ถ้าผู้ใช้เลื่อนขึ้นไปอ่านข้อความเก่า (is_auto_scroll_enabled = false) ไม่ต้องดึงหน้าจอลงมา
+    if (!is_auto_scroll_enabled) return;
+    chat_container.scrollTop = chat_container.scrollHeight;
 }
 
 // ===== จัดการไฟล์แนบ (File Attachment Helpers) =====
 
-function handleFileSelect(event) {
+function HandleFileSelect(event) {
     const files = Array.from(event.target.files);
     files.forEach(async file => {
-        const fileObj = {
+        const file_obj = {
             file: file,
             name: file.name,
             type: file.type,
-            extractedText: ""
+            extracted_text: ""
         };
 
         if (file.type === 'application/pdf') {
-            fileObj.extractedText = await extractTextFromPDF(file);
+            file_obj.extracted_text = await ExtractTextFromPDF(file);
         }
         
-        attachedFiles.push(fileObj);
-        renderFilePreviews();
+        attached_files.push(file_obj);
+        RenderFilePreviews();
     });
-    fileInput.value = ''; // Reset
+    file_input.value = ''; // Reset
 }
 
-async function extractTextFromPDF(file) {
+async function ExtractTextFromPDF(file) {
     try {
-        const arrayBuffer = await file.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-        let fullText = "";
+        const array_buffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: array_buffer }).promise;
+        let full_text = "";
         
         for (let i = 1; i <= pdf.numPages; i++) {
             const page = await pdf.getPage(i);
-            const textContent = await page.getTextContent();
-            const pageText = textContent.items.map(item => item.str).join(" ");
-            fullText += pageText + "\n";
+            const text_content = await page.getTextContent();
+            const page_text = text_content.items.map(item => item.str).join(" ");
+            full_text += page_text + "\n";
         }
-        return fullText;
+        return full_text;
     } catch (e) {
         console.error("PDF Extraction Error:", e);
         return "[Error extracting text from PDF]";
     }
 }
 
-function renderFilePreviews() {
-    filePreviewContainer.innerHTML = '';
-    if (attachedFiles.length === 0) {
-        filePreviewContainer.style.display = 'none';
+function RenderFilePreviews() {
+    file_preview_container.innerHTML = '';
+    if (attached_files.length === 0) {
+        file_preview_container.style.display = 'none';
         return;
     }
 
-    filePreviewContainer.style.display = 'flex';
-    attachedFiles.forEach((file, index) => {
+    file_preview_container.style.display = 'flex';
+    attached_files.forEach((file, index) => {
         const pill = document.createElement('div');
         pill.className = 'file-pill';
         
@@ -1412,83 +1352,83 @@ function renderFilePreviews() {
             pill.appendChild(icon);
         }
 
-        const nameSpan = document.createElement('span');
-        nameSpan.textContent = file.name.length > 15 ? file.name.substring(0, 12) + '...' : file.name;
-        pill.appendChild(nameSpan);
+        const name_span = document.createElement('span');
+        name_span.textContent = file.name.length > 15 ? file.name.substring(0, 12) + '...' : file.name;
+        pill.appendChild(name_span);
 
-        const removeBtn = document.createElement('div');
-        removeBtn.className = 'remove-file';
-        removeBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
-        removeBtn.onclick = () => removeFile(index);
-        pill.appendChild(removeBtn);
+        const remove_btn = document.createElement('div');
+        remove_btn.className = 'remove-file';
+        remove_btn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+        remove_btn.onclick = () => RemoveFile(index);
+        pill.appendChild(remove_btn);
 
-        filePreviewContainer.appendChild(pill);
+        file_preview_container.appendChild(pill);
     });
 }
 
-function removeFile(index) {
-    attachedFiles.splice(index, 1);
-    renderFilePreviews();
+function RemoveFile(index) {
+    attached_files.splice(index, 1);
+    RenderFilePreviews();
 }
 
 // ===== ฟังก์ชันสำหรับตรวจจับและซ่อนข้อมูล PDF ในแชท (Content Parser) =====
 
-function parseMessageContent(rawContent) {
-    if (!rawContent || typeof rawContent !== 'string') return { text: rawContent, files: [] };
+function ParseMessageContent(raw_content) {
+    if (!raw_content || typeof raw_content !== 'string') return { text: raw_content, files: [] };
 
     const TAG = "[เอกสารแนบเพื่ออ้างอิงและสรุป]";
-    if (!rawContent.includes(TAG)) return { text: rawContent, files: [] };
+    if (!raw_content.includes(TAG)) return { text: raw_content, files: [] };
 
-    let text = rawContent;
+    let text = raw_content;
     let files = [];
 
     // ดึงข้อมูลชื่อไฟล์ PDF ออกมา (Regex สำหรับดึงระหว่าง --- ข้อมูลจากไฟล์ PDF: และ ---)
-    const nameRegex = /--- ข้อมูลจากไฟล์ PDF: (.*?) ---/g;
+    const name_regex = /--- ข้อมูลจากไฟล์ PDF: (.*?) ---/g;
     let match;
-    while ((match = nameRegex.exec(rawContent)) !== null) {
+    while ((match = name_regex.exec(raw_content)) !== null) {
         files.push({ name: match[1], type: 'application/pdf' });
     }
 
     // ตัดส่วน Context ทิ้ง เหลือแต่คำสั่งจากผู้ใช้จริงๆ
-    const userPromptRegex = /\[คำสั่งจากผู้ใช้\]: ([\s\S]*)$/;
-    const contentMatch = rawContent.match(userPromptRegex);
-    if (contentMatch) {
-        text = contentMatch[1].trim();
+    const user_prompt_regex = /\[คำสั่งจากผู้ใช้\]: ([\s\S]*)$/;
+    const content_match = raw_content.match(user_prompt_regex);
+    if (content_match) {
+        text = content_match[1].trim();
     } else {
         // กรณีหาแท็กปิดไม่เจอ ให้ตัดเอาแค่ส่วนสุดท้ายหรือส่วนที่เป็น User text
-        text = rawContent.split(TAG).pop().trim();
+        text = raw_content.split(TAG).pop().trim();
     }
 
     return { text, files };
 }
 
 // ===== ผู้ช่วยตรวจจับกระบวนการคิด (Thought Parser) =====
-function parseThoughtPart(content) {
-    if (!content) return { mainText: "", thoughtText: "" };
+function ParseThoughtPart(content) {
+    if (!content) return { main_text: "", thought_text: "" };
 
     // รูปแบบหลัก: <thought>เนื้อหา</thought>
-    const thoughtRegex = /<thought>([\s\S]*?)<\/thought>/;
-    const match = content.match(thoughtRegex);
+    const thought_regex = /<thought>([\s\S]*?)<\/thought>/;
+    const match = content.match(thought_regex);
 
     if (match) {
-        const thoughtText = match[1].trim();
-        const mainText = content.replace(thoughtRegex, "").trim();
-        return { mainText, thoughtText };
+        const thought_text = match[1].trim();
+        const main_text = content.replace(thought_regex, "").trim();
+        return { main_text: main_text, thought_text: thought_text };
     }
 
     // กรณีโมเดลกำลัง Stream และยังไม่มีปิดแท็ก
     if (content.includes("<thought>")) {
         const parts = content.split("<thought>");
         return { 
-            mainText: parts[0]?.trim() || "", 
-            thoughtText: parts[1]?.trim() || "" 
+            main_text: parts[0]?.trim() || "", 
+            thought_text: parts[1]?.trim() || "" 
         };
     }
 
-    return { mainText: content, thoughtText: "" };
+    return { main_text: content, thought_text: "" };
 }
 
-function createThoughtBlock() {
+function CreateThoughtBlock() {
     const container = document.createElement('div');
     container.className = 'thought-container';
     

@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, Text
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 from datetime import datetime
 import os
@@ -76,14 +76,24 @@ class Message(Base):
     
     chat = relationship("Chat", back_populates="messages")
 
+# โมเดลสำหรับเก็บ Chunk ข้อมูลที่ผ่านการทำ RAG Index แล้ว
+class KnowledgeChunk(Base):
+    __tablename__ = "knowledge_chunks"
+
+    id = Column(Integer, primary_key=True, index=True)
+    source_file = Column(String, index=True)         # ชื่อไฟล์ต้นทาง เช่น manual.pdf
+    content = Column(Text)                            # เนื้อหาข้อความของ Chunk นี้
+    embedding = Column(Text)                          # Vector เก็บเป็น JSON String เช่น "[0.1, 0.2, ...]"
+    created_at = Column(DateTime, default=datetime.utcnow)
+
 # ฟังก์ชันสำหรับสร้าง Table ในฐานข้อมูล (ถ้ายังไม่มี)
-def init_db():
+def InitDb():
     Base.metadata.create_all(bind=engine)
 
 # ฟังก์ชันสำหรับสร้าง Database Session เพื่อนำไปใช้งานใน API
-def get_db():
-    # ในสภาวะ Serverless (เช่น Vercel) การเรียกใช้ init_db() ที่นี่จะช่วยให้มั่นใจว่าตารางถูกสร้างขึ้นจริง
-    init_db()
+def GetDb():
+    # ในสภาวะ Serverless (เช่น Vercel) การเรียกใช้ InitDb() ที่นี่จะช่วยให้มั่นใจว่าตารางถูกสร้างขึ้นจริง
+    InitDb()
     db = SessionLocal()
     try:
         yield db

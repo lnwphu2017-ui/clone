@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-retrigger="1">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
@@ -7,26 +7,18 @@
     <title>CLONEICREAM</title>
     <!-- FontAwesome สำหรับไอคอนต่างๆ -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <!-- KaTeX สำหรับการแสดงผลสูตรคณิตศาสตร์ -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
-    <!-- Marked.js สำหรับการแปลง Markdown เป็น HTML -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    
-    <!-- PDF.js for PDF Content Extraction -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
-    <script>
-        // กำหนด workerSrc ให้กับ pdf.js
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
-    </script>
-    
+    <!-- Marked.js สำหรับการแปลง Markdown เป็น HTML (Pinned to v4.3.0 for stability) -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
     <link rel="stylesheet" href="style.css">
     <!-- PDF.js สำหรับการดึงข้อความจากไฟล์ PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -37,119 +29,67 @@
 </head>
 
 <body>
-    <!-- หน้าจอ Login (New Design - SiamGPT Style) -->
-    <div id="login-screen" class="api-key-screen">
-        <div class="login-card">
-            <h1 id="auth-title" class="login-title">Sign in to CLONE</h1>
-            <p class="login-disclaimer">
-                <i class="fa-solid fa-circle-info"></i>
-                CLONE does not make any external connections, and your data stays securely on your locally hosted server.
-            </p>
-
-            <div id="login-fields" class="login-fields">
-                <div class="auth-input-group" id="name-group" style="display: none;">
-                    <label for="reg-name">Name</label>
-                    <input type="text" id="reg-name" placeholder="Enter Your Full Name">
-                </div>
-                <div class="auth-input-group">
-                    <label for="login-email">Email</label>
-                    <input type="email" id="login-email" placeholder="Enter Your Email">
-                </div>
-                <div class="auth-input-group">
-                    <label for="login-password">Password</label>
-                    <div class="password-wrapper">
-                        <input type="password" id="login-password" placeholder="Enter Your Password">
-                        <button id="toggle-login-password" class="toggle-password-btn">
-                            <i class="fa-regular fa-eye"></i>
+    <!-- Unified Setup Wizard Modal (Google Login + API Key Setup) -->
+    <div id="setup-wizard-modal" class="modal-backdrop" style="display: none;">
+        <div class="auth-modal-content">
+            <button class="modal-close-btn" id="close-setup-modal">
+                <i class="fa fa-times"></i>
+            </button>
+            
+            <!-- Step 1: Sign up / Log in -->
+            <div id="wizard-step-1" class="wizard-step">
+                <div class="wizard-step-container">
+                    <h2 class="auth-modal-title">Sign up or log in</h2>
+                    <p class="auth-modal-subtitle">Save chats, upload files, and more.</p>
+                    <div class="auth-methods">
+                        <button id="login-google-btn-modal" class="auth-method-btn google">
+                            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+                            <span>Continue with Google</span>
                         </button>
                     </div>
-                    <p id="password-hint" class="input-hint" style="display: none;">Minimum eight characters, at least one uppercase letter, one lowercase letter, one number and one special character</p>
+                    <p class="auth-modal-disclaimer">
+                        By proceeding, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+                    </p>
                 </div>
             </div>
 
-            <button id="auth-main-btn" class="login-primary-btn">Sign In</button>
+            <!-- Step 2: API Key Setup -->
+            <div id="wizard-step-2" class="wizard-step" style="display: none;">
+                <div class="wizard-step-container">
+                    <h2 class="auth-modal-title">Secure Your Access</h2>
+                    <p class="auth-modal-subtitle">To start chatting with Gemini and other models, please provide your OpenRouter API Key.</p>
+                    
+                    <div class="auth-input-group" style="margin-bottom: 24px;">
+                        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px;">
+                            <label style="font-weight: 600; font-size: 13px; color: #333; text-transform: uppercase; letter-spacing: 0.5px;">API Key</label>
+                            <a href="https://openrouter.ai/keys" target="_blank" class="get-key-link">
+                                Get Key <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 10px;"></i>
+                            </a>
+                        </div>
+                        <div class="password-wrapper">
+                            <input type="password" id="wizard-api-key-input" placeholder="sk-or-v1-xxxx..." autocomplete="off">
+                            <button id="toggle-wizard-key-visibility" class="toggle-password-btn">
+                                <i class="fa fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
 
-            <p class="login-toggle-text">
-                <span id="toggle-msg">Don't have an account?</span>
-                <a href="#" id="toggle-auth-mode">Sign up</a>
-            </p>
-
-            <button id="guest-login-btn" class="login-secondary-btn">Continue as a guest</button>
-
-            <div class="login-divider">
-                <span>or</span>
+                    <button id="save-wizard-api-key-btn" class="login-primary-btn" disabled>
+                        <span>Connect & Start Chatting</span>
+                    </button>
+                    
+                    <p style="font-size: 11px; color: #999; margin-top: 20px; line-height: 1.5;">
+                        <i class="fa-solid fa-lock" style="margin-right: 4px;"></i> Your key is stored locally in your browser and never shared with anyone.
+                    </p>
+                </div>
             </div>
-
-            <button id="login-google-btn" class="login-google-btn">
-                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="18px" height="18px" viewBox="0 0 48 48">
-                    <g>
-                        <path fill="#EA4335"
-                            d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z">
-                        </path>
-                        <path fill="#4285F4"
-                            d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z">
-                        </path>
-                        <path fill="#FBBC05"
-                            d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z">
-                        </path>
-                        <path fill="#34A853"
-                            d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z">
-                        </path>
-                        <path fill="none" d="M0 0h48v48H0z"></path>
-                    </g>
-                </svg>
-                <span>Continue with Google</span>
-            </button>
-
-            <p class="login-footer">
-                By continuing, you agree to the <a href="#">Privacy Policy</a>
-            </p>
         </div>
     </div>
 
-    <!-- หน้าจอใส่ API Key (Reverted to Consistent Minimal Design) -->
-    <div id="api-key-screen" class="api-key-screen" style="display:none;">
-        <div class="login-card">
-            <h1 class="login-title">Configure API Key</h1>
-            <p class="login-disclaimer">
-                <i class="fa-solid fa-key"></i>
-                Please enter your OpenRouter API Key to start chatting. Your key is stored locally in your browser.
-            </p>
 
-            <div class="login-fields">
-                <div class="auth-input-group">
-                    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px;">
-                        <label style="margin-bottom: 0;">API Key</label>
-                        <a href="https://openrouter.ai/keys" target="_blank" class="get-key-link" style="font-size: 13px; color: #0066cc; text-decoration: none; font-weight: 600;">
-                            <i class="fa-solid fa-arrow-up-right-from-square"></i> รับ API Key
-                        </a>
-                    </div>
-                    <div class="password-wrapper">
-                        <input type="password" id="api-key-input" placeholder="sk-or-v1-xxxx..." autocomplete="off">
-                        <button id="toggle-key-visibility" class="toggle-password-btn" title="แสดง/ซ่อน Key">
-                            <i class="fa fa-eye"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
 
-            <button id="save-api-key-btn" class="login-primary-btn" disabled>
-                <span>เริ่มต้นใช้งาน</span>
-                <i class="fa-solid fa-arrow-right"></i>
-            </button>
-
-            <button id="logout-from-key-btn" class="login-secondary-btn">
-                <span>ออกจากระบบ</span>
-            </button>
-
-            <p class="login-footer">
-                Don't have a key? <a href="https://openrouter.ai/" target="_blank" style="color: #666; text-decoration: underline;">Learn more about OpenRouter</a>
-            </p>
-        </div>
-    </div>
-
-    <!-- แอปหลัก (ซ่อนไว้จนกว่าจะใส่ API Key) -->
-    <div class="app-container" id="app-container" style="display:none;">
+    <!-- แอปหลัก (แสดงผลเป็นหน้าแรกทันที) -->
+    <div class="app-container" id="app-container">
         <!-- แถบด้านข้าง (Sidebar) -->
         <nav class="sidebar" id="sidebar">
             <div class="sidebar-header">
@@ -157,17 +97,22 @@
                     <!-- รายการปุ่มใน Sidebar ตามรูปตัวอย่าง -->
                     <div class="sidebar-item-btn" id="toggle-sidebar-internal" title="Close sidebar">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M4 6C4 4.89543 4.89543 4 6 4H18C19.1046 4 20 4.89543 20 6V18C20 19.1046 19.1046 20 18 20H6C4.89543 20 4 19.1046 4 18V6Z" stroke="currentColor" stroke-width="2"/>
-                            <path d="M9 4V20" stroke="currentColor" stroke-width="2"/>
+                            <path
+                                d="M4 6C4 4.89543 4.89543 4 6 4H18C19.1046 4 20 4.89543 20 6V18C20 19.1046 19.1046 20 18 20H6C4.89543 20 4 19.1046 4 18V6Z"
+                                stroke="currentColor" stroke-width="2" />
+                            <path d="M9 4V20" stroke="currentColor" stroke-width="2" />
                         </svg>
                     </div>
 
-                    <div class="sidebar-item-btn" id="new-chat-internal" title="New chat">
+                    <div class="sidebar-item-btn" id="new-chat-internal" title=" ">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M11 4H6C4.89543 4 4 4.89543 4 6V18C4 19.1046 4.89543 20 6 20H18C19.1046 20 20 19.1046 20 18V13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                            <path d="M18.5 2.5L21.5 5.5L11.5 15.5H8.5V12.5L18.5 2.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path
+                                d="M11 4H6C4.89543 4 4 4.89543 4 6V18C4 19.1046 4.89543 20 6 20H18C19.1046 20 20 19.1046 20 18V13"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                            <path d="M18.5 2.5L21.5 5.5L11.5 15.5H8.5V12.5L18.5 2.5Z" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                         </svg>
-                        <span>New Chat</span>
+                        <span>New chat </span>
                     </div>
 
 
@@ -191,7 +136,8 @@
 
             <!-- ส่วนล่างของ Sidebar (User Profile & Settings) -->
             <div class="sidebar-footer">
-                <div class="user-profile" id="user-profile" style="padding: 10px 12px; font-size: 13px; color: #888; border-top: 1px solid var(--border-color); display: flex; align-items: center; gap: 8px;">
+                <div class="user-profile" id="user-profile"
+                    style="padding: 10px 12px; font-size: 13px; color: #888; border-top: 1px solid var(--border-color); display: flex; align-items: center; gap: 8px;">
                     <!-- ข้อมูลผู้ใช้จะถูกใส่ผ่าน JavaScript -->
                 </div>
             </div>
@@ -204,18 +150,23 @@
                 <div class="header-left">
                     <button id="main-sidebar-toggle" class="icon-btn header-control-btn" title="Toggle sidebar">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M4 6C4 4.89543 4.89543 4 6 4H18C19.1046 4 20 4.89543 20 6V18C20 19.1046 19.1046 20 18 20H6C4.89543 20 4 19.1046 4 18V6Z" stroke="currentColor" stroke-width="2"/>
-                            <path d="M9 4V20" stroke="currentColor" stroke-width="2"/>
+                            <path
+                                d="M4 6C4 4.89543 4.89543 4 6 4H18C19.1046 4 20 4.89543 20 6V18C20 19.1046 19.1046 20 18 20H6C4.89543 20 4 19.1046 4 18V6Z"
+                                stroke="currentColor" stroke-width="2" />
+                            <path d="M9 4V20" stroke="currentColor" stroke-width="2" />
                         </svg>
                     </button>
-                    <button id="new-chat-btn-persistent" class="icon-btn header-control-btn" title="New chat">
+                    <button id="new-chat-btn-persistent" class="icon-btn header-control-btn" title=" ">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M11 4H6C4.89543 4 4 4.89543 4 6V18C4 19.1046 4.89543 20 6 20H18C19.1046 20 20 19.1046 20 18V13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                            <path d="M18.5 2.5L21.5 5.5L11.5 15.5H8.5V12.5L18.5 2.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path
+                                d="M11 4H6C4.89543 4 4 4.89543 4 6V18C4 19.1046 4.89543 20 6 20H18C19.1046 20 20 19.1046 20 18V13"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                            <path d="M18.5 2.5L21.5 5.5L11.5 15.5H8.5V12.5L18.5 2.5Z" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                         </svg>
                     </button>
                 </div>
-                <div class="header-center" id="chat-header-title">New chat</div>
+                <div class="header-center" id="chat-header-title"> </div>
                 <div class="header-right">
                 </div>
             </header>
@@ -229,7 +180,7 @@
 
             <div class="chat-container" id="chat-container">
                 <div class="welcome-screen" id="welcome-screen">
-                    <h2>How can I help you today?</h2>
+                    <h2>How can I help you to day?</h2>
                 </div>
             </div>
 
@@ -237,28 +188,31 @@
                 <div class="input-wrapper">
                     <!-- พื้นที่แสดงรูป/ไฟล์ที่แนบ (File Preview) -->
                     <div id="file-preview-container" class="file-preview-container"></div>
-                    
+
                     <textarea id="message-input" placeholder="Send a message" rows="1"></textarea>
-                    
+
                     <!-- Hidden File Input -->
-                    <input type="file" id="file-input" style="display: none;" multiple accept="image/*, .pdf, .txt, .doc, .docx">
+                    <input type="file" id="file-input" style="display: none;" multiple
+                        accept="image/*, .pdf, .txt, .doc, .docx">
                     <div class="input-actions-row">
                         <div class="input-actions-right">
                             <!-- ปุ่มแนบไฟล์ -->
                             <button type="button" class="attach-btn" id="attach-btn" title="แนบไฟล์">
                                 <i class="fa fa-plus"></i>
                             </button>
-                            
+
                             <!-- ตัวเลือกโมเดลแบบพรีเมียม (Custom Model Selector) -->
                             <div class="custom-model-selector" id="custom-model-selector">
-                                <button type="button" class="model-toggle-btn" id="model-toggle-btn" title="เลือก AI Model">
+                                <button type="button" class="model-toggle-btn" id="model-toggle-btn"
+                                    title="เลือก AI Model">
                                     <span id="current-model-display">Gemini 2.0 Flash</span>
                                     <i class="fa fa-chevron-down"></i>
                                 </button>
                                 <div class="model-dropdown-menu" id="model-dropdown-menu" style="display: none;">
                                     <div class="model-search-container">
                                         <i class="fa fa-search"></i>
-                                        <input type="text" id="model-search-input" placeholder="Find model..." autocomplete="off">
+                                        <input type="text" id="model-search-input" placeholder="Find model..."
+                                            autocomplete="off">
                                     </div>
                                     <div class="model-list-container" id="model-list-container">
                                         <!-- รายการโมเดลจะถูกเพิ่มด้วย JavaScript -->
@@ -300,13 +254,14 @@
             </button>
             <h1>Settings</h1>
         </div>
-        
+
         <div class="settings-content">
             <!-- User Profile Card -->
             <div class="settings-card profile-card">
                 <div class="profile-info">
                     <div class="avatar-container">
-                        <img id="settings-avatar" src="" alt="User Avatar" onerror="this.src='https://via.placeholder.com/60'">
+                        <img id="settings-avatar" src="" alt="User Avatar"
+                            onerror="this.src='https://via.placeholder.com/60'">
                     </div>
                     <div class="user-details">
                         <h2 id="settings-user-name">Guest User</h2>

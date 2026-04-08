@@ -1,0 +1,17 @@
+services:
+  rag-app:
+    build: .
+    container_name: dayone_rag_chatbot
+    ports:
+      - "8000:8000"
+    volumes:
+      # เชื่อมต่อโค้ด API และ Frontend เพื่อให้ซิงค์ข้อมูลตลอดเวลา (Live Sync)
+      - ./api:/app/api
+      - ./frontend:/app/frontend
+      # เชื่อมต่อฐานข้อมูล SQLite เพื่อบันทึกประวัติแชทและ Vector Index
+      - ./database.db:/app/database.db
+    environment:
+      - USE_TF=0
+      - USE_TORCH=1
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
