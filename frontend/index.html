@@ -285,6 +285,20 @@
                 <p class="settings-hint">Your API key is stored locally and used for AI requests.</p>
             </div>
 
+            <!-- New: Knowledge Base Management Section -->
+            <div class="settings-card" id="kb-management-section">
+                <label class="settings-label">Knowledge Base (RAG)</label>
+                <div class="kb-info">
+                    <p class="settings-hint">Index files from <code style="background:#eee;padding:2px 4px;border-radius:4px;">api/knowledge</code> directory for AI reference.</p>
+                </div>
+                <button id="index-kb-btn" class="settings-secondary-btn">
+                    <i class="fa-solid fa-database"></i>
+                    <span>Re-index Knowledge Base</span>
+                    <div class="spinner" id="kb-index-spinner" style="display: none;"></div>
+                </button>
+                <div id="kb-index-status" class="kb-status-text"></div>
+            </div>
+
             <!-- Auth Actions -->
             <div class="settings-actions">
                 <button id="settings-auth-btn" class="settings-primary-btn">Sign out</button>

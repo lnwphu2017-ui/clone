@@ -388,6 +388,57 @@ async function SaveSettingsApiKey() {
     }, 500);
 }
 
+// ===== จัดการ Knowledge Base (RAG Indexing) =====
+
+async function HandleRagIndex() {
+    const index_btn = document.getElementById('index-kb-btn');
+    const spinner = document.getElementById('kb-index-spinner');
+    const status_text = document.getElementById('kb-index-status');
+
+    if (!api_key) {
+        alert("Please set your API Key in Settings first.");
+        return;
+    }
+
+    if (!confirm("Are you sure you want to Re-index the Knowledge Base? This will use your API Key for Embeddings.")) {
+        return;
+    }
+
+    // สภาวะเริ่มต้น
+    index_btn.disabled = true;
+    spinner.style.display = 'inline-block';
+    status_text.textContent = 'Indexing in progress...';
+    status_text.style.color = '#666';
+
+    try {
+        const res = await fetch(`${BASE_URL}/rag/index`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-User-Id': current_user_uid || 'guest'
+            },
+            body: JSON.stringify({ api_key: api_key })
+        });
+
+        const result = await res.json();
+
+        if (res.ok && result.success) {
+            status_text.textContent = `✅ ${result.message}`;
+            status_text.style.color = '#28a745';
+        } else {
+            status_text.textContent = `❌ Error: ${result.detail?.message || result.message || 'Unknown error'}`;
+            status_text.style.color = '#dc3545';
+        }
+    } catch (e) {
+        console.error('Indexing failed:', e);
+        status_text.textContent = '❌ Connection failed. Check server status.';
+        status_text.style.color = '#dc3545';
+    } finally {
+        index_btn.disabled = false;
+        spinner.style.display = 'none';
+    }
+}
+
 function ShowLoginScreen() {
     CloseSettingsScreen();
     ShowAuthModal();
@@ -633,6 +684,12 @@ function SetupEventListeners() {
                 ShowLoginScreen();
             }
         };
+    }
+
+    // ✅ปุ่ม Index Knowledge Base (RAG)
+    const index_kb_btn = document.getElementById('index-kb-btn');
+    if (index_kb_btn) {
+        index_kb_btn.onclick = HandleRagIndex;
     }
 
     // ✅ Listeners สำหรับการแนบไฟล์
