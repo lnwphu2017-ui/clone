@@ -88,7 +88,7 @@ window.initApp = async function () {
 // ฟังก์ชันเริ่มต้นการทำงาน
 async function Init() {
     SetupSetupWizard(); // ✅ ใช้ Wizard แทนหน้าจอแยกเดิม
-    
+
     // ... rest of Init remains similar logic ...
 
     // ✅ ปรับเปลี่ยน: เริ่มต้นแอปในสถานะปกติ (ไม่ต้องรอ Firebase)
@@ -155,7 +155,7 @@ async function Init() {
             // ✅ สถานะ Unauthenticated
             current_user_uid = null;
             current_user_photo = '';
-            
+
             // อัปเดตข้อมูลในหน้า Settings ให้เป็นสถานะยังไม่ได้ล็อกอิน
             if (settings_user_name) settings_user_name.textContent = 'Please sign in';
             if (settings_user_email) settings_user_email.textContent = 'Sign in to save your chats';
@@ -261,10 +261,10 @@ function SetupSetupWizard() {
 
 function ShowSetupWizard(step = 1) {
     if (!setup_wizard_modal) return;
-    
+
     setup_wizard_modal.style.display = 'flex';
     is_sending = false;
-    
+
     if (step === 1) {
         wizard_step_1.style.display = 'block';
         wizard_step_2.style.display = 'none';
@@ -307,7 +307,7 @@ async function SaveWizardApiKey() {
         if (result.valid) {
             api_key = key;
             localStorage.setItem('openrouter_api_key', api_key);
-            
+
             HideSetupWizard();
             ShowApp();
 
@@ -333,7 +333,7 @@ async function HandleLogout() {
     } catch (error) {
         console.error("Sign Out Error:", error);
     }
-    
+
     all_chats = [];
     current_chat_id = null;
     chat_list_el.innerHTML = '';
@@ -342,7 +342,7 @@ async function HandleLogout() {
 
     current_user_uid = null;
     ShowAuthModal(); // กลับไปแสดงหน้า Auth modal (Step 1)
-    HideSetupWizard(); 
+    HideSetupWizard();
     app_container.style.display = 'none';
     CloseSettingsScreen();
     localStorage.removeItem('openrouter_api_key');
@@ -353,7 +353,7 @@ function ShowSettingsScreen() {
     if (settings_screen) {
         settings_screen.style.display = 'flex';
         if (settings_api_key_input) settings_api_key_input.value = api_key;
-        
+
         // อัปเดตสถานะปุ่ม Auth ในหน้า Settings
         if (settings_auth_btn) {
             if (current_user_uid && current_user_uid !== "guest") {
@@ -380,63 +380,12 @@ async function SaveSettingsApiKey() {
 
     api_key = key;
     localStorage.setItem('openrouter_api_key', api_key);
-    
+
     setTimeout(() => {
         save_settings_key_btn.disabled = false;
         save_settings_key_btn.textContent = 'Save changes';
         CloseSettingsScreen();
     }, 500);
-}
-
-// ===== จัดการ Knowledge Base (RAG Indexing) =====
-
-async function HandleRagIndex() {
-    const index_btn = document.getElementById('index-kb-btn');
-    const spinner = document.getElementById('kb-index-spinner');
-    const status_text = document.getElementById('kb-index-status');
-
-    if (!api_key) {
-        alert("Please set your API Key in Settings first.");
-        return;
-    }
-
-    if (!confirm("Are you sure you want to Re-index the Knowledge Base? This will use your API Key for Embeddings.")) {
-        return;
-    }
-
-    // สภาวะเริ่มต้น
-    index_btn.disabled = true;
-    spinner.style.display = 'inline-block';
-    status_text.textContent = 'Indexing in progress...';
-    status_text.style.color = '#666';
-
-    try {
-        const res = await fetch(`${BASE_URL}/rag/index`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-User-Id': current_user_uid || 'guest'
-            },
-            body: JSON.stringify({ api_key: api_key })
-        });
-
-        const result = await res.json();
-
-        if (res.ok && result.success) {
-            status_text.textContent = `✅ ${result.message}`;
-            status_text.style.color = '#28a745';
-        } else {
-            status_text.textContent = `❌ Error: ${result.detail?.message || result.message || 'Unknown error'}`;
-            status_text.style.color = '#dc3545';
-        }
-    } catch (e) {
-        console.error('Indexing failed:', e);
-        status_text.textContent = '❌ Connection failed. Check server status.';
-        status_text.style.color = '#dc3545';
-    } finally {
-        index_btn.disabled = false;
-        spinner.style.display = 'none';
-    }
 }
 
 function ShowLoginScreen() {
@@ -448,12 +397,12 @@ function ShowLoginScreen() {
 async function ShowApp() {
     HideSetupWizard();
     app_container.style.display = 'flex';
-    
+
     // ✅ ตรวจสอบสถานะเริ่มต้น ถ้าไม่มีแชทให้โชว์หน้า New Chat
     if (!current_chat_id) {
         UpdateLayoutState(true);
     }
-    
+
     await FetchModels();
     await FetchChats();
     if (!event_listeners_setup) {
@@ -485,7 +434,7 @@ async function FetchModels() {
 // แสดงตัวเลือกโมเดลใน Custom Dropdown และตรวจสอบว่าโมเดลที่เลือกไว้ยังมีอยู่ในรายการ
 function RenderModelOptions(models) {
     all_models = models; // เก็บไว้ใช้ค้นหา
-    
+
     // ตรวจสอบว่าโมเดลที่เก็บใน localStorage ยังมีอยู่จริงหรือไม่
     const model_exists = models.some(m => m.id === selected_model);
     if (!model_exists && models.length > 0) {
@@ -506,7 +455,7 @@ function RenderModelOptions(models) {
 function RenderCustomModelList(filtered_models) {
     if (!model_list_container) return;
     model_list_container.innerHTML = '';
-    
+
     filtered_models.forEach(m => {
         const item = document.createElement('div');
         item.className = `model-item ${m.id === selected_model ? 'active' : ''}`;
@@ -686,12 +635,6 @@ function SetupEventListeners() {
         };
     }
 
-    // ✅ปุ่ม Index Knowledge Base (RAG)
-    const index_kb_btn = document.getElementById('index-kb-btn');
-    if (index_kb_btn) {
-        index_kb_btn.onclick = HandleRagIndex;
-    }
-
     // ✅ Listeners สำหรับการแนบไฟล์
     if (attach_btn && file_input) {
         attach_btn.onclick = () => file_input.click();
@@ -704,7 +647,7 @@ function SetupEventListeners() {
             e.stopPropagation();
             const is_visible = model_dropdown_menu.style.display === 'flex';
             model_dropdown_menu.style.display = is_visible ? 'none' : 'flex';
-            
+
             if (!is_visible) {
                 // รีเซ็ตช่องค้นหาเมื่อเปิดเมนู
                 if (model_search_input) {
@@ -742,7 +685,7 @@ function SetupEventListeners() {
         message_input.addEventListener('input', () => {
             message_input.style.height = 'auto';
             message_input.style.height = message_input.scrollHeight + 'px';
-            
+
             if (!abort_controller) {
                 SetStopMode(false);
             }
@@ -769,7 +712,7 @@ function SetupEventListeners() {
             is_auto_scroll_enabled = is_at_bottom;
         });
     }
-    
+
     window.onclick = (event) => {
         if (event.target === delete_modal) CloseDeleteModal();
     };
@@ -786,7 +729,7 @@ async function HandleAction() {
     }
 
     if (is_sending) return;
-    
+
     // ✅ จุดเช็คสำคัญ: หากยังไม่ล็อกอิน ให้เก็บข้อความลง Pending และเรียก Auth Modal
     if (!current_user_uid) {
         const content_to_save = message_input.value.trim();
@@ -800,7 +743,7 @@ async function HandleAction() {
 
     const content = pending_message || message_input.value.trim();
     if (!content) return;
-    
+
     // ตรวจสอบ API Key ก่อนส่ง
     if (!api_key) {
         // หากยังไม่มี Key ให้เก็บข้อความไว้ใน pending_message ก่อน
@@ -817,7 +760,7 @@ async function HandleAction() {
 
     // 🔒 [LOCK] เริ่มกระบวนการส่งข้อความ
     is_sending = true;
-    
+
     try {
         // ปรับแต่ง UI ทันทีเมื่อเริ่มส่ง
         action_btn.disabled = true;
@@ -844,12 +787,12 @@ async function HandleAction() {
 
         // 💬 [STEP 3] แสดงข้อความผู้ใช้ในหน้าจอ
         AppendMessage('user', content, false, null, current_files);
-        
+
         // 🚨 [STEP 4] เตรียม Streaming
         abort_controller = new AbortController();
         SetStopMode(true);
         is_auto_scroll_enabled = true;
-        
+
         // ล้างไฟล์แนบหลังเตรียมส่ง
         attached_files = [];
         if (file_preview_container) file_preview_container.innerHTML = '';
@@ -893,11 +836,11 @@ async function HandleAction() {
         let raw_content_buffer = ''; // เนื้อหาดิบที่ได้รับจาก Network รอเข้าคิวพ่น
         let full_reasoning = '';
         let line_buffer = ''; // ✅ ตัวเก็บข้อมูลบรรทัดที่พ่นออกมาไม่ครบ (Chunk Fragmentation)
-        
+
         // --- ระบบ Ticker (Smooth Streaming สไตล์ Gemini) ---
         let is_streaming_finished = false;
         const STREAM_SPEED_MS = 25; // ความเร็วในการพ่นตัวอักษรลงจอ (มิลลิวินาที)
-        
+
         const display_ticker = setInterval(() => {
             if (raw_content_buffer.length > 0) {
                 // ดึงตัวอักษรออกมา 1-3 ตัวต่อรอบ (ปรับให้ดูสมูทได้)
@@ -982,22 +925,22 @@ async function HandleAction() {
     } finally {
         is_sending = false;
         action_btn.style.opacity = '1';
-        
+
         if (typeof ai_message_container !== 'undefined' && ai_message_container.contentDiv) {
             ai_message_container.contentDiv.classList.remove('streaming-active');
         }
-        
+
         is_streaming_finished = true; // มั่นใจอีกทีว่าหยุด Ticker
-        
+
         // บังคับคืนค่าปุ่มทันที
         ResetToDefaultState();
-        
+
         // หลังจาก Stream จบ ให้เปิดการแสดงผลปุ่ม Copy
         if (typeof ai_message_container !== 'undefined' && ai_message_container.contentDiv && ai_message_container.contentDiv.parentElement) {
             const action_row = ai_message_container.contentDiv.parentElement.querySelector('.message-actions');
             if (action_row) action_row.style.display = 'flex';
         }
-        
+
         // พับ thought block หลัง stream จบ — แต่ต้องให้ user เห็นนานพอ
         if (typeof ai_message_container !== 'undefined' && ai_message_container.thoughtDiv) {
             const t_container = ai_message_container.thoughtDiv.parentElement;
@@ -1005,7 +948,7 @@ async function HandleAction() {
                 const MIN_THOUGHT_DISPLAY_MS = 1500;
                 const elapsed = ai_message_container.createdAt ? (Date.now() - ai_message_container.createdAt) : MIN_THOUGHT_DISPLAY_MS;
                 const delay = Math.max(0, MIN_THOUGHT_DISPLAY_MS - elapsed);
-                
+
                 setTimeout(() => {
                     const bulb = t_container.querySelector('.bulb');
                     if (bulb) bulb.style.animation = 'none';
@@ -1035,9 +978,9 @@ function SetStopMode(is_stop) {
     } else {
         action_btn.classList.add('send-mode');
         action_btn.classList.remove('stop-mode');
-        
+
         const has_text = message_input.value.trim().length > 0;
-        
+
         if (has_text) {
             action_btn.disabled = false;
             action_btn.style.background = ''; // ใช้สีจาก CSS
@@ -1080,7 +1023,7 @@ function ClearMessages() {
 function AppendMessage(role, content, is_empty_stream, model_name = null, files = []) {
     UpdateLayoutState(false);
     const now = Date.now();
-    
+
     // จัดการการซ่อนข้อความ PDF (Parsing Content)
     const parsed_data = ParseMessageContent(content);
     const display_content = parsed_data.text;
@@ -1235,7 +1178,7 @@ function AppendMessage(role, content, is_empty_stream, model_name = null, files 
 function UpdateMessageContent(elements_obj, raw_markdown_content, explicit_reasoning = "") {
     if (!elements_obj) return;
     const { content_div, thought_div } = elements_obj;
-    
+
     // 1. จัดการข้อมูลการคิด (Thought/Reasoning)
     let final_thought_text = explicit_reasoning;
     let main_text = raw_markdown_content;
@@ -1253,7 +1196,7 @@ function UpdateMessageContent(elements_obj, raw_markdown_content, explicit_reaso
         if (container) {
             container.style.display = 'block';
             container.classList.remove('hidden');
-            
+
             // ✅ พับเก็บอัตโนมัติถ้าเริ่มแสดงเนื้อหาหลักแล้ว (สไตล์ Gemini)
             if (main_text.trim().length > 0) {
                 if (!container.classList.contains('collapsed')) {
@@ -1357,7 +1300,7 @@ function HandleFileSelect(event) {
         if (file.type === 'application/pdf') {
             file_obj.extracted_text = await ExtractTextFromPDF(file);
         }
-        
+
         attached_files.push(file_obj);
         RenderFilePreviews();
     });
@@ -1369,7 +1312,7 @@ async function ExtractTextFromPDF(file) {
         const array_buffer = await file.arrayBuffer();
         const pdf = await pdfjsLib.getDocument({ data: array_buffer }).promise;
         let full_text = "";
-        
+
         for (let i = 1; i <= pdf.numPages; i++) {
             const page = await pdf.getPage(i);
             const text_content = await page.getTextContent();
@@ -1394,7 +1337,7 @@ function RenderFilePreviews() {
     attached_files.forEach((file, index) => {
         const pill = document.createElement('div');
         pill.className = 'file-pill';
-        
+
         // ตรวจสอบว่าเป็นรูปภาพหรือไม่เพื่อแสดง Thumbnail
         if (file.type.startsWith('image/')) {
             const img = document.createElement('img');
@@ -1476,9 +1419,9 @@ function ParseThoughtPart(content) {
     // กรณีโมเดลกำลัง Stream และยังไม่มีปิดแท็ก
     if (content.includes("<thought>")) {
         const parts = content.split("<thought>");
-        return { 
-            main_text: parts[0]?.trim() || "", 
-            thought_text: parts[1]?.trim() || "" 
+        return {
+            main_text: parts[0]?.trim() || "",
+            thought_text: parts[1]?.trim() || ""
         };
     }
 
@@ -1488,7 +1431,7 @@ function ParseThoughtPart(content) {
 function CreateThoughtBlock() {
     const container = document.createElement('div');
     container.className = 'thought-container';
-    
+
     const header = document.createElement('div');
     header.className = 'thought-header';
     header.innerHTML = `
@@ -1496,10 +1439,10 @@ function CreateThoughtBlock() {
         <span>Thought for a moment</span>
         <i class="fa-solid fa-chevron-down chevron" style="margin-left: auto; font-size: 10px;"></i>
     `;
-    
+
     const body = document.createElement('div');
     body.className = 'thought-content';
-    
+
     header.onclick = () => {
         container.classList.toggle('collapsed');
         const chevron = header.querySelector('.chevron');
@@ -1509,9 +1452,9 @@ function CreateThoughtBlock() {
             chevron.className = 'fa-solid fa-chevron-down chevron';
         }
     };
-    
+
     container.appendChild(header);
     container.appendChild(body);
-    
+
     return { container, body };
 }

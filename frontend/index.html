@@ -35,7 +35,7 @@
             <button class="modal-close-btn" id="close-setup-modal">
                 <i class="fa fa-times"></i>
             </button>
-            
+
             <!-- Step 1: Sign up / Log in -->
             <div id="wizard-step-1" class="wizard-step">
                 <div class="wizard-step-container">
@@ -48,7 +48,8 @@
                         </button>
                     </div>
                     <p class="auth-modal-disclaimer">
-                        By proceeding, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+                        By proceeding, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy
+                            Policy</a>.
                     </p>
                 </div>
             </div>
@@ -57,17 +58,22 @@
             <div id="wizard-step-2" class="wizard-step" style="display: none;">
                 <div class="wizard-step-container">
                     <h2 class="auth-modal-title">Secure Your Access</h2>
-                    <p class="auth-modal-subtitle">To start chatting with Gemini and other models, please provide your OpenRouter API Key.</p>
-                    
+                    <p class="auth-modal-subtitle">To start chatting with Gemini and other models, please provide your
+                        OpenRouter API Key.</p>
+
                     <div class="auth-input-group" style="margin-bottom: 24px;">
-                        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px;">
-                            <label style="font-weight: 600; font-size: 13px; color: #333; text-transform: uppercase; letter-spacing: 0.5px;">API Key</label>
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px;">
+                            <label
+                                style="font-weight: 600; font-size: 13px; color: #333; text-transform: uppercase; letter-spacing: 0.5px;">API
+                                Key</label>
                             <a href="https://openrouter.ai/keys" target="_blank" class="get-key-link">
                                 Get Key <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 10px;"></i>
                             </a>
                         </div>
                         <div class="password-wrapper">
-                            <input type="password" id="wizard-api-key-input" placeholder="sk-or-v1-xxxx..." autocomplete="off">
+                            <input type="password" id="wizard-api-key-input" placeholder="sk-or-v1-xxxx..."
+                                autocomplete="off">
                             <button id="toggle-wizard-key-visibility" class="toggle-password-btn">
                                 <i class="fa fa-eye"></i>
                             </button>
@@ -77,9 +83,10 @@
                     <button id="save-wizard-api-key-btn" class="login-primary-btn" disabled>
                         <span>Connect & Start Chatting</span>
                     </button>
-                    
+
                     <p style="font-size: 11px; color: #999; margin-top: 20px; line-height: 1.5;">
-                        <i class="fa-solid fa-lock" style="margin-right: 4px;"></i> Your key is stored locally in your browser and never shared with anyone.
+                        <i class="fa-solid fa-lock" style="margin-right: 4px;"></i> Your key is stored locally in your
+                        browser and never shared with anyone.
                     </p>
                 </div>
             </div>
@@ -283,20 +290,6 @@
                     <button id="save-settings-key" class="save-settings-btn">Save Key</button>
                 </div>
                 <p class="settings-hint">Your API key is stored locally and used for AI requests.</p>
-            </div>
-
-            <!-- New: Knowledge Base Management Section -->
-            <div class="settings-card" id="kb-management-section">
-                <label class="settings-label">Knowledge Base (RAG)</label>
-                <div class="kb-info">
-                    <p class="settings-hint">Index files from <code style="background:#eee;padding:2px 4px;border-radius:4px;">api/knowledge</code> directory for AI reference.</p>
-                </div>
-                <button id="index-kb-btn" class="settings-secondary-btn">
-                    <i class="fa-solid fa-database"></i>
-                    <span>Re-index Knowledge Base</span>
-                    <div class="spinner" id="kb-index-spinner" style="display: none;"></div>
-                </button>
-                <div id="kb-index-status" class="kb-status-text"></div>
             </div>
 
             <!-- Auth Actions -->
