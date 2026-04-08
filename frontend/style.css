@@ -15,12 +15,15 @@
     padding: 0;
     font-family: 'Inter', 'IBM Plex Sans Thai', sans-serif;
     /* ✅ ซ่อนแถบเลื่อนแต่ยังเลื่อนได้ปกติ (Gemini Style) */
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
 }
 
 *::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
+    display: none;
+    /* Chrome, Safari, Opera */
 }
 
 body,
@@ -63,9 +66,16 @@ html {
     overflow: hidden;
 }
 
-@keyframes setupModalAppear { 
-    from { opacity: 0; transform: scale(0.9) translateY(20px); } 
-    to { opacity: 1; transform: scale(1) translateY(0); } 
+@keyframes setupModalAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 }
 
 .wizard-step {
@@ -73,8 +83,15 @@ html {
 }
 
 @keyframes stepFadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .modal-close-btn {
@@ -96,7 +113,10 @@ html {
     z-index: 10;
 }
 
-.modal-close-btn:hover { background-color: rgba(0, 0, 0, 0.1); color: #000; }
+.modal-close-btn:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+    color: #000;
+}
 
 .auth-modal-title {
     font-size: 28px;
@@ -113,6 +133,7 @@ html {
     line-height: 1.6;
     padding: 0 10px;
 }
+
 .wizard-step-container {
     animation: wizard-fade-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -122,6 +143,7 @@ html {
         opacity: 0;
         transform: translateY(10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -172,10 +194,13 @@ html {
     border-color: #000;
     background-color: #fafafa;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-.auth-method-btn img { width: 20px; height: 20px; }
+.auth-method-btn img {
+    width: 20px;
+    height: 20px;
+}
 
 .auth-modal-disclaimer {
     font-size: 12px;
@@ -183,7 +208,10 @@ html {
     line-height: 1.6;
 }
 
-.auth-modal-disclaimer a { color: #000; text-decoration: underline; }
+.auth-modal-disclaimer a {
+    color: #000;
+    text-decoration: underline;
+}
 
 /* Wizard Step 2 Specifics */
 .password-wrapper {
@@ -201,7 +229,10 @@ html {
     transition: 0.2s;
 }
 
-.password-wrapper input:focus { border-color: #000; box-shadow: 0 0 0 3px rgba(0,0,0,0.05); }
+.password-wrapper input:focus {
+    border-color: #000;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+}
 
 .toggle-password-btn {
     position: absolute;
@@ -215,7 +246,9 @@ html {
     padding: 5px;
 }
 
-.toggle-password-btn:hover { color: #555; }
+.toggle-password-btn:hover {
+    color: #555;
+}
 
 .login-primary-btn {
     width: 100%;
@@ -228,22 +261,22 @@ html {
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.login-primary-btn:hover { 
+.login-primary-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
 .login-primary-btn:active {
     transform: translateY(0);
 }
 
-.login-primary-btn:disabled { 
+.login-primary-btn:disabled {
     background: #e0e0e0;
     color: #aaa;
-    cursor: not-allowed; 
+    cursor: not-allowed;
     transform: none;
     box-shadow: none;
 }
@@ -265,7 +298,8 @@ html {
     flex-direction: column;
     padding: 10px;
     border-right: 1px solid var(--border-color);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* แอนิเมชันลื่นไหล */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* แอนิเมชันลื่นไหล */
     overflow-x: hidden;
     position: relative;
     z-index: 1000;
@@ -277,7 +311,8 @@ html {
     padding-right: 0;
     border-right: none;
     opacity: 0;
-    pointer-events: none; /* ป้องกันการกดโดนปุ่มขณะซ่อน */
+    pointer-events: none;
+    /* ป้องกันการกดโดนปุ่มขณะซ่อน */
 }
 
 .sidebar-header {
@@ -290,9 +325,11 @@ html {
 /* ส่วนควบคุมไอคอนด้านบน (Sidebar Toggle & New Chat) */
 .sidebar-controls {
     display: flex;
-    justify-content: flex-start; /* เรียงชิดซ้ายตามรูปตัวอย่าง */
+    justify-content: flex-start;
+    /* เรียงชิดซ้ายตามรูปตัวอย่าง */
     align-items: center;
-    gap: 4px; /* ระยะห่างระหว่างปุ่มเล็กน้อยเพื่อให้ดูเป็นกลุ่มเดียวกัน */
+    gap: 4px;
+    /* ระยะห่างระหว่างปุ่มเล็กน้อยเพื่อให้ดูเป็นกลุ่มเดียวกัน */
     padding: 5px 0;
 }
 
@@ -396,7 +433,8 @@ html {
     border-radius: 8px;
     cursor: pointer;
     font-size: 14px;
-    color: #888888; /* ประวัติแชทสีรองตามสั่ง */
+    color: #888888;
+    /* ประวัติแชทสีรองตามสั่ง */
 }
 
 .chat-item:hover,
@@ -510,7 +548,8 @@ body:not(.sidebar-collapsed) .header-control-btn {
     padding: 10px 12px;
     border-radius: 8px;
     cursor: pointer;
-    color: #1a1a1a; /* เมนูบนสีเข้มตามสั่ง */
+    color: #1a1a1a;
+    /* เมนูบนสีเข้มตามสั่ง */
     transition: all 0.2s;
     font-size: 15px;
     font-weight: 500;
@@ -575,7 +614,8 @@ body:not(.sidebar-collapsed) .header-control-btn {
     align-items: center;
     justify-content: space-between;
     padding: 0 20px;
-    background-color: rgba(255, 255, 255, 0.7); /* ✅ ปรับให้ใสขึ้นเล็กน้อย */
+    background-color: rgba(255, 255, 255, 0.7);
+    /* ✅ ปรับให้ใสขึ้นเล็กน้อย */
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     border-bottom: none;
@@ -615,7 +655,8 @@ body:not(.sidebar-collapsed) .header-control-btn {
 .chat-container {
     flex-grow: 1;
     overflow-y: auto;
-    padding: 20px 0 160px 0; /* ✅ ปรับ padding-bottom ให้พอดีกับช่องแชท */
+    padding: 20px 0 160px 0;
+    /* ✅ ปรับ padding-bottom ให้พอดีกับช่องแชท */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -679,8 +720,15 @@ body:not(.sidebar-collapsed) .header-control-btn {
 }
 
 @keyframes welcomeFadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* ===== ข้อความ (Messages) — สไตล์คล้าย Gemini ===== */
@@ -701,7 +749,8 @@ body:not(.sidebar-collapsed) .header-control-btn {
 
 .message.user .message-inner {
     justify-content: flex-end;
-    padding-right: 24px; /* เพิ่มระยะห่างให้ดูพรีเมียม ไม่ติดขอบจอ */
+    padding-right: 24px;
+    /* เพิ่มระยะห่างให้ดูพรีเมียม ไม่ติดขอบจอ */
 }
 
 
@@ -717,9 +766,10 @@ body:not(.sidebar-collapsed) .header-control-btn {
 
 .message.user .message-content {
     background-color: #f4f4f4;
-    color: #1a1a1a; /* บังคับเป็นสีเข้มเสมอ เพราะพื้นหลังเป็นสีเทาอ่อน อ่านง่ายทั้ง Dark/Light mode */
+    color: #1a1a1a;
+    /* บังคับเป็นสีเข้มเสมอ เพราะพื้นหลังเป็นสีเทาอ่อน อ่านง่ายทั้ง Dark/Light mode */
     padding: 12px 20px;
-    border-radius: 18px;
+    border-radius: 40px;
     display: table;
     width: auto;
     min-width: max-content;
@@ -750,13 +800,27 @@ body:not(.sidebar-collapsed) .header-control-btn {
 }
 
 @keyframes content-pulse {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-1px); }
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-1px);
+    }
 }
 
 @keyframes blink {
-    from, to { opacity: 1; }
-    50% { opacity: 0; }
+
+    from,
+    to {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
 }
 
 /* ย่อหน้า */
@@ -831,9 +895,12 @@ body:not(.sidebar-collapsed) .header-control-btn {
     font-size: clamp(1.2em, 3vw, 1.6em) !important;
     margin: 28px 0 !important;
     padding: 24px 20px;
-    background: transparent !important; /* ✅ นำพื้นหลังสีขาวออกเพื่อให้เข้ากับพื้นหลังแชท */
-    border: none !important;           /* ✅ นำเส้นขอบออก */
-    box-shadow: none !important;       /* ✅ นำเงาออก */
+    background: transparent !important;
+    /* ✅ นำพื้นหลังสีขาวออกเพื่อให้เข้ากับพื้นหลังแชท */
+    border: none !important;
+    /* ✅ นำเส้นขอบออก */
+    box-shadow: none !important;
+    /* ✅ นำเงาออก */
     overflow-x: auto;
     overflow-y: hidden;
     -ms-overflow-style: none;
@@ -853,20 +920,27 @@ body:not(.sidebar-collapsed) .header-control-btn {
 /* ตาราง */
 .message-content table {
     width: 100%;
-    border-collapse: separate; /* ✅ เปลี่ยนเป็น separate เพื่อให้ border-radius ทำงาน */
-    border-spacing: 0;         /* ✅ ป้องกันช่องว่างระหว่าง cell */
+    border-collapse: separate;
+    /* ✅ เปลี่ยนเป็น separate เพื่อให้ border-radius ทำงาน */
+    border-spacing: 0;
+    /* ✅ ป้องกันช่องว่างระหว่าง cell */
     margin: 15px 0;
     table-layout: auto;
-    border: 1px solid var(--border-color); /* ✅ เพิ่มขอบนอกสุด */
-    border-radius: 12px;      /* ✅ ขอบมนตามที่ขอ */
-    overflow: hidden;         /* ✅ ป้องกันเนื้อหาทะลุมุมโค้ง */
+    border: 1px solid var(--border-color);
+    /* ✅ เพิ่มขอบนอกสุด */
+    border-radius: 12px;
+    /* ✅ ขอบมนตามที่ขอ */
+    overflow: hidden;
+    /* ✅ ป้องกันเนื้อหาทะลุมุมโค้ง */
 }
 
 .message-content th,
 .message-content td {
     padding: 10px;
-    border-bottom: 1px solid var(--border-color); /* ✅ เส้นขอบล่าง */
-    border-right: 1px solid var(--border-color);  /* ✅ เส้นขอบขวา */
+    border-bottom: 1px solid var(--border-color);
+    /* ✅ เส้นขอบล่าง */
+    border-right: 1px solid var(--border-color);
+    /* ✅ เส้นขอบขวา */
     text-align: left;
     word-break: normal;
 }
@@ -896,18 +970,17 @@ body:not(.sidebar-collapsed) .header-control-btn {
     align-items: center;
     width: 100%;
     transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-    
+
     /* ✅ Glassmorphism Fade Effect (ลดความเบลอและทำให้โปร่งแสงมากขึ้นตามคำขอ) */
     position: absolute;
     bottom: 0;
     left: 0;
     z-index: 10;
-    background: linear-gradient(to top, 
-        rgba(255, 255, 255, 0.9) 0%, 
-        rgba(255, 255, 255, 0.5) 50%, 
-        rgba(255, 255, 255, 0) 100%
-    );
-    backdrop-filter: blur(1px); 
+    background: linear-gradient(to top,
+            rgba(255, 255, 255, 0.9) 0%,
+            rgba(255, 255, 255, 0.5) 50%,
+            rgba(255, 255, 255, 0) 100%);
+    backdrop-filter: blur(1px);
     -webkit-backdrop-filter: blur(1px);
     pointer-events: none;
 }
@@ -926,12 +999,15 @@ body:not(.sidebar-collapsed) .header-control-btn {
     pointer-events: auto;
     width: 100%;
     max-width: 800px;
-    background-color: var(--input-bg); /* ✅ ย้อนคืนสีขาวเดิม */
-    border-radius: 24px; /* ✅ ทรง Pill Shape ที่สวยงาม */
+    background-color: var(--input-bg);
+    /* ✅ ย้อนคืนสีขาวเดิม */
+    border-radius: 24px;
+    /* ✅ ทรง Pill Shape ที่สวยงาม */
     display: flex;
     flex-direction: column;
     padding: 10px 16px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05); /* ✅ เงาบางๆ สวยงาม */
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+    /* ✅ เงาบางๆ สวยงาม */
     border: 1px solid var(--border-color);
     transition: all 0.3s ease;
 }
@@ -960,8 +1036,15 @@ body:not(.sidebar-collapsed) .header-control-btn {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(5px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .file-pill img {
@@ -990,7 +1073,8 @@ body:not(.sidebar-collapsed) .header-control-btn {
     width: 100%;
     background: transparent;
     border: none;
-    color: var(--text-color); /* ✅ ย้อนคืนสีเดิม */
+    color: var(--text-color);
+    /* ✅ ย้อนคืนสีเดิม */
     resize: none;
     min-height: 24px;
     max-height: 200px;
@@ -1007,7 +1091,8 @@ body:not(.sidebar-collapsed) .header-control-btn {
 
 .input-actions-row {
     display: flex;
-    justify-content: flex-end; /* ✅ ชิดขวาตามตัวอย่าง */
+    justify-content: flex-end;
+    /* ✅ ชิดขวาตามตัวอย่าง */
     align-items: center;
     gap: 8px;
     margin-top: 2px;
@@ -1020,7 +1105,8 @@ body:not(.sidebar-collapsed) .header-control-btn {
     gap: 6px;
 }
 
-.attach-btn, .action-btn {
+.attach-btn,
+.action-btn {
     width: 32px;
     height: 32px;
     border-radius: 50%;
@@ -1042,7 +1128,8 @@ body:not(.sidebar-collapsed) .header-control-btn {
     border-color: #0d0d0d;
 }
 
-.attach-btn:hover, .action-btn:hover:not(:disabled) {
+.attach-btn:hover,
+.action-btn:hover:not(:disabled) {
     background-color: #f5f5f5 !important;
     transform: scale(1.05);
 }
@@ -1065,9 +1152,17 @@ body:not(.sidebar-collapsed) .header-control-btn {
     display: none;
 }
 
+.action-btn.stop-mode {
+    background-color: #f5f5f5 !important;
+    /* พื้นหลังเทาอ่อนมากตามรูป */
+    border-color: rgba(0, 0, 0, 0.1) !important;
+    opacity: 1 !important;
+}
+
 .action-btn.stop-mode .stop-icon {
     display: block;
-    color: #0d0d0d;
+    color: #0d0d0d !important;
+    /* สี่เหลี่ยมสีดำเข้มชัดเจน */
 }
 
 .action-btn.send-mode .send-icon {
@@ -1111,7 +1206,8 @@ body:not(.sidebar-collapsed) .header-control-btn {
 /* หน้าต่างเมนู Dropdown */
 .model-dropdown-menu {
     position: absolute;
-    bottom: calc(100% + 12px); /* ลอยอยู่เหนือปุ่ม */
+    bottom: calc(100% + 12px);
+    /* ลอยอยู่เหนือปุ่ม */
     right: 0;
     width: 320px;
     max-height: 400px;
@@ -1127,8 +1223,15 @@ body:not(.sidebar-collapsed) .header-control-btn {
 }
 
 @keyframes fadeInScale {
-    from { opacity: 0; transform: scale(0.95) translateY(10px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 }
 
 /* ส่วนค้นหา */
@@ -1211,7 +1314,7 @@ body:not(.sidebar-collapsed) .header-control-btn {
 }
 
 /* ===== PDF Icon Coloring (RED) ===== */
-.fa-file-pdf, 
+.fa-file-pdf,
 .message-file-pill.pdf-type i {
     color: #ff4444 !important;
 }
@@ -1229,7 +1332,8 @@ body:not(.sidebar-collapsed) .header-control-btn {
     display: flex;
     align-items: center;
     gap: 12px;
-    background: #f4f4f4; /* ปรับให้เป็นสีเดียวกับข้อความ */
+    background: #f4f4f4;
+    /* ปรับให้เป็นสีเดียวกับข้อความ */
     border: 1px solid var(--border-color);
     padding: 10px 18px;
     border-radius: 18px;
@@ -1247,7 +1351,8 @@ body:not(.sidebar-collapsed) .header-control-btn {
 
 .message-file-pill i {
     font-size: 22px;
-    color: #ff4444 !important; /* ไอคอน PDF สีแดงสดตามรูป */
+    color: #ff4444 !important;
+    /* ไอคอน PDF สีแดงสดตามรูป */
 }
 
 .message-file-pill .file-name {
@@ -1601,13 +1706,29 @@ body:not(.sidebar-collapsed) .header-control-btn {
 /* ===== AI Reasoning: Thought for a moment ===== */
 /* animation กะพริบ lightbulb ขณะที่ AI กำลังคิด */
 @keyframes pulse-bulb {
-    0%, 100% { opacity: 0.4; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.15); }
+
+    0%,
+    100% {
+        opacity: 0.4;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.15);
+    }
 }
 
 @keyframes wizard-fade-in {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .wizard-step-container {
@@ -1732,7 +1853,7 @@ body:not(.sidebar-collapsed) .header-control-btn {
 }
 
 .disclaimer {
-    color: #888;
+    color: #fffcfc;
     font-size: 12px;
     margin-top: 10px;
 }
@@ -1882,7 +2003,8 @@ code {
 }
 
 .message-file-pill.pdf-type i {
-    color: #ff4444; /* ไอคอน PDF สีแดงสด */
+    color: #ff4444;
+    /* ไอคอน PDF สีแดงสด */
 }
 
 .message-file-pill .file-name {

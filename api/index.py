@@ -10,8 +10,12 @@ import json
 import os
 from pathlib import Path as FilePath
 from openai import OpenAI
+import httpx
 
 app = FastAPI()
+
+# พิกัดของ Ollama API (เชื่อมต่อจาก Docker ไปยัง Host Machine)
+OLLAMA_BASE_URL = "http://host.docker.internal:11434"
 
 app.add_middleware(
     CORSMiddleware,
@@ -58,9 +62,28 @@ def DebugDb():
     return {"status": "connected" if "postgres" in db_url else "sqlite", "db_type": "PostgreSQL" if "postgres" in db_url else "SQLite", "is_vercel": os.environ.get("VERCEL") is not None}
 
 @app.get("/api/models")
-def GetModels():
-    """แสดงรายการ AI Models ทั้งหมดที่แอปพลิเคชันรองรับ"""
-    return AVAILABLE_MODELS
+async def GetModels():
+    """แสดงรายการ AI Models ทั้งหมดที่แอปพลิเคชันรองรับ (รวมทั้งจากเครื่องและ Cloud)"""
+    models = list(AVAILABLE_MODELS) # คัดลอกรายการพื้นฐาน (OpenRouter)
+    
+    # พยายามดึงรายชื่อโมเดลจาก Ollama (โมเดลในเครื่องคุณ)
+    try:
+        async with httpx.AsyncClient() as client:
+            # เรียกไปที่ Ollama API เพื่อดูว่ามีโมเดลอะไรบ้าง
+            response = await client.get(f"{OLLAMA_BASE_URL}/api/tags", timeout=2.0)
+            if response.status_code == 200:
+                ollama_data = response.json()
+                for model in ollama_data.get("models", []):
+                    name = model.get("name")
+                    models.append({
+                        "id": f"ollama/{name}", # ใส่ prefix เพื่อให้ Backend แยกแยะได้ตอนสั่งแชท
+                        "name": f"{name} (Local)" # นำไอคอนบ้านออกตามคำขอ
+                    })
+    except Exception as e:
+        # ถ้าเชื่อมต่อ Ollama ไม่ได้ (เช่น ยังไม่ได้เปิดแอป) ให้แสดงแค่โมเดลปกติ ไม่ต้อง error
+        print(f"⚠️ ไม่สามารถเชื่อมต่อกับ Ollama ได้: {str(e)}")
+        
+    return models
 
 # -------------------------------------------------------
 # RAG Endpoints — จัดการระบบ Knowledge Base
@@ -104,6 +127,12 @@ async def ValidateKey(request: Request):
     """ตรวจสอบความถูกต้องของ API Key ผ่าน OpenRouter"""
     data = await request.json()
     api_key = data.get("api_key", "")
+    model = data.get("model", "") # รับชื่อโมเดลมาเช็คด้วย
+    
+    # ถ้าเป็นโมเดลในเครื่อง ไม่ต้องเช็ค Key
+    if model.startswith("ollama/"):
+        return {"valid": True, "message": "Ollama พร้อมใช้งาน!"}
+        
     if not api_key: 
         RaiseError(400, ERR_BAD_REQUEST, "กรุณาใส่ API Key")
     try:
@@ -148,15 +177,29 @@ async def StreamAiResponse(chat_id: int, messages_history: list, db: Session, ap
     """ฟังก์ชัน Streaming ข้อมูลจาก OpenAI/OpenRouter โดยตรง"""
     full_response = ""
     full_reasoning = ""
+    # กำหนดพิกัดเป้าหมาย (Routing)
+    actual_model = model
+    target_base_url = "https://openrouter.ai/api/v1"
+    target_api_key = api_key
+    
+    # ถ้าเป็นโมเดลในเครื่อง (Ollama)
+    if model.startswith("ollama/"):
+        actual_model = model.replace("ollama/", "")
+        target_base_url = f"{OLLAMA_BASE_URL}/v1"
+        target_api_key = "ollama" # Ollama ไม่ต้องใช้ Key จริง แต่ OpenAI Client บังคับให้ใส่
+        print(f"🏠 Routing chat to Local Ollama: {actual_model}")
+    else:
+        print(f"☁️ Routing chat to OpenRouter: {actual_model}")
+
     try:
-        client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=api_key)
-        # รับ Stream จาก AI — เพิ่ม extra_body เพื่อรองรับ reasoning content ของบางโมเดล
+        client = OpenAI(base_url=target_base_url, api_key=target_api_key)
+        # รับ Stream จาก AI
         response = client.chat.completions.create(
-            model=model,
+            model=actual_model,
             messages=messages_history,
             stream=True,
             max_tokens=4096,
-            extra_body={"include_reasoning": True}
+            extra_body={"include_reasoning": True} if not model.startswith("ollama/") else {}
         )
         for chunk in response:
             if not chunk.choices: continue
@@ -205,7 +248,9 @@ async def ChatStream(chat_id: int, request: Request, x_user_id: str = Header("gu
         RaiseError(404, ERR_CHAT_NOT_FOUND, "ไม่พบข้อมูลห้องแชท")
     data = await request.json()
     user_content, api_key, model = data.get("content"), data.get("api_key"), data.get("model", "google/gemini-2.0-flash-001")
-    if not api_key: 
+    
+    # บังคับให้ใส่ API Key เฉพาะกรณีที่ใช้โมเดลภายนอก (ไม่ใช่ Ollama)
+    if not api_key and not model.startswith("ollama/"): 
         RaiseError(400, ERR_INVALID_API_KEY, "กรุณาใส่ API Key เพื่อใช้ในการสนทนา")
     db.add(Message(chat_id=chat_id, user_id=x_user_id, role="user", content=user_content))
     db.commit()
@@ -225,22 +270,37 @@ async def ChatStream(chat_id: int, request: Request, x_user_id: str = Header("gu
         # หากระบบ RAG มีปัญหา ให้ข้ามไปตอบตามปกติ ไม่ให้แชทล่ม
         rag_context = ""
 
-    # สร้าง System Prompt โดยแทรก RAG Context เข้าไปหากมีข้อมูล
-    system_prompt = "You are a helpful AI assistant. Use Markdown. For mathematical formulas, ALWAYS use LaTeX with '$$ ... $$' for block math (standalone lines) and '$ ... $' for inline math. Make formulas clear and well-structured like in professional textbooks."
+    # สร้าง System Prompt — แยกโหมดตามความเกี่ยวข้องของข้อมูล
+    DEFAULT_PROMPT = (
+        "You are a helpful AI assistant. Use Markdown. "
+        "For math formulas, use LaTeX with '$$ ... $$' for blocks and '$ ... $' for inline."
+    )
+    system_prompt = DEFAULT_PROMPT
+
     if rag_context:
+        # โหมด RAG Hybrid: กู้คืนความเป๊ะสำหรับโมเดล Cloud
         system_prompt = (
-            "You are a helpful AI assistant with access to a knowledge base. "
-            "When answering, prioritize information from the knowledge base below. "
-            "If the answer is found in the knowledge base, cite the source file name. "
-            "If the knowledge base doesn't contain relevant information, answer from your general knowledge. "
-            "Use Markdown formatting. For math formulas use LaTeX: '$$ ... $$' for block, '$ ... $' for inline.\n\n"
+            "You are a helpful expert assistant. Answer based on the CONTEXT DATA provided below.\n\n"
+            "## ABSOLUTE RULES:\n"
+            "0. **No Echo**: DO NOT repeat the user's question. Start your response immediately.\n"
+            "1. **Syllabus Logic**: If the user asks for a specific year (e.g., 'ปี 2'), find that year's header in the context and list EVERY subject under it until the next year's header. Do not skip or summarize any course code/title.\n"
+            "2. **General Fact Logic**: If the query is about specific info (e.g., birthdays, personal details) and it IS in the context, answer it immediately using that data.\n"
+            "3. **No Mix-up**: If a specific year is requested, ONLY provide subjects for that year. Discard context from other years.\n"
+            "4. **Format**: Use a numbered list for subjects. Use clear Markdown.\n"
+            "5. **Source Citation**: End your response with '- ข้อมูลจากฐานข้อมูล' ONLY if you used context.\n"
+            "6. **Fallback**: If the query is unrelated to context, use your general knowledge and do not mention any source file.\n\n"
+            "## CONTEXT DATA:\n"
             + rag_context
         )
+        # --- Debug ---
+        print("\n--- DEBUG: HIGH-QUALITY HYBRID PROMPT ---")
+        print(system_prompt)
+        print("----------------------------------------\n")
 
+    # คืนค่าการส่ง message แบบมาตรฐาน (แยกบทบาทชัดเจน)
     messages_history = [{"role": "system", "content": system_prompt}]
-
     messages_history.extend([{"role": msg.role, "content": msg.content} for msg in all_messages])
-    
+
     db_gen = SessionLocal()
     async def wrapped_stream():
         try:

@@ -17,10 +17,11 @@ from openai import OpenAI
 # --------------------------------------------------------
 # ค่าคงที่สำหรับปรับจูนระบบ RAG
 # --------------------------------------------------------
-KNOWLEDGE_DIR = Path(__file__).parent / "knowledge"
-CHUNK_SIZE = 800
-CHUNK_OVERLAP = 150
-TOP_K_RESULTS = 5
+KNOWLEDGE_DIR = Path(__file__).parent / "knowledge"  # โฟลเดอร์เก็บไฟล์ความรู้
+CHUNK_SIZE = 2000         # ขยายขนาดเพื่อให้วิชาอยู่รวมกัน ไม่โดนตัดแบ่งท่อน
+CHUNK_OVERLAP = 300       # เพิ่ม Overlap เพื่อความต่อเนื่อง
+TOP_K_RESULTS = 25        # ดึงทุกอย่างที่มี (เพื่อให้ได้ข้อมูลครบ 100%)
+SIMILARITY_THRESHOLD = 0.1 # ไม่กรองทิ้งเลย เพื่อป้องกันวิชาหาย ✅
 EMBEDDING_MODEL = "openai/text-embedding-3-small" # โมเดลแนะนำ: ราคาประหยัดและแม่นยำสูง
 
 # --------------------------------------------------------
@@ -107,8 +108,6 @@ def EmbedTexts(texts: List[str], api_key: str) -> List[List[float]]:
             model=EMBEDDING_MODEL,
             input=texts
         )
-        # สกัดข้อมูลผลลัพธ์ออกมาเป็นลิสต์ของเวกเตอร์
-        # ผลลัพธ์ที่ได้จาก API จะเรียงตามลำดับ input อยู่แล้วครับ
         return [data.embedding for data in response.data]
     except Exception as e:
         print(f"❌ Embedding API Error: {str(e)}")
@@ -119,7 +118,6 @@ def EmbedTexts(texts: List[str], api_key: str) -> List[List[float]]:
 # --------------------------------------------------------
 
 def ComputeCosineSimilarity(vec_a: List[float], vec_b: List[float]) -> float:
-    """คำนวณความใกล้เคียงด้วยวิธีทางคณิตศาสตร์แบบไม่ใช้ numpy เพื่อลดขนาด Dependency"""
     dot_product = sum(a * b for a, b in zip(vec_a, vec_b))
     norm_a = math.sqrt(sum(a * a for a in vec_a))
     norm_b = math.sqrt(sum(b * b for b in vec_b))
@@ -129,6 +127,11 @@ def ComputeCosineSimilarity(vec_a: List[float], vec_b: List[float]) -> float:
     return dot_product / (norm_a * norm_b)
 
 def RetrieveRelevantChunks(query: str, db, api_key: str, top_k: int = TOP_K_RESULTS) -> List[Dict]:
+    """
+    ค้นหา Chunk ที่ตรงกับ query มากที่สุด
+    1. กรองเฉพาะที่ score >= SIMILARITY_THRESHOLD
+    2. จัดลำดับใหม่ตามต้นฉบับ (Original Order) เพื่อให้ AI ไม่งง
+    """
     from .database import KnowledgeChunk
     
     all_chunks = db.query(KnowledgeChunk).all()
@@ -144,15 +147,23 @@ def RetrieveRelevantChunks(query: str, db, api_key: str, top_k: int = TOP_K_RESU
             chunk_embedding = json.loads(chunk.embedding)
             score = ComputeCosineSimilarity(query_embedding, chunk_embedding)
             scored_chunks.append({
+                "id": chunk.id,
                 "content": chunk.content,
                 "source": chunk.source_file,
                 "score": score
             })
-        except:
-            continue
+        except: continue
 
     scored_chunks.sort(key=lambda x: x["score"], reverse=True)
-    return scored_chunks[:top_k]
+    filtered_chunks = [c for c in scored_chunks[:top_k] if c["score"] >= SIMILARITY_THRESHOLD]
+
+    # --- หัวใจสำคัญ: เรียงลำดับกลับตาม ID เพื่อให้เนื้อหาต่อเนื่องกันตามเอกสารต้นฉบับ ---
+    filtered_chunks.sort(key=lambda x: x["id"])
+
+    if scored_chunks:
+        print(f"🔍 RAG Search | Top Score: {scored_chunks[0]['score']:.4f} | Threshold: {SIMILARITY_THRESHOLD} | Found: {len(filtered_chunks)}")
+
+    return filtered_chunks
 
 # --------------------------------------------------------
 # Step ผสม: IndexKnowledgeFiles
@@ -160,6 +171,8 @@ def RetrieveRelevantChunks(query: str, db, api_key: str, top_k: int = TOP_K_RESU
 
 def IndexKnowledgeFiles(db, api_key: str) -> dict:
     from .database import KnowledgeChunk
+    import re
+
     KNOWLEDGE_DIR.mkdir(parents=True, exist_ok=True)
     result = {"files_processed": 0, "chunks_created": 0, "errors": []}
 
@@ -171,7 +184,6 @@ def IndexKnowledgeFiles(db, api_key: str) -> dict:
     if not supported_files:
         return {"files_processed": 0, "chunks_created": 0, "errors": ["ไม่พบไฟล์ในโฟลเดอร์ knowledge"]}
 
-    # เคลียร์ข้อมูลเดิม
     db.query(KnowledgeChunk).delete()
     db.commit()
 
@@ -182,14 +194,38 @@ def IndexKnowledgeFiles(db, api_key: str) -> dict:
                 result["errors"].append(f"ไม่สามารถอ่านข้อความจาก {file_path.name}")
                 continue
 
-            chunks = ChunkText(raw_text)
-            if not chunks:
+            processed_chunks = []
+            if file_path.name == "syllabus.txt":
+                current_year_context = ""
+                lines = raw_text.split("\n")
+                current_buffer = []
+                
+                for line in lines:
+                    year_match = re.search(r"(ชั้นปีที่\s*\d+|รายชื่อวิชาปี\s*\d+)", line)
+                    if year_match:
+                        if current_buffer:
+                            text_to_chunk = "\n".join(current_buffer)
+                            chunks = ChunkText(text_to_chunk)
+                            for c in chunks:
+                                processed_chunks.append(f"ข้อมูลนี้คือรายชื่อวิชาของ {current_year_context}: {c}")
+                            current_buffer = []
+                        current_year_context = year_match.group(0).strip()
+                    current_buffer.append(line)
+                
+                if current_buffer:
+                    text_to_chunk = "\n".join(current_buffer)
+                    chunks = ChunkText(text_to_chunk)
+                    for c in chunks:
+                        processed_chunks.append(f"ข้อมูลนี้คือรายชื่อวิชาของ {current_year_context}: {c}")
+            else:
+                processed_chunks = ChunkText(raw_text)
+
+            if not processed_chunks:
                 continue
 
-            # ทำ Embedding ทุก Chunk ผ่าน API
-            embeddings = EmbedTexts(chunks, api_key)
+            embeddings = EmbedTexts(processed_chunks, api_key)
 
-            for chunk_text, embedding in zip(chunks, embeddings):
+            for chunk_text, embedding in zip(processed_chunks, embeddings):
                 db_chunk = KnowledgeChunk(
                     source_file=file_path.name,
                     content=chunk_text,
@@ -199,7 +235,7 @@ def IndexKnowledgeFiles(db, api_key: str) -> dict:
 
             db.commit()
             result["files_processed"] += 1
-            result["chunks_created"] += len(chunks)
+            result["chunks_created"] += len(processed_chunks)
 
         except Exception as e:
             db.rollback()

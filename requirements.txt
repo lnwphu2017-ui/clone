@@ -7,3 +7,6 @@ psycopg2-binary
 # --- RAG Dependencies (Lightweight) ---
 PyPDF2
 python-docx
+numpy==1.23.5
+sentence-transformers
+httpx

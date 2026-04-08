@@ -242,7 +242,9 @@ function SetupSetupWizard() {
 
     if (wizard_api_key_input) {
         wizard_api_key_input.addEventListener('input', () => {
-            save_wizard_api_key_btn.disabled = wizard_api_key_input.value.trim() === '';
+            // ปุ่ม Save จะกดได้เมื่อ: กรอกมีข้อความ หรือ (เป็นโมเดลท้องถิ่น)
+            const is_local = selected_model.startsWith('ollama/');
+            save_wizard_api_key_btn.disabled = wizard_api_key_input.value.trim() === '' && !is_local;
         });
         wizard_api_key_input.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !save_wizard_api_key_btn.disabled) SaveWizardApiKey();
@@ -300,7 +302,10 @@ async function SaveWizardApiKey() {
         const res = await fetch(`${BASE_URL}/validate-key`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-User-Id': current_user_uid || 'guest' },
-            body: JSON.stringify({ api_key: key })
+            body: JSON.stringify({ 
+                api_key: key,
+                model: selected_model 
+            })
         });
         const result = await res.json();
 
@@ -372,10 +377,33 @@ function CloseSettingsScreen() {
 
 async function SaveSettingsApiKey() {
     const key = settings_api_key_input.value.trim();
-    if (!key) return;
+    const is_local = selected_model.startsWith('ollama/');
+    
+    // ถ้าไม่ใช่โมเดลเครื่อง และไม่ได้กรอก Key ให้เด้งออก
+    if (!key && !is_local) return;
 
     save_settings_key_btn.disabled = true;
     save_settings_key_btn.textContent = 'Saving...';
+
+    // ถ้าเป็นโมเดลปกติ ให้ลอง Validate ก่อน
+    if (key && !is_local) {
+        try {
+            const res = await fetch(`${BASE_URL}/validate-key`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ api_key: key, model: selected_model })
+            });
+            const result = await res.json();
+            if (!result.valid) {
+                alert('Invalid Key: ' + result.message);
+                save_settings_key_btn.disabled = false;
+                save_settings_key_btn.textContent = 'Save changes';
+                return;
+            }
+        } catch (e) {
+            console.error('Validation error:', e);
+        }
+    }
 
     api_key = key;
     localStorage.setItem('openrouter_api_key', api_key);
@@ -742,9 +770,8 @@ async function HandleAction() {
 
     const content = pending_message || message_input.value.trim();
     if (!content) return;
-
-    // ตรวจสอบ API Key ก่อนส่ง
-    if (!api_key) {
+    // ตรวจสอบ API Key ก่อนส่ง (ข้ามขั้นตอนนี้ถ้าเป็นโมเดลท้องถิ่น)
+    if (!api_key && !selected_model.startsWith('ollama/')) {
         // หากยังไม่มี Key ให้เก็บข้อความไว้ใน pending_message ก่อน
         pending_message = content;
         pending_files = pending_files.length > 0 ? [...pending_files] : [...attached_files];
@@ -763,7 +790,6 @@ async function HandleAction() {
     try {
         // ปรับแต่ง UI ทันทีเมื่อเริ่มส่ง
         action_btn.disabled = true;
-        action_btn.style.opacity = '0.5';
         message_input.value = '';
         message_input.style.height = 'auto';
 
@@ -972,22 +998,30 @@ function SetStopMode(is_stop) {
         action_btn.classList.remove('send-mode');
         action_btn.classList.add('stop-mode');
         action_btn.disabled = false;
-        action_btn.style.background = ''; // ใช้สีจาก CSS
-        action_btn.style.color = '';      // ใช้สีจาก CSS
+        
+        // 🚀 [FORCE STYLE] ปรับให้ตรงตามรูปตัวอย่างล่าสุด (พื้นหลังเทาอ่อนมาก, สี่เหลี่ยมดำ)
+        action_btn.style.setProperty('background-color', '#f5f5f5', 'important');
+        action_btn.style.setProperty('color', '#0d0d0d', 'important');
+        action_btn.style.setProperty('border', '1px solid rgba(0,0,0,0.1)', 'important');
+        action_btn.style.setProperty('opacity', '1', 'important');
+        
+        // บังคับไอคอนข้างในให้เป็นสีดำเข้ม
+        const stopIcon = action_btn.querySelector('.stop-icon');
+        if (stopIcon) stopIcon.style.setProperty('color', '#0d0d0d', 'important');
     } else {
         action_btn.classList.add('send-mode');
         action_btn.classList.remove('stop-mode');
-
+        // คืนค่าสีเดิม (ให้ไปใช้ตาม CSS)
+        action_btn.style.backgroundColor = '';
+        action_btn.style.color = '';
+        action_btn.style.opacity = '1';
+        
         const has_text = message_input.value.trim().length > 0;
 
         if (has_text) {
             action_btn.disabled = false;
-            action_btn.style.background = ''; // ใช้สีจาก CSS
-            action_btn.style.color = '';      // ใช้สีจาก CSS
         } else {
             action_btn.disabled = true;
-            action_btn.style.background = ''; // ใช้สีจาก CSS
-            action_btn.style.color = '';      // ใช้สีจาก CSS
         }
     }
 }
