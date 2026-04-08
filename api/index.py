@@ -67,13 +67,18 @@ def GetModels():
 # -------------------------------------------------------
 
 @app.post("/api/rag/index")
-def IndexRagKnowledge(db: Session = Depends(GetDb)):
+async def IndexRagKnowledge(request: Request, db: Session = Depends(GetDb)):
     """
     Endpoint สำหรับ Trigger การ Index ไฟล์ความรู้ทั้งหมดใน api/knowledge
     เรียกใช้เมื่อเพิ่ม/แก้ไขไฟล์ในโฟลเดอร์ knowledge
     """
     try:
-        result = IndexKnowledgeFiles(db)
+        data = await request.json()
+        api_key = data.get("api_key")
+        if not api_key:
+            RaiseError(400, ERR_BAD_REQUEST, "กรุณาใส่ API Key เพื่อใช้ในการทำ Index")
+            
+        result = IndexKnowledgeFiles(db, api_key)
         return {
             "success": True,
             "message": f"Index สำเร็จ: {result['files_processed']} ไฟล์, {result['chunks_created']} Chunks",
@@ -214,7 +219,7 @@ async def ChatStream(chat_id: int, request: Request, x_user_id: str = Header("gu
     try:
         has_knowledge = db.query(KnowledgeChunk).count() > 0
         if has_knowledge:
-            relevant_chunks = RetrieveRelevantChunks(user_content, db)
+            relevant_chunks = RetrieveRelevantChunks(user_content, db, api_key)
             rag_context = BuildRagContext(relevant_chunks)
     except Exception:
         # หากระบบ RAG มีปัญหา ให้ข้ามไปตอบตามปกติ ไม่ให้แชทล่ม
