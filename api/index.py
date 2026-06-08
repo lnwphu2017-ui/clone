@@ -42,7 +42,7 @@ def RaiseError(status_code: int, code: str, message: str):
     )
 
 AVAILABLE_MODELS = [
-    {"id": "google/gemini-2.0-flash-001", "name": "Gemini 2.0 Flash"},
+    {"id": "google/gemini-2.5-flash", "name": "Gemini 2.5 Flash"},
     {"id": "qwen/qwen3.6-plus:free", "name": "Qwen 3.6 Plus "},
     {"id": "openai/gpt-oss-120b:free", "name": "GPT-OSS 120B (Free)"},
     {"id": "openai/gpt-oss-20b:free", "name": "GPT-OSS 20B (Free)"},
@@ -137,7 +137,7 @@ async def ValidateKey(request: Request):
         RaiseError(400, ERR_BAD_REQUEST, "กรุณาใส่ API Key")
     try:
         client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=api_key)
-        client.chat.completions.create(model="google/gemini-2.0-flash-001", messages=[{"role": "user", "content": "hi"}], max_tokens=5)
+        client.chat.completions.create(model="google/gemini-2.5-flash", messages=[{"role": "user", "content": "hi"}], max_tokens=5)
         return {"valid": True, "message": "API Key ใช้งานได้!"}
     except Exception as e: return {"valid": False, "message": str(e)}
 
@@ -247,7 +247,7 @@ async def ChatStream(chat_id: int, request: Request, x_user_id: str = Header("gu
     if not chat: 
         RaiseError(404, ERR_CHAT_NOT_FOUND, "ไม่พบข้อมูลห้องแชท")
     data = await request.json()
-    user_content, api_key, model = data.get("content"), data.get("api_key"), data.get("model", "google/gemini-2.0-flash-001")
+    user_content, api_key, model = data.get("content"), data.get("api_key"), data.get("model", "google/gemini-2.5-flash")
     
     # บังคับให้ใส่ API Key เฉพาะกรณีที่ใช้โมเดลภายนอก (ไม่ใช่ Ollama)
     if not api_key and not model.startswith("ollama/"): 

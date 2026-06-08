@@ -9,7 +9,7 @@ let pending_files = [];    // ✅ เก็บไฟล์ที่แนบค�
 
 // ===== ตัวแปรสำหรับจัดการ API Key และ Model (เก็บใน localStorage เหมือน st.session_state) =====
 let api_key = localStorage.getItem('openrouter_api_key') || '';
-let selected_model = localStorage.getItem('selected_model') || 'google/gemini-2.0-flash-001';
+let selected_model = localStorage.getItem('selected_model') || 'google/gemini-2.5-flash';
 
 // อ้างอิง Element หลัก
 const chat_list_el = document.getElementById('history-list');
@@ -451,7 +451,7 @@ async function FetchModels() {
         console.error('Failed to fetch models:', e);
         // Fallback ถ้า server ยังไม่พร้อม
         RenderModelOptions([
-            { id: 'google/gemini-2.0-flash-001', name: 'Gemini 2.0 Flash (Free)' },
+            { id: 'google/gemini-2.5-flash', name: 'Gemini 2.5 Flash' },
             { id: 'deepseek/deepseek-chat-v3-0324:free', name: 'DeepSeek V3 (Free)' },
             { id: 'openai/gpt-oss-20b:free', name: 'GPT-OSS 20B (Free)' },
         ]);
